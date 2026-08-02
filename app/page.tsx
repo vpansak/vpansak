@@ -4,6 +4,7 @@ import {
   ArrowRight,
   BadgeCheck,
   Banknote,
+  BookOpen,
   Box,
   Check,
   ChevronDown,
@@ -12,34 +13,43 @@ import {
   CircleHelp,
   Clock3,
   CreditCard,
+  Dumbbell,
   Gift,
+  Gamepad2,
   Grid3X3,
   Headphones,
   Heart,
   Home,
   Laptop,
+  LampDesk,
   MapPin,
   Menu,
   Minus,
   PackageCheck,
+  PackageOpen,
   Plus,
   RotateCcw,
   Search,
   ShieldCheck,
   Shirt,
+  Sofa,
   ShoppingBag,
   ShoppingCart,
   SlidersHorizontal,
   Smartphone,
   Sparkles,
   Store,
+  ToyBrick,
   Tag,
   Trash2,
   Truck,
   UserRound,
+  Utensils,
   WalletCards,
   X,
   Zap,
+  Car,
+  Watch,
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
@@ -48,6 +58,7 @@ import { CatalogProduct, catalogProducts } from "./lib/catalog";
 const money = (amount: number) => new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(amount);
 
 const categories = [
+  { name: "All", value: "All", icon: Grid3X3, color: "#edf2f8" },
   { name: "Mobiles", value: "Mobile", icon: Smartphone, color: "#e8f2ff" },
   { name: "Electronics", value: "Electronics", icon: Laptop, color: "#eeeaff" },
   { name: "Fashion", value: "Fashion", icon: Shirt, color: "#fff0f3" },
@@ -55,13 +66,35 @@ const categories = [
   { name: "Appliances", value: "Appliances", icon: Zap, color: "#e9fbf4" },
   { name: "Beauty", value: "Beauty", icon: Sparkles, color: "#fff0fa" },
   { name: "Grocery", value: "Grocery", icon: ShoppingBag, color: "#f1f9e7" },
-  { name: "All", value: "All", icon: Grid3X3, color: "#edf2f8" },
+  { name: "Kitchen", value: "Kitchen", icon: Utensils, color: "#fff4e7" },
+  { name: "Computers", value: "Computer", icon: Laptop, color: "#e9f3ff" },
+  { name: "Accessories", value: "Accessories", icon: PackageOpen, color: "#f4edff" },
+  { name: "Lifestyle", value: "Lifestyle", icon: Watch, color: "#eafaf7" },
+  { name: "Gaming", value: "Gaming", icon: Gamepad2, color: "#f0ecff" },
+  { name: "Furniture", value: "Furniture", icon: Sofa, color: "#fff0e7" },
+  { name: "Sports", value: "Sports", icon: Dumbbell, color: "#eaf8ef" },
+  { name: "Toys", value: "Toys", icon: ToyBrick, color: "#fff1f1" },
+  { name: "Books", value: "Books", icon: BookOpen, color: "#fff7df" },
+  { name: "Automotive", value: "Automotive", icon: Car, color: "#edf2f8" },
+  { name: "Smart Watches", value: "Electronics", icon: Watch, color: "#e7f4ff" },
+  { name: "Audio", value: "Electronics", icon: Headphones, color: "#f4edff" },
+  { name: "Study", value: "Books", icon: LampDesk, color: "#fff4dc" },
+  { name: "Home Decor", value: "Home", icon: Home, color: "#f5efe8" },
+  { name: "Daily Needs", value: "Lifestyle", icon: ShoppingBag, color: "#eaf8ef" },
+  { name: "Top Deals", value: "All", icon: Tag, color: "#fff0e5" },
 ];
 
 const heroSlides = [
   { eyebrow: "VPANSAK SAVINGS FESTIVAL", title: "Premium tech.\nSmarter prices.", copy: "Upgrade your everyday with verified electronics, mobiles and accessories at launch prices.", offer: "Up to 60% off", button: "Explore electronics", category: "Electronics", image: "/shop/electronics-hero.png", theme: "blue" },
   { eyebrow: "NEW SEASON EDIT", title: "Everyday style,\nmade effortless.", copy: "Fresh fashion picks, useful accessories and easy deals for every plan.", offer: "From ₹399", button: "Shop fashion", category: "Fashion", image: "/shop/fashion-card.png", theme: "rose" },
   { eyebrow: "HOME REFRESH DAYS", title: "Small upgrades.\nA better home.", copy: "Thoughtful furniture, kitchen and home essentials for comfortable spaces.", offer: "Minimum 40% off", button: "Refresh your home", category: "Home", image: "/shop/home-card.png", theme: "gold" },
+  { eyebrow: "MOBILE MEGA DAYS", title: "Faster phones.\nBetter everyday.", copy: "Explore dependable 5G smartphones, accessories and mobile essentials at smart prices.", offer: "From ₹9,999", button: "Shop mobiles", category: "Mobile", image: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=1800&q=88", theme: "blue" },
+  { eyebrow: "KITCHEN BESTSELLERS", title: "Cook smarter.\nServe happier.", copy: "Useful cookware, storage and everyday kitchen tools selected for modern homes.", offer: "Up to 55% off", button: "Explore kitchen", category: "Kitchen", image: "https://images.unsplash.com/photo-1556911220-bff31c812dba?auto=format&fit=crop&w=1800&q=88", theme: "gold" },
+  { eyebrow: "BEAUTY & SELF CARE", title: "Simple care.\nEveryday glow.", copy: "Discover skincare and personal-care essentials for an uncomplicated daily routine.", offer: "Starting ₹299", button: "Shop beauty", category: "Beauty", image: "https://images.unsplash.com/photo-1556228578-8c89e6adf883?auto=format&fit=crop&w=1800&q=88", theme: "rose" },
+  { eyebrow: "GAMING ZONE", title: "Level up.\nPlay your way.", copy: "Controllers, audio and gaming accessories made for relaxed and responsive play.", offer: "Up to 45% off", button: "Enter gaming", category: "Gaming", image: "https://images.unsplash.com/photo-1592840496694-26d035b52b48?auto=format&fit=crop&w=1800&q=88", theme: "blue" },
+  { eyebrow: "FITNESS PICKS", title: "Move better.\nFeel stronger.", copy: "Practical sports and home-fitness essentials for stretching, training and active days.", offer: "From ₹499", button: "Shop sports", category: "Sports", image: "https://images.unsplash.com/photo-1592432678016-e910b452f9a2?auto=format&fit=crop&w=1800&q=88", theme: "gold" },
+  { eyebrow: "STUDY & WORK", title: "Focus more.\nCreate better.", copy: "Laptops, planners and desk essentials that make study and everyday work feel organised.", offer: "Up to 35% off", button: "Explore computers", category: "Computer", image: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&w=1800&q=88", theme: "blue" },
+  { eyebrow: "TOYS & CREATIVITY", title: "Big ideas.\nHappy play.", copy: "Creative toys and building sets for fun, curiosity and screen-free family time.", offer: "From ₹349", button: "Shop toys", category: "Toys", image: "https://images.unsplash.com/photo-1594736797933-d0501ba2fe65?auto=format&fit=crop&w=1800&q=88", theme: "rose" },
 ];
 
 function ProductCard({ product, wished, onWish, onAdd }: { product: CatalogProduct; wished: boolean; onWish: () => void; onAdd: () => void }) {
@@ -193,11 +226,13 @@ export default function HomePage() {
       </nav>
 
       <section className="vp-category-strip" aria-label="Popular departments">
-        {categories.map(({ name, value, icon: Icon, color }) => <button type="button" key={name} onClick={() => chooseCategory(value)}><span style={{ background: color }}><Icon /></span><strong>{name}</strong><small>{name === "All" ? "18+ categories" : "Top offers"}</small></button>)}
+        {categories.slice(0, 8).map(({ name, value, icon: Icon, color }) => <button type="button" key={name} onClick={() => chooseCategory(value)}><span style={{ background: color }}><Icon /></span><strong>{name}</strong><small>{name === "All" ? `${categories.length - 1}+ categories` : "Top offers"}</small></button>)}
       </section>
 
       <section className="vp-hero-shell">
-        <article className={`vp-hero vp-hero-${currentHero.theme}`} style={{ backgroundImage: `linear-gradient(90deg, rgba(4,12,28,.98) 0%, rgba(4,16,36,.86) 43%, rgba(4,16,36,.08) 76%), url('${currentHero.image}')` }}>
+        <article className={`vp-hero vp-hero-${currentHero.theme}`}>
+          <img className="vp-hero-image" src={currentHero.image} alt="" aria-hidden="true" />
+          <div className="vp-hero-shade" aria-hidden="true" />
           <div className="vp-hero-copy"><span>{currentHero.eyebrow}</span><h1>{currentHero.title.split("\n").map((line) => <span key={line}>{line}</span>)}</h1><p>{currentHero.copy}</p><strong>{currentHero.offer}</strong><button type="button" onClick={() => chooseCategory(currentHero.category)}>{currentHero.button} <ArrowRight /></button></div>
           <button className="vp-hero-arrow left" type="button" onClick={() => setHero((hero - 1 + heroSlides.length) % heroSlides.length)} aria-label="Previous offer"><ChevronLeft /></button>
           <button className="vp-hero-arrow right" type="button" onClick={() => setHero((hero + 1) % heroSlides.length)} aria-label="Next offer"><ChevronRight /></button>
