@@ -3,14 +3,14 @@
 import { ArrowLeft, Check, Circle, Clock3, Headphones, MapPin, PackageCheck, Search, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 
 type TrackedOrder={orderId:string;status:string;total:number;createdAt:string;paymentMethod:string;city:string;pinCode:string;mobile:string};
 type Item={id:number;productName:string;price:number;quantity:number};
 const stages=["Order Confirmed","Packed","Shipped","Out for Delivery","Delivered"];
 const money=(n:number)=>new Intl.NumberFormat("en-IN",{style:"currency",currency:"INR",maximumFractionDigits:0}).format(n);
 
-export default function TrackPage(){
+function TrackContent(){
  const query=useSearchParams();const [id,setId]=useState(query.get("id")||"");const [order,setOrder]=useState<TrackedOrder|null>(null);const [items,setItems]=useState<Item[]>([]);const [error,setError]=useState("");const [loading,setLoading]=useState(false);
  const track=async(value=id)=>{const orderId=value.trim().toUpperCase();if(!/^VPO\d{6}$/.test(orderId)){setError("Enter a valid Order ID such as VPO123456.");setOrder(null);return;}setLoading(true);setError("");try{const res=await fetch(`/api/orders?id=${encodeURIComponent(orderId)}`);const data=await res.json();if(!res.ok){setError(data.error||"Order not found");setOrder(null);}else{setOrder(data.order);setItems(data.items||[]);history.replaceState(null,"",`/track?id=${orderId}`)}}catch{setError("Tracking service is temporarily unavailable.")}setLoading(false)};
  useEffect(()=>{const initial=query.get("id");if(!initial)return;const timer=window.setTimeout(()=>{void track(initial)},0);return()=>window.clearTimeout(timer)},[]);
@@ -20,4 +20,8 @@ export default function TrackPage(){
  {!order?<section className="track-help"><article><PackageCheck/><h3>Where is my Order ID?</h3><p>Your Order ID starts with <b>VPO</b> and appears after successful checkout.</p></article><article><ShieldCheck/><h3>Privacy protected</h3><p>Full mobile number and delivery address are never displayed on the public page.</p></article><article><Headphones/><h3>Need help?</h3><p>Create a support ticket if your status has not changed for an expected period.</p><Link href="/support">Open Support Hub</Link></article></section>:
  <section className="track-result-page"><header><div><small>ORDER ID</small><h2>{order.orderId}</h2><p>Placed on {new Date(order.createdAt).toLocaleString("en-IN")}</p></div><span>{order.status}</span></header>{exceptional&&<div className="tracking-special"><PackageCheck/><span><strong>{exceptional}</strong><small>This order is in a special workflow. Open Support Hub for cancellation, return or refund details.</small></span></div>}<div className="order-timeline">{stages.map((stage,index)=><div className={index<=current?"complete":index===current+1?"next":""} key={stage}><span>{index<=current&&current>=0?<Check/>:<Circle/>}</span><div><strong>{stage}</strong><small>{index<current?"Completed":index===current?"Current status":index===current+1&&current>=0?"Next update":"Pending"}</small></div>{index<stages.length-1&&<i/>}</div>)}</div><div className="tracking-columns"><section><h3><PackageCheck/>Order summary</h3>{items.length?items.map((item)=><div className="tracked-item" key={item.id}><span><strong>{item.productName}</strong><small>Quantity: {item.quantity}</small></span><b>{money(item.price*item.quantity)}</b></div>):<p className="privacy-note">Item details are available in the signed-in account dashboard.</p>}<div className="tracked-total"><span>Total amount</span><strong>{money(order.total)}</strong></div></section><section><h3><MapPin/>Delivery information</h3><dl><div><dt>City</dt><dd>{order.city}</dd></div><div><dt>PIN code</dt><dd>{order.pinCode}</dd></div><div><dt>Mobile</dt><dd>{order.mobile}</dd></div><div><dt>Payment</dt><dd>{order.paymentMethod}</dd></div></dl><p className="privacy-note"><ShieldCheck/>Sensitive customer information is masked for security.</p></section></div><div className="track-actions"><div><Clock3/><span><strong>Status updates</strong><small>Refresh this page to see the latest admin update.</small></span></div><Link href={`/support?order=${order.orderId}`}><Headphones/>Get order help</Link></div></section>}
  </main>
+}
+
+export default function TrackPage(){
+ return <Suspense fallback={<main className="track-page"><section className="track-hero"><p>Loading order tracking…</p></section></main>}><TrackContent/></Suspense>;
 }
