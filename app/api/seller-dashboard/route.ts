@@ -1,0 +1,16 @@
+import { and, desc, eq } from "drizzle-orm";
+import { getDb } from "../../../db";
+import { products, sellerApplications } from "../../../db/schema";
+
+function authEmail(request:Request){return request.headers.get("oai-authenticated-user-email")?.trim().toLowerCase()||""}
+export async function GET(request:Request){
+ const email=authEmail(request);if(!email)return Response.json({error:"Sign in to open the Seller Dashboard."},{status:401});
+ try{const db=await getDb();const [application]=await db.select().from(sellerApplications).where(eq(sellerApplications.email,email)).orderBy(desc(sellerApplications.createdAt)).limit(1);if(!application)return Response.json({email,application:null,products:[]});const listings=await db.select().from(products).where(eq(products.sellerId,application.applicationId)).orderBy(desc(products.createdAt));return Response.json({email,application:{applicationId:application.applicationId,fullName:application.fullName,businessName:application.businessName,businessType:application.businessType,status:application.status,createdAt:application.createdAt},products:listings});}catch{return Response.json({error:"Seller Dashboard is temporarily unavailable."},{status:503})}
+}
+export async function POST(request:Request){
+ const email=authEmail(request);if(!email)return Response.json({error:"Sign in is required."},{status:401});
+ try{const body=await request.json() as Record<string,unknown>;const db=await getDb();const [application]=await db.select().from(sellerApplications).where(eq(sellerApplications.email,email)).orderBy(desc(sellerApplications.createdAt)).limit(1);if(!application)return Response.json({error:"Submit a seller application first."},{status:403});
+  if(body.action==="inventory"){const id=String(body.id||"");const stock=Math.max(0,Math.min(99999,Math.round(Number(body.stock)||0)));const [owned]=await db.select().from(products).where(and(eq(products.id,id),eq(products.sellerId,application.applicationId))).limit(1);if(!owned)return Response.json({error:"Product not found."},{status:404});await db.update(products).set({stock}).where(eq(products.id,id));return Response.json({ok:true});}
+  const required=["name","category","description","imageUrl","price","mrp","stock","sku"];if(required.some((key)=>!String(body[key]??"").trim()))return Response.json({error:"Complete all product details."},{status:400});const id=`seller-${application.applicationId.toLowerCase()}-${crypto.randomUUID().slice(0,8)}`;await db.insert(products).values({id,name:String(body.name).trim().slice(0,160),brand:String(body.brand||application.businessName).trim().slice(0,100),category:String(body.category).trim().slice(0,80),description:String(body.description).trim().slice(0,2000),specifications:JSON.stringify({sellerSku:String(body.sku)}),imageUrl:String(body.imageUrl).trim().slice(0,500),images:JSON.stringify([String(body.imageUrl).trim().slice(0,500)]),price:Math.max(1,Math.round(Number(body.price))),mrp:Math.max(1,Math.round(Number(body.mrp))),stock:Math.max(0,Math.round(Number(body.stock))),sku:String(body.sku).trim().toUpperCase().slice(0,60),status:"Pending Review",sellerId:application.applicationId});return Response.json({id,status:"Pending Review"},{status:201});
+ }catch{return Response.json({error:"Product could not be saved. Check that the SKU is unique."},{status:500})}
+}

@@ -1,0 +1,183 @@
+import { sql } from "drizzle-orm";
+import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+
+export const orders = sqliteTable("orders", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  orderId: text("order_id").notNull().unique(),
+  ownerEmail: text("owner_email"),
+  customerName: text("customer_name").notNull(),
+  mobile: text("mobile").notNull(),
+  address: text("address").notNull(),
+  city: text("city").notNull(),
+  pinCode: text("pin_code").notNull(),
+  paymentMethod: text("payment_method").notNull(),
+  total: integer("total").notNull(),
+  status: text("status").notNull().default("Order Confirmed"),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const sellerApplications = sqliteTable("seller_applications", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  applicationId: text("application_id").notNull().unique(),
+  fullName: text("full_name").notNull(),
+  mobile: text("mobile").notNull(),
+  email: text("email").notNull(),
+  businessName: text("business_name").notNull(),
+  businessType: text("business_type").notNull(),
+  gstin: text("gstin"),
+  documentPrefix: text("document_prefix").notNull(),
+  status: text("status").notNull().default("Pending Review"),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const products = sqliteTable("products", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  brand: text("brand").notNull().default("VPANSAK Select"),
+  category: text("category").notNull(),
+  description: text("description").notNull().default(""),
+  specifications: text("specifications").notNull().default("{}"),
+  imageUrl: text("image_url").notNull(),
+  images: text("images").notNull().default("[]"),
+  price: integer("price").notNull(),
+  mrp: integer("mrp").notNull(),
+  stock: integer("stock").notNull().default(0),
+  sku: text("sku").notNull().unique(),
+  rating: integer("rating").notNull().default(0),
+  reviewCount: integer("review_count").notNull().default(0),
+  status: text("status").notNull().default("Approved"),
+  sellerId: text("seller_id"),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const profiles = sqliteTable("profiles", {
+  email: text("email").primaryKey(),
+  fullName: text("full_name").notNull().default(""),
+  mobile: text("mobile").notNull().default(""),
+  avatarUrl: text("avatar_url"),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const addresses = sqliteTable("addresses", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  ownerEmail: text("owner_email").notNull(),
+  label: text("label").notNull().default("Home"),
+  fullName: text("full_name").notNull(),
+  mobile: text("mobile").notNull(),
+  line1: text("line1").notNull(),
+  city: text("city").notNull(),
+  state: text("state").notNull(),
+  pinCode: text("pin_code").notNull(),
+  isPrimary: integer("is_primary", { mode: "boolean" }).notNull().default(false),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const wishlistItems = sqliteTable("wishlist_items", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  ownerEmail: text("owner_email").notNull(),
+  productId: text("product_id").notNull(),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const persistentCartItems = sqliteTable("cart_items", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  ownerEmail: text("owner_email").notNull(),
+  productId: text("product_id").notNull(),
+  quantity: integer("quantity").notNull().default(1),
+  updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const orderItems = sqliteTable("order_items", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  orderId: text("order_id").notNull(),
+  productId: text("product_id").notNull(),
+  productName: text("product_name").notNull(),
+  price: integer("price").notNull(),
+  quantity: integer("quantity").notNull(),
+});
+
+export const reviews = sqliteTable("reviews", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  productId: text("product_id").notNull(),
+  ownerEmail: text("owner_email").notNull(),
+  displayName: text("display_name").notNull(),
+  rating: integer("rating").notNull(),
+  title: text("title").notNull().default(""),
+  body: text("body").notNull(),
+  status: text("status").notNull().default("Pending"),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const coupons = sqliteTable("coupons", {
+  code: text("code").primaryKey(),
+  title: text("title").notNull(),
+  type: text("type").notNull().default("percentage"),
+  value: integer("value").notNull(),
+  minOrder: integer("min_order").notNull().default(0),
+  maxDiscount: integer("max_discount"),
+  active: integer("active", { mode: "boolean" }).notNull().default(true),
+  expiresAt: text("expires_at"),
+});
+
+export const notifications = sqliteTable("notifications", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  ownerEmail: text("owner_email").notNull(),
+  title: text("title").notNull(),
+  message: text("message").notNull(),
+  type: text("type").notNull().default("info"),
+  read: integer("read", { mode: "boolean" }).notNull().default(false),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const tickets = sqliteTable("tickets", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  ticketId: text("ticket_id").notNull().unique(),
+  customerName: text("customer_name").notNull(),
+  email: text("email").notNull(),
+  mobile: text("mobile").notNull().default(""),
+  category: text("category").notNull(),
+  subject: text("subject").notNull(),
+  description: text("description").notNull(),
+  priority: text("priority").notNull().default("Normal"),
+  status: text("status").notNull().default("Open"),
+  assignedOfficer: text("assigned_officer"),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const ticketReplies = sqliteTable("ticket_replies", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  ticketId: text("ticket_id").notNull(),
+  authorType: text("author_type").notNull(),
+  authorName: text("author_name").notNull(),
+  message: text("message").notNull(),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const officers = sqliteTable("officers", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  officerId: text("officer_id").notNull().unique(),
+  fullName: text("full_name").notNull(),
+  email: text("email").notNull().unique(),
+  role: text("role").notNull(),
+  department: text("department").notNull(),
+  active: integer("active", { mode: "boolean" }).notNull().default(true),
+  assignedCount: integer("assigned_count").notNull().default(0),
+  resolvedCount: integer("resolved_count").notNull().default(0),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const donations = sqliteTable("donations", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  donationId: text("donation_id").notNull().unique(),
+  donorName: text("donor_name").notNull(),
+  email: text("email").notNull(),
+  mobile: text("mobile").notNull(),
+  amount: integer("amount").notNull(),
+  paymentMethod: text("payment_method").notNull().default("Manual"),
+  paymentStatus: text("payment_status").notNull().default("Pending Verification"),
+  certificateId: text("certificate_id").notNull().unique(),
+  appreciationMessage: text("appreciation_message").notNull(),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
