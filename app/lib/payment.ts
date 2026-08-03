@@ -5,6 +5,8 @@ import { catalogProducts } from "./catalog";
 
 export type CheckoutItem = { productId: string; quantity: number };
 
+const fallbackPublicKeyId = "rzp_live_TLMoK497QwLs7Y";
+
 export async function calculateCheckout(rawItems: unknown, rawCoupon: unknown) {
   if (!Array.isArray(rawItems) || rawItems.length < 1 || rawItems.length > 50) throw new Error("INVALID_ITEMS");
   const items = rawItems.map((raw) => {
@@ -29,11 +31,9 @@ export async function calculateCheckout(rawItems: unknown, rawCoupon: unknown) {
 }
 
 export async function razorpayConfig() {
-  const { env } = await import("cloudflare:workers");
-  const values = env as Record<string, unknown>;
-  const keyId = values.RAZORPAY_KEY_ID;
-  const keySecret = values.RAZORPAY_KEY_SECRET;
-  if (typeof keyId !== "string" || typeof keySecret !== "string") throw new Error("PAYMENT_NOT_CONFIGURED");
+  const keyId = process.env.RAZORPAY_KEY_ID || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || fallbackPublicKeyId;
+  const keySecret = process.env.RAZORPAY_KEY_SECRET;
+  if (typeof keyId !== "string" || !keyId.startsWith("rzp_") || typeof keySecret !== "string" || !keySecret) throw new Error("PAYMENT_NOT_CONFIGURED");
   return { keyId, keySecret };
 }
 
