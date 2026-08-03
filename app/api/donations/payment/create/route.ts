@@ -6,5 +6,9 @@ export async function POST(request:Request){
  const {keyId,keySecret}=await razorpayConfig();const donationId=`VPD${Math.floor(100000+Math.random()*900000)}`;const certificateId=`VPC${Math.floor(100000+Math.random()*900000)}`;
  const response=await fetch("https://api.razorpay.com/v1/orders",{method:"POST",headers:{authorization:basicAuth(keyId,keySecret),"content-type":"application/json"},body:JSON.stringify({amount:amount*100,currency:"INR",receipt:donationId,notes:{purpose:"VPANSAK Support Fund",certificate_id:certificateId}})});const order=await response.json() as {id?:string;amount?:number;currency?:string;error?:{description?:string}};
  if(!response.ok||!order.id)return Response.json({error:order.error?.description||"Payment start nahi ho saka."},{status:502});return Response.json({keyId,donationId,certificateId,order:{id:order.id,amount:order.amount,currency:order.currency}})
- }catch{return Response.json({error:"Online contribution abhi available nahi hai."},{status:503})}
+ }catch(error){
+  const message=error instanceof Error?error.message:"";
+  if(message==="PAYMENT_NOT_CONFIGURED")return Response.json({error:"Razorpay live key Vercel Environment Variables me set nahi hai. RAZORPAY_KEY_SECRET add karke redeploy karein."},{status:503});
+  return Response.json({error:"Online contribution abhi available nahi hai. Razorpay keys aur deployment logs check karein."},{status:503})
+ }
 }
