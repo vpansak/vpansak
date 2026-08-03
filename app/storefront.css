@@ -177,15 +177,15 @@
 
 .vp-banner-grid { width: min(1480px, calc(100% - 32px)); margin: 14px auto; display: grid; grid-template-columns: 1fr 1fr .72fr; gap: 12px; }
 .vp-banner-grid > button { min-height: 245px; padding: 30px; position: relative; overflow: hidden; display: flex; align-items: center; text-align: left; border: 0; border-radius: 11px; background-position: center; background-size: cover; color: white; }
-.vp-banner-grid > button::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, #061328f0 0%, #07162ab8 48%, transparent 88%); }
+.vp-banner-grid > button::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(6,19,40,.92) 0%, rgba(7,22,42,.62) 48%, rgba(7,22,42,.08) 85%); }
 .vp-banner-grid > button > span { max-width: 280px; position: relative; z-index: 2; display: flex; flex-direction: column; align-items: flex-start; }
 .vp-banner-grid small { color: #a5c3ed; font-size: 7px; font-weight: 900; letter-spacing: .16em; }
 .vp-banner-grid strong { margin: 9px 0; font-size: 25px; line-height: 1.08; }
 .vp-banner-grid b { color: #ffc24e; font-size: 11px; }
 .vp-banner-grid i { margin-top: 19px; display: flex; align-items: center; gap: 6px; font-size: 8px; font-style: normal; font-weight: 850; }
 .vp-banner-grid i svg { width: 13px; }
-.vp-banner-fashion { background-image: url('/shop/fashion-card.png'); }
-.vp-banner-home { background-image: url('/shop/home-card.png'); }
+.vp-banner-fashion { background-image: url('https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=1200&q=85'); background-position: right center; }
+.vp-banner-home { background-image: url('https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=1200&q=85'); background-position: right center; }
 .vp-banner-seller { padding: 30px !important; flex-direction: column; align-items: flex-start !important; justify-content: flex-end; background: linear-gradient(145deg, #1268f4, #082d72) !important; }
 .vp-banner-seller::after { display: none; }
 .vp-banner-seller > svg:first-child { width: 42px; height: 42px; margin-bottom: auto; padding: 10px; border-radius: 9px; background: #ffffff1c; }
