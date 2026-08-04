@@ -6,7 +6,6 @@ import {
   Boxes,
   CircleDollarSign,
   Copy,
-  Download,
   KeyRound,
   LayoutDashboard,
   LockKeyhole,
@@ -15,11 +14,14 @@ import {
   Plus,
   RefreshCw,
   Save,
+  Search,
   Send,
+  ShieldCheck,
   Sparkles,
   Star,
   Store,
   TicketCheck,
+  UserCheck,
   Users,
 } from "lucide-react";
 import Link from "next/link";
@@ -39,6 +41,7 @@ type Row = {
   email?: string;
   ownerEmail?: string;
   fullName?: string;
+  mobile?: string;
   subject?: string;
   category?: string;
   productId?: string;
@@ -64,6 +67,7 @@ type Row = {
 };
 
 type AdminData = {
+  users: Row[];
   orders: Row[];
   sellers: Row[];
   tickets: Row[];
@@ -82,6 +86,7 @@ type EmailDraft = {
 };
 
 const empty: AdminData = {
+  users: [],
   orders: [],
   sellers: [],
   tickets: [],
@@ -100,6 +105,7 @@ export default function SecretAdminPage() {
   const [loading, setLoading] = useState(true);
   const [denied, setDenied] = useState(false);
   const [tab, setTab] = useState("dashboard");
+  const [query, setQuery] = useState("");
   const [message, setMessage] = useState("");
 
   // Login form state
@@ -115,7 +121,7 @@ export default function SecretAdminPage() {
     setLoading(true);
     setDenied(false);
 
-    // Auto set admin cookie on secret route
+    // Set admin cookie on secret route
     document.cookie = "vpansak_admin_key=7380869635; path=/; max-age=2592000; SameSite=Lax";
 
     try {
@@ -127,7 +133,17 @@ export default function SecretAdminPage() {
       }
       const value = await res.json();
       if (res.ok) {
-        setData(value);
+        setData({
+          users: value.users || [],
+          orders: value.orders || [],
+          sellers: value.sellers || [],
+          tickets: value.tickets || [],
+          products: value.products || [],
+          reviews: value.reviews || [],
+          officers: value.officers || [],
+          donations: value.donations || [],
+          coupons: value.coupons || [],
+        });
         setDenied(false);
       } else {
         setDenied(true);
@@ -167,7 +183,6 @@ export default function SecretAdminPage() {
         setDenied(false);
         load();
       } else {
-        // Fallback for valid credentials
         if (loginPass === "1207" || loginEmail === "aloksingh84959@gmail.com") {
           setDenied(false);
           load();
@@ -189,7 +204,7 @@ export default function SecretAdminPage() {
       body: JSON.stringify(body),
     });
     const value = await res.json();
-    setMessage(res.ok ? "Admin action completed" : value.error || "Action failed");
+    setMessage(res.ok ? "Admin action completed successfully" : value.error || "Action failed");
     if (res.ok) {
       load();
       if (value.composeUrl) window.open(value.composeUrl, "_blank", "noopener,noreferrer");
@@ -200,7 +215,8 @@ export default function SecretAdminPage() {
     e.preventDefault();
     const form = new FormData(e.currentTarget);
     const type = String(form.get("type") || "Custom");
-    const promptText = String(form.get("prompt") || "").trim() || "We have an important update regarding your VPANSAK account.";
+    const promptText =
+      String(form.get("prompt") || "").trim() || "We have an important update regarding your VPANSAK account.";
     const rec = String(form.get("recipient") || "").trim();
     setEmailRecipient(rec);
 
@@ -303,7 +319,7 @@ export default function SecretAdminPage() {
           </h1>
 
           <p style={{ margin: 0, color: "#94a3b8", fontSize: 12, lineHeight: 1.6 }}>
-            Enter Super Admin ID (<strong>aloksingh84959@gmail.com</strong>) and Password (<strong>1207</strong>) to access orders, tickets & sellers.
+            Enter Super Admin ID (<strong>aloksingh84959@gmail.com</strong>) and Password (<strong>1207</strong>) to access all user accounts, orders, tickets & sellers.
           </p>
 
           <form
@@ -398,12 +414,32 @@ export default function SecretAdminPage() {
     );
 
   const revenue = data.orders.reduce((s, r) => s + (r.total || 0), 0);
+
+  // Filter helper
+  const filterList = (list: Row[]) => {
+    if (!query.trim()) return list;
+    const q = query.toLowerCase().trim();
+    return list.filter(
+      (r) =>
+        (r.email && r.email.toLowerCase().includes(q)) ||
+        (r.fullName && r.fullName.toLowerCase().includes(q)) ||
+        (r.customerName && r.customerName.toLowerCase().includes(q)) ||
+        (r.orderId && r.orderId.toLowerCase().includes(q)) ||
+        (r.ticketId && r.ticketId.toLowerCase().includes(q)) ||
+        (r.businessName && r.businessName.toLowerCase().includes(q)) ||
+        (r.name && r.name.toLowerCase().includes(q)) ||
+        (r.code && r.code.toLowerCase().includes(q)) ||
+        (r.mobile && r.mobile.includes(q))
+    );
+  };
+
   const menus = [
     { k: "dashboard", I: LayoutDashboard, l: "Dashboard" },
+    { k: "users", I: UserCheck, l: "Users & Accounts" },
     { k: "orders", I: PackageCheck, l: "Orders" },
     { k: "sellers", I: Store, l: "Sellers" },
     { k: "products", I: Boxes, l: "Products" },
-    { k: "tickets", I: TicketCheck, l: "Tickets" },
+    { k: "tickets", I: TicketCheck, l: "Support Tickets" },
     { k: "reviews", I: Star, l: "Reviews" },
     { k: "officers", I: Users, l: "Officers" },
     { k: "donations", I: CircleDollarSign, l: "Donations" },
@@ -448,75 +484,99 @@ export default function SecretAdminPage() {
       </aside>
 
       <section className="admin-workspace">
-        <header>
+        <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
           <div>
-            <small>VPANSAK SECRET CONSOLE • 7380869635</small>
+            <small>SECRET CONSOLE • 7380869635</small>
             <h1>{menus.find((m) => m.k === tab)?.l}</h1>
           </div>
-          <span>
-            <i />
-            Protected admin session (aloksingh84959@gmail.com)
-          </span>
+
+          <label style={{ display: "flex", alignItems: "center", gap: 8, background: "#0a1f38", border: "1px solid #1e3a61", borderRadius: 8, padding: "0 12px", height: 40, width: "min(320px, 100%)" }}>
+            <Search size={16} color="#60a5fa" />
+            <input
+              type="text"
+              placeholder="Search users, orders, tickets..."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              style={{ background: "transparent", border: 0, color: "white", outline: 0, width: "100%", fontSize: 12 }}
+            />
+          </label>
         </header>
 
         {tab === "dashboard" && (
           <>
             <div className="admin-manage-stats">
               <article>
+                <UserCheck />
+                <span>
+                  <strong>{data.users.length}</strong>
+                  <small>Registered Accounts</small>
+                </span>
+              </article>
+              <article>
                 <PackageCheck />
                 <span>
                   <strong>{data.orders.length}</strong>
-                  <small>Orders</small>
+                  <small>Total Orders</small>
                 </span>
               </article>
               <article>
                 <Store />
                 <span>
                   <strong>{data.sellers.length}</strong>
-                  <small>Seller applications</small>
+                  <small>Seller Applications</small>
                 </span>
               </article>
               <article>
                 <TicketCheck />
                 <span>
                   <strong>{data.tickets.filter((t) => t.status !== "Closed").length}</strong>
-                  <small>Open tickets</small>
+                  <small>Open Tickets</small>
                 </span>
               </article>
               <article>
                 <CircleDollarSign />
                 <span>
                   <strong>{money(revenue)}</strong>
-                  <small>Recorded order value</small>
+                  <small>Total Order Revenue</small>
                 </span>
               </article>
             </div>
+
             <div className="admin-dashboard-grid">
-              <AdminSection title="Latest orders">
-                <OrderRows rows={data.orders.slice(0, 6)} action={action} />
+              <AdminSection title="Latest User Registrations">
+                <UserRows rows={filterList(data.users).slice(0, 5)} action={action} />
               </AdminSection>
-              <AdminSection title="Latest tickets">
-                <TicketRows rows={data.tickets.slice(0, 6)} action={action} />
+              <AdminSection title="Latest Orders">
+                <OrderRows rows={filterList(data.orders).slice(0, 5)} action={action} />
+              </AdminSection>
+              <AdminSection title="Latest Support Tickets">
+                <TicketRows rows={filterList(data.tickets).slice(0, 5)} action={action} />
               </AdminSection>
             </div>
           </>
         )}
 
+        {tab === "users" && (
+          <AdminSection title="Registered Users & Accounts">
+            <UserRows rows={filterList(data.users)} action={action} />
+          </AdminSection>
+        )}
+
         {tab === "orders" && (
-          <AdminSection title="Order management">
-            <OrderRows rows={data.orders} action={action} />
+          <AdminSection title="Order Management Ledger">
+            <OrderRows rows={filterList(data.orders)} action={action} />
           </AdminSection>
         )}
 
         {tab === "sellers" && (
-          <AdminSection title="Seller KYC approval">
+          <AdminSection title="Seller KYC Approval Applications">
             <div className="manage-rows">
-              {data.sellers.map((r) => (
+              {filterList(data.sellers).map((r) => (
                 <article key={r.applicationId}>
                   <span>
                     <strong>{r.businessName}</strong>
                     <small>
-                      {r.applicationId} • {r.email}
+                      {r.applicationId} • Email: {r.email} • Mobile: {r.mobile || "N/A"}
                     </small>
                   </span>
                   <select
@@ -537,14 +597,14 @@ export default function SecretAdminPage() {
         )}
 
         {tab === "products" && (
-          <AdminSection title="Product moderation">
+          <AdminSection title="Product Inventory & Moderation">
             <div className="manage-rows">
-              {data.products.map((r) => (
+              {filterList(data.products).map((r) => (
                 <article key={String(r.id)}>
                   <span>
                     <strong>{r.name}</strong>
                     <small>
-                      {r.sku} • Stock {r.stock}
+                      SKU: {r.sku} • Stock: {r.stock} • Category: {r.category || "General"}
                     </small>
                   </span>
                   <b>{money(r.price)}</b>
@@ -564,22 +624,22 @@ export default function SecretAdminPage() {
         )}
 
         {tab === "tickets" && (
-          <AdminSection title="Ticket queue">
-            <TicketRows rows={data.tickets} action={action} detailed />
+          <AdminSection title="Customer Support Tickets">
+            <TicketRows rows={filterList(data.tickets)} action={action} detailed />
           </AdminSection>
         )}
 
         {tab === "reviews" && (
-          <AdminSection title="Review moderation">
+          <AdminSection title="Customer Product Reviews">
             <div className="manage-rows">
-              {data.reviews.map((r) => (
+              {filterList(data.reviews).map((r) => (
                 <article key={r.id}>
                   <span>
                     <strong>
-                      {r.title || "Customer review"} • {r.rating}/5
+                      {r.title || "Customer Review"} • Rating: {r.rating}/5
                     </strong>
                     <small>
-                      {r.ownerEmail} • {r.body}
+                      User: {r.ownerEmail} • Comment: {r.body}
                     </small>
                   </span>
                   <select
@@ -598,7 +658,7 @@ export default function SecretAdminPage() {
 
         {tab === "officers" && (
           <>
-            <AdminSection title="Add support officer">
+            <AdminSection title="Add Support Officer">
               <form
                 className="admin-inline-form"
                 onSubmit={(e) => {
@@ -621,13 +681,13 @@ export default function SecretAdminPage() {
                 </select>
                 <button>
                   <Plus />
-                  Add officer
+                  Add Officer
                 </button>
               </form>
             </AdminSection>
-            <AdminSection title="Officer directory">
+            <AdminSection title="Officer Directory">
               <div className="manage-rows">
-                {data.officers.map((r) => (
+                {filterList(data.officers).map((r) => (
                   <article key={r.id}>
                     <span>
                       <strong>{r.fullName}</strong>
@@ -644,16 +704,16 @@ export default function SecretAdminPage() {
         )}
 
         {tab === "donations" && (
-          <AdminSection title="Donation verification">
+          <AdminSection title="Donation Certificates">
             <div className="manage-rows">
-              {data.donations.map((r) => (
+              {filterList(data.donations).map((r) => (
                 <article key={r.donationId}>
                   <span>
                     <strong>
                       {r.donorName} • {money(r.amount)}
                     </strong>
                     <small>
-                      {r.donationId} • Certificate {r.certificateId}
+                      Donation ID: {r.donationId} • Certificate: {r.certificateId}
                     </small>
                   </span>
                   <select
@@ -674,7 +734,7 @@ export default function SecretAdminPage() {
 
         {tab === "coupons" && (
           <>
-            <AdminSection title="Create or update coupon">
+            <AdminSection title="Create or Edit Coupon">
               <form
                 className="admin-inline-form coupon-form"
                 onSubmit={(e) => {
@@ -693,20 +753,20 @@ export default function SecretAdminPage() {
                 <input name="maxDiscount" type="number" min="0" placeholder="Max discount" />
                 <button>
                   <Save />
-                  Save coupon
+                  Save Coupon
                 </button>
               </form>
             </AdminSection>
-            <AdminSection title="Active coupon rules">
+            <AdminSection title="Active Promo Coupons">
               <div className="manage-rows">
-                {data.coupons.map((r) => (
+                {filterList(data.coupons).map((r) => (
                   <article key={r.code}>
                     <span>
                       <strong>
                         {r.code} • {r.title}
                       </strong>
                       <small>
-                        Value {r.value} • Minimum {money(r.minOrder)}
+                        Discount Value: {r.value} • Min Order: {money(r.minOrder)}
                       </small>
                     </span>
                     <b>{r.active ? "Active" : "Inactive"}</b>
@@ -801,34 +861,68 @@ function AdminSection({ title, children }: { title: string; children: React.Reac
   );
 }
 
+function UserRows({ rows, action }: { rows: Row[]; action: (b: Record<string, unknown>) => void }) {
+  return (
+    <div className="manage-rows">
+      {rows.length ? (
+        rows.map((r) => (
+          <article key={r.email}>
+            <span>
+              <strong>{r.fullName || r.email}</strong>
+              <small>
+                {r.email} • Mobile: {r.mobile || "N/A"} • Joined: {r.createdAt ? r.createdAt.slice(0, 10) : "N/A"}
+              </small>
+            </span>
+            <select
+              value={r.role || "customer"}
+              onChange={(e) => action({ action: "userRole", email: r.email, role: e.target.value })}
+            >
+              <option value="customer">Customer</option>
+              <option value="seller">Seller</option>
+              <option value="officer">Support Officer</option>
+              <option value="admin">Super Admin</option>
+            </select>
+          </article>
+        ))
+      ) : (
+        <div style={{ padding: 20, color: "#94a3b8", fontSize: 12 }}>No registered user accounts found.</div>
+      )}
+    </div>
+  );
+}
+
 function OrderRows({ rows, action }: { rows: Row[]; action: (b: Record<string, unknown>) => void }) {
   return (
     <div className="manage-rows">
-      {rows.map((r) => (
-        <article key={r.orderId}>
-          <span>
-            <strong>
-              {r.orderId} • {r.customerName}
-            </strong>
-            <small>
-              {r.paymentMethod} • {money(r.total)}
-            </small>
-          </span>
-          <select
-            value={r.status}
-            onChange={(e) => action({ action: "orderStatus", orderId: r.orderId, status: e.target.value })}
-          >
-            <option>Order Confirmed</option>
-            <option>Packed</option>
-            <option>Shipped</option>
-            <option>Out for Delivery</option>
-            <option>Delivered</option>
-            <option>Cancelled</option>
-            <option>Return Requested</option>
-            <option>Refunded</option>
-          </select>
-        </article>
-      ))}
+      {rows.length ? (
+        rows.map((r) => (
+          <article key={r.orderId}>
+            <span>
+              <strong>
+                {r.orderId} • {r.customerName}
+              </strong>
+              <small>
+                Payment: {r.paymentMethod} • Amount: {money(r.total)}
+              </small>
+            </span>
+            <select
+              value={r.status}
+              onChange={(e) => action({ action: "orderStatus", orderId: r.orderId, status: e.target.value })}
+            >
+              <option>Order Confirmed</option>
+              <option>Packed</option>
+              <option>Shipped</option>
+              <option>Out for Delivery</option>
+              <option>Delivered</option>
+              <option>Cancelled</option>
+              <option>Return Requested</option>
+              <option>Refunded</option>
+            </select>
+          </article>
+        ))
+      ) : (
+        <div style={{ padding: 20, color: "#94a3b8", fontSize: 12 }}>No orders recorded yet.</div>
+      )}
     </div>
   );
 }
@@ -844,42 +938,46 @@ function TicketRows({
 }) {
   return (
     <div className="manage-rows">
-      {rows.map((r) => (
-        <article className={detailed ? "detailed" : ""} key={r.ticketId}>
-          <span>
-            <strong>
-              {r.ticketId} • {r.subject}
-            </strong>
-            <small>
-              {r.category} • {r.email} • Assigned: {r.assignedOfficer || "Queue"}
-            </small>
-          </span>
-          <select
-            value={r.status}
-            onChange={(e) => action({ action: "ticketStatus", ticketId: r.ticketId, status: e.target.value })}
-          >
-            <option>Open</option>
-            <option>In Progress</option>
-            <option>Customer Replied</option>
-            <option>Support Replied</option>
-            <option>Resolved</option>
-            <option>Closed</option>
-          </select>
-          {detailed && (
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                const f = new FormData(e.currentTarget);
-                action({ action: "ticketReply", ticketId: r.ticketId, message: f.get("message") });
-                e.currentTarget.reset();
-              }}
+      {rows.length ? (
+        rows.map((r) => (
+          <article className={detailed ? "detailed" : ""} key={r.ticketId}>
+            <span>
+              <strong>
+                {r.ticketId} • {r.subject}
+              </strong>
+              <small>
+                Category: {r.category} • User: {r.email} • Assigned: {r.assignedOfficer || "Queue"}
+              </small>
+            </span>
+            <select
+              value={r.status}
+              onChange={(e) => action({ action: "ticketStatus", ticketId: r.ticketId, status: e.target.value })}
             >
-              <input name="message" placeholder="Professional support reply" required />
-              <button>Reply</button>
-            </form>
-          )}
-        </article>
-      ))}
+              <option>Open</option>
+              <option>In Progress</option>
+              <option>Customer Replied</option>
+              <option>Support Replied</option>
+              <option>Resolved</option>
+              <option>Closed</option>
+            </select>
+            {detailed && (
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  const f = new FormData(e.currentTarget);
+                  action({ action: "ticketReply", ticketId: r.ticketId, message: f.get("message") });
+                  e.currentTarget.reset();
+                }}
+              >
+                <input name="message" placeholder="Type official support reply..." required />
+                <button>Reply</button>
+              </form>
+            )}
+          </article>
+        ))
+      ) : (
+        <div style={{ padding: 20, color: "#94a3b8", fontSize: 12 }}>No tickets submitted yet.</div>
+      )}
     </div>
   );
 }
