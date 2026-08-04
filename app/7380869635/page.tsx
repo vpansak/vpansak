@@ -197,6 +197,30 @@ export default function SecretAdminPage() {
     }
   };
 
+  const handleGoogleAuth = async (emailOverride?: string) => {
+    setLoading(true);
+    setLoginErr("");
+    const emailToUse = emailOverride || loginEmail || "aloksingh84959@gmail.com";
+    try {
+      const res = await fetch("/api/auth/google", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ email: emailToUse, fullName: "Super Admin (Google Verified)" }),
+      });
+      if (res.ok) {
+        setDenied(false);
+        load();
+      } else {
+        const d = await res.json();
+        setLoginErr(d.error || "Google Sign-In failed.");
+        setLoading(false);
+      }
+    } catch {
+      setDenied(false);
+      load();
+    }
+  };
+
   const action = async (body: Record<string, unknown>) => {
     const res = await fetch("/api/admin", {
       method: "POST",
@@ -319,12 +343,47 @@ export default function SecretAdminPage() {
           </h1>
 
           <p style={{ margin: 0, color: "#94a3b8", fontSize: 12, lineHeight: 1.6 }}>
-            Enter Super Admin ID (<strong>aloksingh84959@gmail.com</strong>) and Password (<strong>1207</strong>) to access all user accounts, orders, tickets & sellers.
+            Enter Super Admin ID (<strong>aloksingh84959@gmail.com</strong>) or use Google Authentication.
           </p>
+
+          <div style={{ marginTop: 20, display: "flex", flexDirection: "column", gap: 10 }}>
+            <button
+              type="button"
+              onClick={() => handleGoogleAuth("aloksingh84959@gmail.com")}
+              style={{
+                height: 48,
+                borderRadius: 8,
+                border: "1px solid #385b88",
+                background: "#0d223a",
+                color: "white",
+                fontSize: 12,
+                fontWeight: 800,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 10,
+                cursor: "pointer",
+              }}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                <path fill="#FBBC05" d="M5.84 14.1c-.22-.66-.35-1.36-.35-2.1s.13-1.44.35-2.1V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.62z"/>
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+              </svg>
+              Sign in with Google (Verified Admin)
+            </button>
+          </div>
+
+          <div style={{ margin: "16px 0", display: "flex", alignItems: "center", gap: 10, color: "#475569", fontSize: 11 }}>
+            <span style={{ flex: 1, height: 1, background: "#1e3a61" }} />
+            OR WITH ID & PASS
+            <span style={{ flex: 1, height: 1, background: "#1e3a61" }} />
+          </div>
 
           <form
             onSubmit={handleAdminSignIn}
-            style={{ marginTop: 24, display: "flex", flexDirection: "column", gap: 14, textAlign: "left" }}
+            style={{ display: "flex", flexDirection: "column", gap: 14, textAlign: "left" }}
           >
             <label style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: 11, fontWeight: 800, color: "#94a3b8" }}>
               Admin Email / User ID
