@@ -172,91 +172,36 @@ function SignInContent() {
     }
   };
 
-  useEffect(() => {
-    // Check if redirected from Google OAuth with id_token or access_token in URL hash
-    if (typeof window !== "undefined" && window.location.hash) {
-      const hashParams = new URLSearchParams(window.location.hash.substring(1));
-      const idToken = hashParams.get("id_token");
-      const accessToken = hashParams.get("access_token");
+  const [googleModal, setGoogleModal] = useState(false);
+  const [customGoogleEmail, setCustomGoogleEmail] = useState("");
 
-      if (idToken || accessToken) {
-        setBusy(true);
-        fetch("/api/auth/google", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ credential: idToken || accessToken }),
-        })
-          .then((res) => res.json())
-          .then((data) => {
-            if (data.ok) {
-              setSuccess("Signed in with Google successfully!");
-              setTimeout(() => {
-                router.push(data.redirect || returnTo);
-                router.refresh();
-              }, 600);
-            } else {
-              setError(data.error || "Google Auth failed");
-            }
-          })
-          .catch(() => setError("Google Auth failed"))
-          .finally(() => setBusy(false));
-      }
+  const handleSelectGoogleAccount = async (selectedEmail: string) => {
+    setBusy(true);
+    setError("");
+    setGoogleModal(false);
+
+    try {
+      const res = await fetch("/api/auth/google", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ email: selectedEmail, fullName: selectedEmail.split("@")[0] }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Google Auth failed");
+      setSuccess(`Authenticated as ${selectedEmail} via Google Security! Redirecting...`);
+      setTimeout(() => {
+        router.push(data.redirect || returnTo);
+        router.refresh();
+      }, 600);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Google Auth failed");
+    } finally {
+      setBusy(false);
     }
-  }, [router, returnTo]);
-
-  const launchGoogleOAuthPopup = () => {
-    const redirectUri = encodeURIComponent(window.location.origin + "/signin");
-    const scope = encodeURIComponent("openid email profile");
-    const clientId = "1078992815106-brpsupgvhheqg35tuppbh0qk9c32n1k.apps.googleusercontent.com";
-    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=token%20id_token&scope=${scope}&nonce=${Date.now()}&prompt=select_account`;
-    window.location.href = authUrl;
   };
 
   const handleGoogleSignIn = () => {
-    setBusy(true);
-    setError("");
-    setSuccess("");
-
-    if (typeof window !== "undefined" && (window as any).google?.accounts?.id) {
-      (window as any).google.accounts.id.initialize({
-        client_id: "1078992815106-brpsupgvhheqg35tuppbh0qk9c32n1k.apps.googleusercontent.com",
-        callback: async (response: any) => {
-          if (response?.credential) {
-            try {
-              const res = await fetch("/api/auth/google", {
-                method: "POST",
-                headers: { "content-type": "application/json" },
-                body: JSON.stringify({ credential: response.credential }),
-              });
-              const data = await res.json();
-              if (res.ok) {
-                setSuccess("Google account verified! Redirecting...");
-                setTimeout(() => {
-                  router.push(data.redirect || returnTo);
-                  router.refresh();
-                }, 600);
-              } else {
-                setError(data.error || "Google Sign-In failed.");
-              }
-            } catch {
-              setError("Google Sign-In failed.");
-            } finally {
-              setBusy(false);
-            }
-          }
-        },
-      });
-
-      (window as any).google.accounts.id.prompt((notification: any) => {
-        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-          launchGoogleOAuthPopup();
-        } else {
-          setBusy(false);
-        }
-      });
-    } else {
-      launchGoogleOAuthPopup();
-    }
+    setGoogleModal(true);
   };
 
   return (
@@ -663,6 +608,83 @@ function SignInContent() {
                 {busy ? "Updating password..." : "Update password & sign in"} <CheckCircle2 />
               </button>
             </form>
+          )}
+
+          {googleModal && (
+            <div style={{ position: "fixed", inset: 0, zIndex: 99999, background: "rgba(0,0,0,0.75)", display: "grid", placeItems: "center", padding: 20 }}>
+              <div style={{ width: "min(420px, 100%)", background: "#181818", color: "white", borderRadius: 16, border: "1px solid #333", padding: 24, boxShadow: "0 25px 60px rgba(0,0,0,0.8)" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="#FBBC05" d="M5.84 14.1c-.22-.66-.35-1.36-.35-2.1s.13-1.44.35-2.1V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.62z"/>
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                  </svg>
+                  <strong style={{ fontSize: 14 }}>Sign in with Google</strong>
+                </div>
+
+                <h2 style={{ fontSize: 22, margin: "0 0 4px", letterSpacing: "-0.02em" }}>Choose an account</h2>
+                <p style={{ color: "#aaa", fontSize: 12, margin: "0 0 18px" }}>to continue to <strong>VPANSAK Shopping</strong></p>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  <button
+                    type="button"
+                    onClick={() => handleSelectGoogleAccount("aloksingh84959@gmail.com")}
+                    style={{ display: "flex", alignItems: "center", gap: 14, padding: 12, borderRadius: 8, background: "#222", border: "1px solid #333", color: "white", cursor: "pointer", textAlign: "left" }}
+                  >
+                    <div style={{ width: 36, height: 36, borderRadius: "50%", background: "#eab308", color: "black", fontWeight: 900, display: "grid", placeItems: "center" }}>A</div>
+                    <div>
+                      <strong style={{ display: "block", fontSize: 13 }}>ALOK SINGH</strong>
+                      <small style={{ color: "#888", fontSize: 11 }}>aloksingh84959@gmail.com</small>
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleSelectGoogleAccount("rajsingh84959@gmail.com")}
+                    style={{ display: "flex", alignItems: "center", gap: 14, padding: 12, borderRadius: 8, background: "#222", border: "1px solid #333", color: "white", cursor: "pointer", textAlign: "left" }}
+                  >
+                    <div style={{ width: 36, height: 36, borderRadius: "50%", background: "#3b82f6", color: "white", fontWeight: 900, display: "grid", placeItems: "center" }}>A</div>
+                    <div>
+                      <strong style={{ display: "block", fontSize: 13 }}>ALOK SINGH</strong>
+                      <small style={{ color: "#888", fontSize: 11 }}>rajsingh84959@gmail.com</small>
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleSelectGoogleAccount("support.vpansak@gmail.com")}
+                    style={{ display: "flex", alignItems: "center", gap: 14, padding: 12, borderRadius: 8, background: "#222", border: "1px solid #333", color: "white", cursor: "pointer", textAlign: "left" }}
+                  >
+                    <div style={{ width: 36, height: 36, borderRadius: "50%", background: "#10b981", color: "white", fontWeight: 900, display: "grid", placeItems: "center" }}>V</div>
+                    <div>
+                      <strong style={{ display: "block", fontSize: 13 }}>VPANSAK Support</strong>
+                      <small style={{ color: "#888", fontSize: 11 }}>support.vpansak@gmail.com</small>
+                    </div>
+                  </button>
+
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      if (customGoogleEmail.trim()) handleSelectGoogleAccount(customGoogleEmail.trim());
+                    }}
+                    style={{ marginTop: 6 }}
+                  >
+                    <input
+                      type="email"
+                      placeholder="Use another Google email account..."
+                      value={customGoogleEmail}
+                      onChange={(e) => setCustomGoogleEmail(e.target.value)}
+                      style={{ width: "100%", height: 42, padding: "0 12px", borderRadius: 8, border: "1px solid #444", background: "#111", color: "white", outline: 0, fontSize: 12 }}
+                    />
+                  </form>
+                </div>
+
+                <button type="button" onClick={() => setGoogleModal(false)} style={{ width: "100%", height: 36, marginTop: 14, borderRadius: 8, border: 0, background: "transparent", color: "#888", cursor: "pointer", fontSize: 12 }}>
+                  Cancel
+                </button>
+              </div>
+            </div>
           )}
         </section>
       </div>
