@@ -1,13 +1,15 @@
 import { and, desc, eq } from "drizzle-orm";
 import { getDb } from "../../../db";
 import { addresses, notifications, orders, persistentCartItems, profiles, wishlistItems } from "../../../db/schema";
+import { getAuthUserFromRequest } from "../../lib/auth-session";
 
-function emailFrom(request: Request) {
-  return request.headers.get("oai-authenticated-user-email")?.trim().toLowerCase() || null;
+async function emailFrom(request: Request) {
+  const user = await getAuthUserFromRequest(request);
+  return user?.email || null;
 }
 
 export async function GET(request: Request) {
-  const email = emailFrom(request);
+  const email = await emailFrom(request);
   if (!email) return Response.json({ error: "Sign in to access your account." }, { status: 401 });
   try {
     const db = await getDb();
@@ -26,7 +28,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const email = emailFrom(request);
+  const email = await emailFrom(request);
   if (!email) return Response.json({ error: "Sign in to continue." }, { status: 401 });
   try {
     const body = await request.json() as Record<string, unknown>;

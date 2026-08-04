@@ -190,6 +190,26 @@ const SCHEMA_SQL = `
       read INTEGER NOT NULL DEFAULT 0,
       created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
+
+    CREATE TABLE IF NOT EXISTS users (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      email TEXT NOT NULL UNIQUE,
+      password_hash TEXT NOT NULL,
+      full_name TEXT NOT NULL,
+      mobile TEXT NOT NULL DEFAULT '',
+      role TEXT NOT NULL DEFAULT 'customer',
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS password_resets (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      email TEXT NOT NULL,
+      code TEXT NOT NULL,
+      expires_at TEXT NOT NULL,
+      used INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
 `;
 
 async function initLocalDb() {

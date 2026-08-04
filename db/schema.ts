@@ -181,3 +181,23 @@ export const donations = sqliteTable("donations", {
   appreciationMessage: text("appreciation_message").notNull(),
   createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });
+
+export const users = sqliteTable("users", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  email: text("email").notNull().unique(),
+  passwordHash: text("password_hash").notNull(),
+  fullName: text("full_name").notNull(),
+  mobile: text("mobile").notNull().default(""),
+  role: text("role").notNull().default("customer"),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const passwordResets = sqliteTable("password_resets", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  email: text("email").notNull(),
+  code: text("code").notNull(),
+  expiresAt: text("expires_at").notNull(),
+  used: integer("used", { mode: "boolean" }).notNull().default(false),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
