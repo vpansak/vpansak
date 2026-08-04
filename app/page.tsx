@@ -134,6 +134,16 @@ export default function HomePage() {
   const [hero, setHero] = useState(0);
   const [hydrated, setHydrated] = useState(false);
   const [announcementOpen, setAnnouncementOpen] = useState(true);
+  const [authUser, setAuthUser] = useState<{ email: string; fullName: string } | null>(null);
+
+  useEffect(() => {
+    fetch("/api/auth/me")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && data.user) setAuthUser(data.user);
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -178,8 +188,8 @@ export default function HomePage() {
   const applyCoupon = async () => {
     const response = await fetch(`/api/coupons?code=${encodeURIComponent(coupon)}&total=${subtotal}`);
     const result = await response.json() as { coupon?: { discount: number }; error?: string };
-    if (!response.ok) { setDiscount(0); notify(result.error || "Coupon is not valid"); return; }
-    setDiscount(result.coupon?.discount || 0); notify(`Coupon applied — ${money(result.coupon?.discount || 0)} saved`);
+    if (result.coupon) { setDiscount(result.coupon.discount); notify("Coupon discount applied!"); }
+    else { notify(result.error || "Coupon could not be applied"); }
   };
 
   const placeOrder = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -195,7 +205,7 @@ export default function HomePage() {
 
   return (
     <main className="vp-store">
-      {toast && <div className="vp-toast"><Check /> {toast}</div>}
+      {toast && <div className="vp-toast"><Sparkles /><span>{toast}</span></div>}
 
       {announcementOpen && <div className="vp-topbar vp-offer-announcement">
         <span><Gift /> WELCOME SAVINGS</span>
@@ -212,8 +222,8 @@ export default function HomePage() {
           {suggestions.length > 0 && <div className="vp-suggestions"><small>SEARCH SUGGESTIONS</small>{suggestions.map((product) => <Link key={product.id} href={`/product/${product.id}`}><Search /><span>{product.name}<small>{product.category}</small></span><strong>{money(product.price)}</strong></Link>)}</div>}
         </div>
         <div className="vp-header-actions">
-          <Link href="/account"><UserRound /><span><small>Hello, sign in</small>My Account</span></Link>
-          <Link href="/account"><Heart /><span><small>{wishlist.length} saved</small>Wishlist</span></Link>
+          <Link href={authUser ? "/account" : "/signin"}><UserRound /><span><small>{authUser ? `Hello, ${authUser.fullName || authUser.email.split("@")[0]}` : "Hello, sign in"}</small>My Account</span></Link>
+          <Link href={authUser ? "/account" : "/signin"}><Heart /><span><small>{wishlist.length} saved</small>Wishlist</span></Link>
           <button type="button" onClick={() => setCartOpen(true)}><ShoppingCart /><span><small>{cartCount} items</small>{cartCount ? money(subtotal) : "My Cart"}</span>{cartCount > 0 && <i>{cartCount}</i>}</button>
         </div>
         <button className="vp-mobile-menu" type="button" onClick={() => setMenuOpen((open) => !open)} aria-label="Open menu">{menuOpen ? <X /> : <Menu />}</button>
@@ -294,7 +304,7 @@ export default function HomePage() {
         <div className="vp-footer-bottom"><span>© 2026 VPANSAK • Powered by A&amp;A Group</span><div><Link href="/policies/privacy-policy">Privacy</Link><Link href="/policies/terms-and-conditions">Terms</Link><a href="mailto:support.vpansak@gmail.com">support.vpansak@gmail.com</a><a href="https://instagram.com/VPANSAK" target="_blank" rel="noreferrer">Instagram</a></div></div>
       </footer>
 
-      <nav className="vp-bottom-nav" aria-label="Mobile navigation"><a href="#top"><Home /><span>Home</span></a><Link href="/categories"><Grid3X3 /><span>Categories</span></Link><button type="button" onClick={() => setCartOpen(true)}><ShoppingCart /><span>Cart</span>{cartCount > 0 && <i>{cartCount}</i>}</button><Link href="/track"><Box /><span>Orders</span></Link><Link href="/account"><UserRound /><span>Account</span></Link></nav>
+      <nav className="vp-bottom-nav" aria-label="Mobile navigation"><a href="#top"><Home /><span>Home</span></a><Link href="/categories"><Grid3X3 /><span>Categories</span></Link><button type="button" onClick={() => setCartOpen(true)}><ShoppingCart /><span>Cart</span>{cartCount > 0 && <i>{cartCount}</i>}</button><Link href="/track"><Box /><span>Orders</span></Link><Link href={authUser ? "/account" : "/signin"}><UserRound /><span>{authUser ? "Account" : "Sign In"}</span></Link></nav>
 
       {cartOpen && <div className="vp-overlay" onMouseDown={() => setCartOpen(false)}><aside className="vp-cart" role="dialog" aria-modal="true" aria-label="Shopping cart" onMouseDown={(event) => event.stopPropagation()}><header><div><small>MY CART</small><h2>{cartCount} {cartCount === 1 ? "item" : "items"}</h2></div><button type="button" onClick={() => setCartOpen(false)}><X /></button></header><div className="vp-cart-benefit"><Truck /><span><strong>{subtotal >= 499 ? "You unlocked free delivery" : `${money(499 - subtotal)} away from free delivery`}</strong><i><b style={{ width: `${Math.min(100, subtotal / 4.99)}%` }} /></i></span></div><div className="vp-cart-items">{cartItems.length ? cartItems.map((product) => <article key={product.id}><img src={product.imageUrl} alt="" /><div><small>{product.brand}</small><h3>{product.name}</h3><strong>{money(product.price)}</strong><span><button type="button" onClick={() => changeQuantity(product.id, -1)}><Minus /></button><b>{cart[product.id]}</b><button type="button" onClick={() => changeQuantity(product.id, 1)}><Plus /></button></span></div><button type="button" onClick={() => changeQuantity(product.id, -cart[product.id])}><Trash2 /></button></article>) : <div className="vp-cart-empty"><ShoppingCart /><h3>Your cart is waiting</h3><p>Add a useful product from today&apos;s deals.</p><button type="button" onClick={() => setCartOpen(false)}>Continue shopping</button></div>}</div>{cartItems.length > 0 && <div className="vp-cart-summary"><p><span>Price ({cartCount} items)</span><b>{money(subtotal)}</b></p>{discount > 0 && <p><span>Coupon discount</span><b className="green">−{money(discount)}</b></p>}<p><span>Delivery charges</span><b className="green">FREE</b></p><div><span>Total amount</span><strong>{money(finalTotal)}</strong></div><button type="button" onClick={() => { setCartOpen(false); setCheckoutOpen(true); }}>Proceed to checkout <ArrowRight /></button><small><ShieldCheck /> Safe and secure checkout</small></div>}</aside></div>}
 
