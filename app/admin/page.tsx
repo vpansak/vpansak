@@ -1,6 +1,6 @@
 import { desc } from "drizzle-orm";
 import { headers } from "next/headers";
-import { redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Activity, BadgeIndianRupee, Boxes, ChevronRight, CircleDollarSign, ClipboardCheck, Gauge, LayoutDashboard, PackageCheck, Search, Settings, ShieldAlert, ShoppingBag, Store, TicketCheck, Users } from "lucide-react";
 import { getDb } from "../../db";
@@ -26,7 +26,7 @@ export default async function AdminPage() {
   const email = authUser?.email || headerEmail || "aloksingh84959@gmail.com";
 
   if (!isAuthorized) {
-    redirect("/7380869635");
+    notFound();
   }
 
   let recentOrders: typeof orders.$inferSelect[] = [];

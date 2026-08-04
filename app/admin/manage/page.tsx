@@ -174,120 +174,12 @@ export default function AdminManage() {
 
   if (denied)
     return (
-      <main className="admin-denied">
-        <div style={{ maxWidth: 440, width: "100%", padding: 24, textAlign: "center" }}>
-          <span>
-            <LockKeyhole />
-          </span>
-          <small>VPANSAK SECURITY</small>
-          <h1>Admin Command Portal</h1>
-          <p>Sign in with your Super Admin credentials or passcode to access orders, tickets, products & sellers.</p>
-
-          <form
-            onSubmit={handleAdminSignIn}
-            style={{
-              marginTop: 20,
-              display: "flex",
-              flexDirection: "column",
-              gap: 12,
-              textAlign: "left",
-            }}
-          >
-            <label style={{ fontSize: 11, fontWeight: 800, color: "#94a3b8" }}>
-              Email / User ID
-              <input
-                type="email"
-                value={loginEmail}
-                onChange={(e) => setLoginEmail(e.target.value)}
-                required
-                style={{
-                  width: "100%",
-                  height: 44,
-                  marginTop: 5,
-                  padding: "0 12px",
-                  borderRadius: 8,
-                  border: "1px solid #2d4769",
-                  background: "#0a1f38",
-                  color: "white",
-                  outline: 0,
-                  fontSize: 12,
-                }}
-              />
-            </label>
-
-            <label style={{ fontSize: 11, fontWeight: 800, color: "#94a3b8" }}>
-              Password / Passcode
-              <input
-                type="password"
-                value={loginPass}
-                onChange={(e) => setLoginPass(e.target.value)}
-                required
-                style={{
-                  width: "100%",
-                  height: 44,
-                  marginTop: 5,
-                  padding: "0 12px",
-                  borderRadius: 8,
-                  border: "1px solid #2d4769",
-                  background: "#0a1f38",
-                  color: "white",
-                  outline: 0,
-                  fontSize: 12,
-                }}
-              />
-            </label>
-
-            {loginErr && (
-              <span style={{ color: "#ef4444", fontSize: 11, fontWeight: 700 }}>{loginErr}</span>
-            )}
-
-            <button
-              type="submit"
-              style={{
-                height: 46,
-                marginTop: 8,
-                borderRadius: 8,
-                border: 0,
-                background: "#1766ef",
-                color: "white",
-                fontWeight: 900,
-                fontSize: 12,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 8,
-                cursor: "pointer",
-              }}
-            >
-              <KeyRound size={16} /> Open Admin Console <ArrowRight size={16} />
-            </button>
-          </form>
-
-          <div style={{ marginTop: 18, display: "flex", flexDirection: "column", gap: 8, fontSize: 11 }}>
-            <button
-              onClick={() => {
-                setLoginEmail("aloksingh84959@gmail.com");
-                setLoginPass("1207");
-                handleAdminSignIn();
-              }}
-              style={{
-                background: "transparent",
-                border: "1px dashed #385b88",
-                color: "#60a5fa",
-                padding: "8px 12px",
-                borderRadius: 6,
-                cursor: "pointer",
-                fontWeight: 800,
-              }}
-            >
-              Quick Login with ID: aloksingh84959@gmail.com (Pass: 1207)
-            </button>
-
-            <Link href="/" style={{ color: "#94a3b8" }}>
-              Return to Store
-            </Link>
-          </div>
-        </div>
+      <main style={{ minHeight: "100vh", display: "grid", placeContent: "center", textAlign: "center", background: "#06111f", color: "white", fontFamily: "Arial, sans-serif" }}>
+        <h1 style={{ fontSize: 80, margin: 0, letterSpacing: "-0.04em", color: "#385b88" }}>404</h1>
+        <h2 style={{ fontSize: 22, color: "#94a3b8", margin: "10px 0 24px" }}>This page could not be found.</h2>
+        <Link href="/" style={{ margin: "auto", padding: "12px 20px", borderRadius: 8, background: "#1766ef", color: "white", fontWeight: 800, fontSize: 12, textDecoration: "none" }}>
+          Return to Storefront
+        </Link>
       </main>
     );
 
