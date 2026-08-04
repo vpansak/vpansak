@@ -75,14 +75,14 @@ export async function getAuthUserFromRequest(request: Request): Promise<AuthSess
   }
 
   // 3. Check admin key cookie or query secret
-  if (cookieHeader.includes("vpansak_admin_key=1207")) {
+  if (cookieHeader.includes("vpansak_admin_key=1207") || cookieHeader.includes("vpansak_admin_key=7380869635")) {
     return { email: ADMIN_EMAIL, fullName: "Super Admin", role: "admin" };
   }
 
   try {
     const url = new URL(request.url);
     const code = url.searchParams.get("code") || url.searchParams.get("key") || url.searchParams.get("pass");
-    if (code === "1207" || code === "vpa-1207") {
+    if (code === "1207" || code === "vpa-1207" || code === "7380869635") {
       return { email: ADMIN_EMAIL, fullName: "Super Admin", role: "admin" };
     }
   } catch {

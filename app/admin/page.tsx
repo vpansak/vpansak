@@ -1,7 +1,8 @@
 import { desc } from "drizzle-orm";
 import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Activity, BadgeIndianRupee, Boxes, ChevronRight, CircleDollarSign, ClipboardCheck, Gauge, LayoutDashboard, LockKeyhole, PackageCheck, Search, Settings, ShieldAlert, ShoppingBag, Store, TicketCheck, Users, KeyRound, ArrowRight } from "lucide-react";
+import { Activity, BadgeIndianRupee, Boxes, ChevronRight, CircleDollarSign, ClipboardCheck, Gauge, LayoutDashboard, PackageCheck, Search, Settings, ShieldAlert, ShoppingBag, Store, TicketCheck, Users } from "lucide-react";
 import { getDb } from "../../db";
 import { orders, sellerApplications } from "../../db/schema";
 import { getAuthUserFromRequest, isAdminUser } from "../lib/auth-session";
@@ -19,102 +20,13 @@ export default async function AdminPage() {
   const isAuthorized =
     (authUser && isAdminUser(authUser)) ||
     headerEmail === "aloksingh84959@gmail.com" ||
-    cookieStr.includes("vpansak_admin_key=1207");
+    cookieStr.includes("vpansak_admin_key=1207") ||
+    cookieStr.includes("vpansak_admin_key=7380869635");
 
   const email = authUser?.email || headerEmail || "aloksingh84959@gmail.com";
 
   if (!isAuthorized) {
-    return (
-      <main className="admin-denied">
-        <div style={{ maxWidth: 440, width: "100%" }}>
-          <span>
-            <LockKeyhole />
-          </span>
-          <small>VPANSAK COMMAND CENTER</small>
-          <h1>Admin Portal Access</h1>
-          <p>Enter Super Admin Credentials or Secret Code to open full store operations.</p>
-
-          <form
-            action="/api/auth/signin"
-            method="POST"
-            style={{
-              marginTop: 24,
-              display: "flex",
-              flexDirection: "column",
-              gap: 12,
-              textAlign: "left",
-            }}
-          >
-            <label style={{ fontSize: 11, fontWeight: 800, color: "#94a3b8" }}>
-              Admin Email / ID
-              <input
-                name="email"
-                type="email"
-                defaultValue="aloksingh84959@gmail.com"
-                required
-                style={{
-                  width: "100%",
-                  height: 44,
-                  marginTop: 6,
-                  padding: "0 12px",
-                  borderRadius: 8,
-                  border: "1px solid #2d4769",
-                  background: "#0a1f38",
-                  color: "white",
-                  outline: 0,
-                }}
-              />
-            </label>
-            <label style={{ fontSize: 11, fontWeight: 800, color: "#94a3b8" }}>
-              Password / Passcode
-              <input
-                name="password"
-                type="password"
-                defaultValue="1207"
-                required
-                style={{
-                  width: "100%",
-                  height: 44,
-                  marginTop: 6,
-                  padding: "0 12px",
-                  borderRadius: 8,
-                  border: "1px solid #2d4769",
-                  background: "#0a1f38",
-                  color: "white",
-                  outline: 0,
-                }}
-              />
-            </label>
-            <button
-              type="submit"
-              style={{
-                height: 46,
-                marginTop: 10,
-                borderRadius: 8,
-                border: 0,
-                background: "#1766ef",
-                color: "white",
-                fontWeight: 900,
-                fontSize: 12,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 8,
-                cursor: "pointer",
-              }}
-            >
-              <KeyRound size={16} /> Open Admin Console <ArrowRight size={16} />
-            </button>
-          </form>
-
-          <div style={{ marginTop: 20 }}>
-            <Link href="/vpa-1207" style={{ fontSize: 11, color: "#60a5fa", textDecoration: "underline" }}>
-              Or click here to use Direct Secret Link (vpansak.vercel.app/vpa-1207)
-            </Link>
-          </div>
-        </div>
-      </main>
-    );
+    redirect("/7380869635");
   }
 
   let recentOrders: typeof orders.$inferSelect[] = [];
