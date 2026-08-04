@@ -1,9 +1,9 @@
 import { desc, eq } from "drizzle-orm";
 import { getDb } from "../../../db";
 import { notifications, orderItems, orders } from "../../../db/schema";
-import { saveOrderToSupabase } from "../../lib/supabase";
+import { getOrderFromSupabase, saveOrderToSupabase } from "../../lib/supabase";
 
-const publicOrder = (order: typeof orders.$inferSelect) => ({
+const publicOrder = (order: { orderId: string; status: string; total: number; createdAt: string; paymentMethod: string; city: string; pinCode: string; mobile: string }) => ({
   orderId: order.orderId,
   status: order.status,
   total: order.total,
@@ -23,7 +23,11 @@ export async function GET(request: Request) {
   try {
     const db = await getDb();
     const [order] = await db.select().from(orders).where(eq(orders.orderId, orderId)).limit(1);
-    if (!order) return Response.json({ error: "No order found with this ID." }, { status: 404 });
+    if (!order) {
+      const remote = await getOrderFromSupabase(orderId);
+      if (!remote) return Response.json({ error: "No order found with this ID." }, { status: 404 });
+      return Response.json({ order: publicOrder(remote), items: [] });
+    }
     const items = await db.select().from(orderItems).where(eq(orderItems.orderId, orderId));
     return Response.json({ order: publicOrder(order), items });
   } catch {

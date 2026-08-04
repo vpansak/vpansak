@@ -40,3 +40,61 @@ export async function saveTicketToSupabase(ticketData: Record<string, unknown>) 
     return null;
   }
 }
+
+export async function getTicketFromSupabase(ticketId: string) {
+  if (!supabase) return null;
+  try {
+    const { data, error } = await supabase.from("tickets").select("*").eq("ticket_id", ticketId).single();
+    if (error || !data) return null;
+    return {
+      ticketId: String(data.ticket_id || ticketId),
+      customerName: String(data.customer_name || "Customer"),
+      category: String(data.category || "Support"),
+      subject: String(data.subject || "Support Request"),
+      priority: String(data.priority || "Normal"),
+      status: String(data.status || "Open"),
+      createdAt: String(data.created_at || new Date().toISOString()),
+      updatedAt: String(data.updated_at || new Date().toISOString()),
+    };
+  } catch {
+    return null;
+  }
+}
+
+export async function getDonationFromSupabase(certificateId: string) {
+  if (!supabase) return null;
+  try {
+    const { data, error } = await supabase.from("donations").select("*").eq("certificate_id", certificateId).single();
+    if (error || !data) return null;
+    return {
+      certificateId: String(data.certificate_id || certificateId),
+      donorName: String(data.donor_name || "Donor"),
+      amount: Number(data.amount || 0),
+      appreciationMessage: String(data.appreciation_message || ""),
+      createdAt: String(data.created_at || new Date().toISOString()),
+      paymentStatus: String(data.payment_status || "Pending Verification"),
+    };
+  } catch {
+    return null;
+  }
+}
+
+export async function getOrderFromSupabase(orderId: string) {
+  if (!supabase) return null;
+  try {
+    const { data, error } = await supabase.from("orders").select("*").eq("order_id", orderId).single();
+    if (error || !data) return null;
+    return {
+      orderId: String(data.order_id || orderId),
+      status: String(data.status || "Order Confirmed"),
+      total: Number(data.total || 0),
+      createdAt: String(data.created_at || new Date().toISOString()),
+      paymentMethod: String(data.payment_method || "COD"),
+      city: String(data.city || ""),
+      pinCode: String(data.pin_code || ""),
+      mobile: String(data.mobile || ""),
+    };
+  } catch {
+    return null;
+  }
+}

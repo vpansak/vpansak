@@ -1,14 +1,21 @@
 import { eq } from "drizzle-orm";
 import { getDb } from "../../../db";
 import { donations } from "../../../db/schema";
+import { getDonationFromSupabase, saveDonationToSupabase } from "../../lib/supabase";
 
 const appreciation = (name: string, amount: number) => `With sincere appreciation, VPANSAK Support Foundation recognizes ${name} for contributing ₹${amount.toLocaleString("en-IN")}. Your support helps us continue responsible community initiatives and create meaningful opportunities.`;
 
 export async function GET(request: Request) {
   const certificateId = new URL(request.url).searchParams.get("certificate")?.trim().toUpperCase();
   if (!certificateId) return Response.json({ error: "Certificate ID is required." }, { status: 400 });
-  try { const db = await getDb(); const [row] = await db.select().from(donations).where(eq(donations.certificateId, certificateId)).limit(1); if (!row) return Response.json({ error: "Certificate not found." }, { status: 404 }); return Response.json({ certificate: { certificateId: row.certificateId, donorName: row.donorName, amount: row.amount, appreciationMessage: row.appreciationMessage, createdAt: row.createdAt, paymentStatus: row.paymentStatus } }); }
-  catch { return Response.json({ error: "Certificate lookup is unavailable." }, { status: 503 }); }
+  try {
+    const db = await getDb();
+    const [row] = await db.select().from(donations).where(eq(donations.certificateId, certificateId)).limit(1);
+    if (row) return Response.json({ certificate: { certificateId: row.certificateId, donorName: row.donorName, amount: row.amount, appreciationMessage: row.appreciationMessage, createdAt: row.createdAt, paymentStatus: row.paymentStatus } });
+    const remote = await getDonationFromSupabase(certificateId);
+    if (remote) return Response.json({ certificate: remote });
+    return Response.json({ error: "Certificate not found." }, { status: 404 });
+  } catch { return Response.json({ error: "Certificate lookup is unavailable." }, { status: 503 }); }
 }
 
 export async function POST(request: Request) {
@@ -18,6 +25,7 @@ export async function POST(request: Request) {
     if (!name || !email || !mobile || !amount || amount < 1) return Response.json({ error: "Enter valid donor details and amount." }, { status: 400 });
     const donationId = `VPD${Math.floor(100000 + Math.random() * 900000)}`; const certificateId = `VPC${Math.floor(100000 + Math.random() * 900000)}`; const appreciationMessage = appreciation(name, amount);
     const db = await getDb(); await db.insert(donations).values({ donationId, donorName: name.slice(0,100), email: email.toLowerCase().slice(0,150), mobile: mobile.slice(0,20), amount, paymentMethod: String(body.paymentMethod || "Manual").slice(0,30), certificateId, appreciationMessage });
+    await saveDonationToSupabase({ donation_id: donationId, donor_name: name.slice(0,100), email: email.toLowerCase().slice(0,150), mobile: mobile.slice(0,20), amount, payment_method: String(body.paymentMethod || "Manual").slice(0,30), certificate_id: certificateId, appreciation_message: appreciationMessage, payment_status: "Pending Verification" });
     return Response.json({ donationId, certificateId, donorName: name, amount, appreciationMessage, paymentStatus: "Pending Verification" }, { status: 201 });
   } catch { return Response.json({ error: "Donation record could not be created." }, { status: 500 }); }
 }

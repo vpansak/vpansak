@@ -1,9 +1,9 @@
 import { asc, desc, eq } from "drizzle-orm";
 import { getDb } from "../../../db";
 import { officers, ticketReplies, tickets } from "../../../db/schema";
-import { saveTicketToSupabase } from "../../lib/supabase";
+import { getTicketFromSupabase, saveTicketToSupabase } from "../../lib/supabase";
 
-const publicTicket = (ticket: typeof tickets.$inferSelect) => ({ ticketId: ticket.ticketId, customerName: `${ticket.customerName.slice(0, 1)}***`, category: ticket.category, subject: ticket.subject, priority: ticket.priority, status: ticket.status, createdAt: ticket.createdAt, updatedAt: ticket.updatedAt });
+const publicTicket = (ticket: { ticketId: string; customerName: string; category: string; subject: string; priority: string; status: string; createdAt: string; updatedAt: string }) => ({ ticketId: ticket.ticketId, customerName: `${ticket.customerName.slice(0, 1)}***`, category: ticket.category, subject: ticket.subject, priority: ticket.priority, status: ticket.status, createdAt: ticket.createdAt, updatedAt: ticket.updatedAt });
 
 export async function GET(request: Request) {
   const id = new URL(request.url).searchParams.get("id")?.trim().toUpperCase();
@@ -11,7 +11,11 @@ export async function GET(request: Request) {
   try {
     const db = await getDb();
     const [ticket] = await db.select().from(tickets).where(eq(tickets.ticketId, id)).limit(1);
-    if (!ticket) return Response.json({ error: "Ticket not found." }, { status: 404 });
+    if (!ticket) {
+      const remoteTicket = await getTicketFromSupabase(id);
+      if (!remoteTicket) return Response.json({ error: "Ticket not found." }, { status: 404 });
+      return Response.json({ ticket: publicTicket(remoteTicket), replies: [{ authorType: "system", authorName: "VPANSAK Support", message: "Your request has been received. Our support team will review it and share an update here.", createdAt: remoteTicket.createdAt }] });
+    }
     const replies = await db.select({ authorType: ticketReplies.authorType, authorName: ticketReplies.authorName, message: ticketReplies.message, createdAt: ticketReplies.createdAt }).from(ticketReplies).where(eq(ticketReplies.ticketId, id)).orderBy(asc(ticketReplies.createdAt));
     return Response.json({ ticket: publicTicket(ticket), replies: replies.map((reply: { authorType: string; authorName: string; message: string; createdAt: string })=>({...reply,authorName:reply.authorType==="customer"?"Customer":reply.authorName})) });
   } catch { return Response.json({ error: "Ticket tracking is temporarily unavailable." }, { status: 503 }); }
