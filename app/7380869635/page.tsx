@@ -9,6 +9,7 @@ import {
   KeyRound,
   LayoutDashboard,
   LockKeyhole,
+  LogOut,
   Mail,
   PackageCheck,
   Plus,
@@ -539,6 +540,22 @@ export default function SecretAdminPage() {
         <button className="admin-refresh" onClick={load}>
           <RefreshCw />
           Refresh data
+        </button>
+        <button
+          className="admin-refresh"
+          onClick={async () => {
+            try {
+              await fetch("/api/auth/signout", { method: "POST" });
+            } catch {}
+            document.cookie = "vpansak_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0";
+            document.cookie = "vpansak_admin_key=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0";
+            setData(empty);
+            setDenied(true);
+          }}
+          style={{ marginTop: 8, background: "#7f1d1d", color: "#fca5a5", border: "1px solid #991b1b" }}
+        >
+          <LogOut size={15} />
+          Log Out (Exit Admin)
         </button>
       </aside>
 

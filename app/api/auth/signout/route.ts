@@ -8,3 +8,15 @@ export async function POST() {
     headers: responseHeaders,
   });
 }
+
+export async function GET(request: Request) {
+  const responseHeaders = new Headers();
+  clearSessionCookieHeaders(responseHeaders);
+  const url = new URL(request.url);
+  const returnTo = url.searchParams.get("return_to") || "/signin";
+  responseHeaders.set("Location", returnTo);
+  return new Response(null, {
+    status: 302,
+    headers: responseHeaders,
+  });
+}

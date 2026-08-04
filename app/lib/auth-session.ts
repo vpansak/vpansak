@@ -109,10 +109,10 @@ export function setSessionCookieHeaders(headers: Headers, sessionData: AuthSessi
 export function clearSessionCookieHeaders(headers: Headers) {
   headers.append(
     "Set-Cookie",
-    `${SESSION_COOKIE_NAME}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0`
+    `${SESSION_COOKIE_NAME}=; Path=/; HttpOnly; SameSite=Lax; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Max-Age=0`
   );
   headers.append(
     "Set-Cookie",
-    `vpansak_admin_key=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0`
+    `vpansak_admin_key=; Path=/; HttpOnly; SameSite=Lax; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Max-Age=0`
   );
 }

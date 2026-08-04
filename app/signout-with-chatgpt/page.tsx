@@ -1,18 +1,23 @@
-import { headers } from "next/headers";
-import { redirect } from "next/navigation";
-import { clearSessionCookieHeaders } from "../lib/auth-session";
+"use client";
 
-export default async function SignOutPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ return_to?: string }>;
-}) {
-  const params = await searchParams;
-  const returnTo = params.return_to || "/";
-  
-  // Clear session cookie
-  const resHeaders = new Headers();
-  clearSessionCookieHeaders(resHeaders);
+import { useEffect } from "react";
 
-  redirect(returnTo);
+export default function SignOutPage() {
+  useEffect(() => {
+    // 1. Wipe all client-side session cookies in browser
+    document.cookie = "vpansak_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0";
+    document.cookie = "vpansak_admin_key=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0";
+
+    // 2. Clear server-side session headers & redirect to signin
+    fetch("/api/auth/signout", { method: "POST" }).finally(() => {
+      window.location.href = "/signin";
+    });
+  }, []);
+
+  return (
+    <main className="account-loading">
+      <span />
+      <p>Signing out of VPANSAK...</p>
+    </main>
+  );
 }
