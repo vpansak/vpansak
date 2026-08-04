@@ -6,6 +6,36 @@ export type CatalogProduct = {
 };
 
 export const catalogProducts: CatalogProduct[] = [
+  {
+    id: "derma-sunscreen-50g",
+    name: "The Derma Co 1% Hyaluronic Sunscreen Aqua Ultra Light Gel",
+    brand: "The Derma Co",
+    category: "Beauty",
+    description: "A lightweight, oil-free SPF 50 PA++++ sunscreen gel with 1% Hyaluronic Acid. It helps protect the skin from UVA and UVB rays without leaving a heavy or greasy feel.",
+    imageUrl: "/shop/derma-sunscreen-main.jpg",
+    images: [
+      "/shop/derma-sunscreen-main.jpg",
+      "/shop/derma-sunscreen-box.jpg",
+      "/shop/derma-sunscreen-usage.jpg"
+    ],
+    price: 460,
+    mrp: 520,
+    stock: 50,
+    sku: "VPS-DERMA-SPF50-50G",
+    rating: 48,
+    reviewCount: 412,
+    badge: "10% OFF",
+    specifications: {
+      "SPF Rating": "SPF 50 PA++++",
+      "Net Quantity": "50 g",
+      "Skin Type": "Dry, Oily, Combination, Acne-Prone, Normal and Sensitive Skin",
+      "Finish": "Oil-free, fragrance-free, lightweight matte gel",
+      "Key Ingredient": "1% Hyaluronic Acid, Niacinamide, Zinc PCA, Vitamin E",
+      "Protection": "UVA & UVB Broad Spectrum",
+      "Formulation": "Aqua Ultra Light Gel",
+      "Subcategory": "Skin Care → Sunscreen"
+    }
+  },
   { id:"aerobuds-pro", name:"AeroBuds Pro Wireless Earbuds", brand:"Aero", category:"Electronics", description:"Comfortable true-wireless earbuds with clear calls, low-latency mode and an all-day charging case.", imageUrl:"https://images.unsplash.com/photo-1606220945770-b5b6c2c55bf1?auto=format&fit=crop&w=1000&q=85", images:["https://images.unsplash.com/photo-1606220945770-b5b6c2c55bf1?auto=format&fit=crop&w=1000&q=85","https://images.unsplash.com/photo-1572569511254-d8f925fe2cbb?auto=format&fit=crop&w=1000&q=85"], price:1499,mrp:3499,stock:38,sku:"VP-AERO-001",rating:45,reviewCount:842,badge:"Bestseller",specifications:{Connectivity:"Bluetooth 5.3",Battery:"Up to 30 hours",Charging:"USB-C",Warranty:"1 year"}},
   { id:"pulsefit-watch", name:"PulseFit AMOLED Smartwatch", brand:"PulseFit", category:"Electronics", description:"A bright AMOLED smartwatch designed for notifications, everyday activity insights and quick health summaries.", imageUrl:"https://images.unsplash.com/photo-1546868871-7041f2a55e12?auto=format&fit=crop&w=1000&q=85", images:["https://images.unsplash.com/photo-1546868871-7041f2a55e12?auto=format&fit=crop&w=1000&q=85","https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=1000&q=85"],price:2299,mrp:5999,stock:21,sku:"VP-PULSE-002",rating:43,reviewCount:619,badge:"Top deal",specifications:{Display:"1.78-inch AMOLED",Battery:"Up to 7 days",WaterResistance:"IP68",Compatibility:"Android & iOS"}},
   { id:"urbanwalk-sneakers", name:"UrbanWalk Everyday Sneakers", brand:"UrbanWalk", category:"Fashion", description:"Lightweight everyday sneakers with a cushioned sole and clean versatile styling.", imageUrl:"https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=1000&q=85",images:["https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=1000&q=85","https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?auto=format&fit=crop&w=1000&q=85"],price:1299,mrp:2599,stock:54,sku:"VP-URBAN-003",rating:44,reviewCount:387,badge:"New",specifications:{Material:"Mesh & synthetic",Sole:"Cushioned rubber",Fit:"Regular",Care:"Wipe clean"}},
