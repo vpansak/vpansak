@@ -172,32 +172,90 @@ function SignInContent() {
     }
   };
 
-  const handleGoogleSignIn = async () => {
+  useEffect(() => {
+    // Check if redirected from Google OAuth with id_token or access_token in URL hash
+    if (typeof window !== "undefined" && window.location.hash) {
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      const idToken = hashParams.get("id_token");
+      const accessToken = hashParams.get("access_token");
+
+      if (idToken || accessToken) {
+        setBusy(true);
+        fetch("/api/auth/google", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ credential: idToken || accessToken }),
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.ok) {
+              setSuccess("Signed in with Google successfully!");
+              setTimeout(() => {
+                router.push(data.redirect || returnTo);
+                router.refresh();
+              }, 600);
+            } else {
+              setError(data.error || "Google Auth failed");
+            }
+          })
+          .catch(() => setError("Google Auth failed"))
+          .finally(() => setBusy(false));
+      }
+    }
+  }, [router, returnTo]);
+
+  const launchGoogleOAuthPopup = () => {
+    const redirectUri = encodeURIComponent(window.location.origin + "/signin");
+    const scope = encodeURIComponent("openid email profile");
+    const clientId = "1078992815106-brpsupgvhheqg35tuppbh0qk9c32n1k.apps.googleusercontent.com";
+    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=token%20id_token&scope=${scope}&nonce=${Date.now()}&prompt=select_account`;
+    window.location.href = authUrl;
+  };
+
+  const handleGoogleSignIn = () => {
     setBusy(true);
     setError("");
     setSuccess("");
-    const userEmail = prompt("Enter your Google Account email to verify and sign in with Google Security:", "aloksingh84959@gmail.com");
-    if (!userEmail) {
-      setBusy(false);
-      return;
-    }
-    try {
-      const res = await fetch("/api/auth/google", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ email: userEmail, fullName: userEmail.split("@")[0] }),
+
+    if (typeof window !== "undefined" && (window as any).google?.accounts?.id) {
+      (window as any).google.accounts.id.initialize({
+        client_id: "1078992815106-brpsupgvhheqg35tuppbh0qk9c32n1k.apps.googleusercontent.com",
+        callback: async (response: any) => {
+          if (response?.credential) {
+            try {
+              const res = await fetch("/api/auth/google", {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({ credential: response.credential }),
+              });
+              const data = await res.json();
+              if (res.ok) {
+                setSuccess("Google account verified! Redirecting...");
+                setTimeout(() => {
+                  router.push(data.redirect || returnTo);
+                  router.refresh();
+                }, 600);
+              } else {
+                setError(data.error || "Google Sign-In failed.");
+              }
+            } catch {
+              setError("Google Sign-In failed.");
+            } finally {
+              setBusy(false);
+            }
+          }
+        },
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Google Sign In failed");
-      setSuccess("Authenticated via Google Security! Redirecting...");
-      setTimeout(() => {
-        router.push(data.redirect || returnTo);
-        router.refresh();
-      }, 700);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Google Auth failed");
-    } finally {
-      setBusy(false);
+
+      (window as any).google.accounts.id.prompt((notification: any) => {
+        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+          launchGoogleOAuthPopup();
+        } else {
+          setBusy(false);
+        }
+      });
+    } else {
+      launchGoogleOAuthPopup();
     }
   };
 

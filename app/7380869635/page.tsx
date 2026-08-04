@@ -198,27 +198,53 @@ export default function SecretAdminPage() {
     }
   };
 
-  const handleGoogleAuth = async (emailOverride?: string) => {
+  const launchGoogleOAuthPopupAdmin = () => {
+    const redirectUri = encodeURIComponent(window.location.origin + "/7380869635");
+    const scope = encodeURIComponent("openid email profile");
+    const clientId = "1078992815106-brpsupgvhheqg35tuppbh0qk9c32n1k.apps.googleusercontent.com";
+    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=token%20id_token&scope=${scope}&nonce=${Date.now()}&prompt=select_account`;
+    window.location.href = authUrl;
+  };
+
+  const handleGoogleAuth = () => {
     setLoading(true);
     setLoginErr("");
-    const emailToUse = emailOverride || loginEmail || "aloksingh84959@gmail.com";
-    try {
-      const res = await fetch("/api/auth/google", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ email: emailToUse, fullName: "Super Admin (Google Verified)" }),
+
+    if (typeof window !== "undefined" && (window as any).google?.accounts?.id) {
+      (window as any).google.accounts.id.initialize({
+        client_id: "1078992815106-brpsupgvhheqg35tuppbh0qk9c32n1k.apps.googleusercontent.com",
+        callback: async (response: any) => {
+          if (response?.credential) {
+            try {
+              const res = await fetch("/api/auth/google", {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({ credential: response.credential }),
+              });
+              if (res.ok) {
+                setDenied(false);
+                load();
+              } else {
+                setLoginErr("Google Verification failed.");
+                setLoading(false);
+              }
+            } catch {
+              setDenied(false);
+              load();
+            }
+          }
+        },
       });
-      if (res.ok) {
-        setDenied(false);
-        load();
-      } else {
-        const d = await res.json();
-        setLoginErr(d.error || "Google Sign-In failed.");
-        setLoading(false);
-      }
-    } catch {
-      setDenied(false);
-      load();
+
+      (window as any).google.accounts.id.prompt((notification: any) => {
+        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+          launchGoogleOAuthPopupAdmin();
+        } else {
+          setLoading(false);
+        }
+      });
+    } else {
+      launchGoogleOAuthPopupAdmin();
     }
   };
 
@@ -350,7 +376,7 @@ export default function SecretAdminPage() {
           <div style={{ marginTop: 20, display: "flex", flexDirection: "column", gap: 10 }}>
             <button
               type="button"
-              onClick={() => handleGoogleAuth("aloksingh84959@gmail.com")}
+              onClick={handleGoogleAuth}
               style={{
                 height: 48,
                 borderRadius: 8,
