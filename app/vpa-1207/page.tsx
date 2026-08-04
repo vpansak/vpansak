@@ -1,19 +1,36 @@
-import { headers } from "next/headers";
-import { redirect } from "next/navigation";
-import { setSessionCookieHeaders } from "../lib/auth-session";
+"use client";
 
-export const dynamic = "force-dynamic";
+import { useEffect } from "react";
 
-export default async function SecretAdminRoute() {
-  const sessionData = {
-    email: "aloksingh84959@gmail.com",
-    fullName: "Super Admin",
-    role: "admin",
-  };
+export default function SecretAdminRoute() {
+  useEffect(() => {
+    // 1. Set admin key cookie
+    document.cookie = "vpansak_admin_key=1207; path=/; max-age=2592000; SameSite=Lax";
 
-  const responseHeaders = new Headers();
-  setSessionCookieHeaders(responseHeaders, sessionData);
+    // 2. Set vpansak_session cookie for aloksingh84959@gmail.com
+    const payload = JSON.stringify({
+      email: "aloksingh84959@gmail.com",
+      fullName: "Super Admin",
+      role: "admin",
+      ts: Date.now(),
+    });
+    
+    // base64url encoding
+    const token = btoa(payload)
+      .replace(/\+/g, "-")
+      .replace(/\//g, "_")
+      .replace(/=+$/, "");
 
-  // Perform redirect with set-cookie header set
-  redirect("/admin/manage");
+    document.cookie = `vpansak_session=${token}; path=/; max-age=2592000; SameSite=Lax`;
+
+    // 3. Redirect to Admin Management Console
+    window.location.href = "/admin/manage";
+  }, []);
+
+  return (
+    <main className="account-loading">
+      <span />
+      <p>Unlocking VPANSAK Admin Command Center...</p>
+    </main>
+  );
 }
