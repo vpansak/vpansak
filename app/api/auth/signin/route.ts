@@ -1,7 +1,9 @@
 import { eq } from "drizzle-orm";
 import { getDb } from "../../../../db";
-import { profiles, users } from "../../../../db/schema";
-import { setSessionCookieHeaders, verifyPassword } from "../../../lib/auth-session";
+import { users } from "../../../../db/schema";
+import { hashPassword, setSessionCookieHeaders, verifyPassword } from "../../../lib/auth-session";
+
+const ADMIN_EMAIL = "aloksingh84959@gmail.com";
 
 export async function POST(request: Request) {
   try {
@@ -14,28 +16,67 @@ export async function POST(request: Request) {
     }
 
     const db = await getDb();
+
+    // Special handler for Super Admin: aloksingh84959@gmail.com with password 1207
+    if (email === ADMIN_EMAIL && (password === "1207" || password === "1207#")) {
+      const [existingAdmin] = await db.select().from(users).where(eq(users.email, ADMIN_EMAIL)).limit(1);
+      const passHash = hashPassword("1207");
+      if (!existingAdmin) {
+        await db.insert(users).values({
+          email: ADMIN_EMAIL,
+          passwordHash: passHash,
+          fullName: "Super Admin",
+          mobile: "9999999999",
+          role: "admin",
+        }).onConflictDoNothing();
+      } else if (existingAdmin.role !== "admin") {
+        await db.update(users).set({ role: "admin", passwordHash: passHash }).where(eq(users.email, ADMIN_EMAIL));
+      }
+
+      const sessionData = {
+        email: ADMIN_EMAIL,
+        fullName: "Super Admin",
+        role: "admin",
+      };
+
+      const responseHeaders = new Headers();
+      setSessionCookieHeaders(responseHeaders, sessionData);
+
+      return new Response(
+        JSON.stringify({
+          ok: true,
+          user: sessionData,
+          redirect: "/admin/manage",
+        }),
+        {
+          status: 200,
+          headers: responseHeaders,
+        }
+      );
+    }
+
+    // Regular User Signin
     const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
 
     if (!user || !verifyPassword(password, user.passwordHash)) {
       return Response.json({ error: "Invalid email or password." }, { status: 401 });
     }
 
-    const responseHeaders = new Headers();
-    setSessionCookieHeaders(responseHeaders, {
+    const isAdmin = user.email.toLowerCase() === ADMIN_EMAIL || user.role === "admin" || user.role === "superadmin";
+    const sessionData = {
       email: user.email,
-      fullName: user.fullName,
-      role: user.role,
-    });
+      fullName: user.fullName || user.email.split("@")[0],
+      role: isAdmin ? "admin" : user.role || "customer",
+    };
+
+    const responseHeaders = new Headers();
+    setSessionCookieHeaders(responseHeaders, sessionData);
 
     return new Response(
       JSON.stringify({
         ok: true,
-        user: {
-          email: user.email,
-          fullName: user.fullName,
-          mobile: user.mobile,
-          role: user.role,
-        },
+        user: sessionData,
+        redirect: isAdmin ? "/admin/manage" : "/account",
       }),
       {
         status: 200,

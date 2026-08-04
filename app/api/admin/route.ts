@@ -1,11 +1,42 @@
 import { desc, eq } from "drizzle-orm";
 import { getDb } from "../../../db";
 import { coupons, donations, notifications, officers, orders, products, reviews, sellerApplications, ticketReplies, tickets } from "../../../db/schema";
+import { getAuthUserFromRequest, isAdminUser } from "../../lib/auth-session";
 
-const ADMIN="aloksingh84959@gmail.com";
-function authorized(request:Request){return request.headers.get("oai-authenticated-user-email")?.toLowerCase()===ADMIN}
-export async function GET(request:Request){if(!authorized(request))return Response.json({error:"Admin access denied."},{status:403});try{const db=await getDb();const [orderRows,sellerRows,ticketRows,productRows,reviewRows,officerRows,donationRows,couponRows]=await Promise.all([db.select().from(orders).orderBy(desc(orders.createdAt)).limit(100),db.select().from(sellerApplications).orderBy(desc(sellerApplications.createdAt)).limit(100),db.select().from(tickets).orderBy(desc(tickets.updatedAt)).limit(100),db.select().from(products).orderBy(desc(products.createdAt)).limit(100),db.select().from(reviews).orderBy(desc(reviews.createdAt)).limit(100),db.select().from(officers).orderBy(desc(officers.createdAt)).limit(100),db.select().from(donations).orderBy(desc(donations.createdAt)).limit(100),db.select().from(coupons).limit(100)]);return Response.json({orders:orderRows,sellers:sellerRows,tickets:ticketRows,products:productRows,reviews:reviewRows,officers:officerRows,donations:donationRows,coupons:couponRows});}catch{return Response.json({error:"Admin data is temporarily unavailable."},{status:503})}}
-export async function POST(request:Request){if(!authorized(request))return Response.json({error:"Admin access denied."},{status:403});try{const body=await request.json() as Record<string,unknown>;const action=String(body.action||"");const db=await getDb();
+const ADMIN = "aloksingh84959@gmail.com";
+
+async function authorized(request: Request) {
+  const user = await getAuthUserFromRequest(request);
+  if (user && isAdminUser(user)) return true;
+  const headerEmail = request.headers.get("oai-authenticated-user-email")?.toLowerCase();
+  if (headerEmail === ADMIN) return true;
+  return false;
+}
+
+export async function GET(request: Request) {
+  if (!(await authorized(request))) return Response.json({ error: "Admin access denied." }, { status: 403 });
+  try {
+    const db = await getDb();
+    const [orderRows, sellerRows, ticketRows, productRows, reviewRows, officerRows, donationRows, couponRows] = await Promise.all([
+      db.select().from(orders).orderBy(desc(orders.createdAt)).limit(100),
+      db.select().from(sellerApplications).orderBy(desc(sellerApplications.createdAt)).limit(100),
+      db.select().from(tickets).orderBy(desc(tickets.updatedAt)).limit(100),
+      db.select().from(products).orderBy(desc(products.createdAt)).limit(100),
+      db.select().from(reviews).orderBy(desc(reviews.createdAt)).limit(100),
+      db.select().from(officers).orderBy(desc(officers.createdAt)).limit(100),
+      db.select().from(donations).orderBy(desc(donations.createdAt)).limit(100),
+      db.select().from(coupons).limit(100),
+    ]);
+    return Response.json({ orders: orderRows, sellers: sellerRows, tickets: ticketRows, products: productRows, reviews: reviewRows, officers: officerRows, donations: donationRows, coupons: couponRows });
+  } catch {
+    return Response.json({ error: "Admin data is temporarily unavailable." }, { status: 503 });
+  }
+}
+
+export async function POST(request: Request) {
+  if (!(await authorized(request))) return Response.json({ error: "Admin access denied." }, { status: 403 });
+  try {
+const body=await request.json() as Record<string,unknown>;const action=String(body.action||"");const db=await getDb();
  if(action==="orderStatus"){const id=String(body.orderId||"");const status=String(body.status||"").slice(0,50);await db.update(orders).set({status}).where(eq(orders.orderId,id));const [order]=await db.select().from(orders).where(eq(orders.orderId,id)).limit(1);if(order?.ownerEmail)await db.insert(notifications).values({ownerEmail:order.ownerEmail,title:"Order status updated",message:`${id} is now ${status}.`,type:"order"});return Response.json({ok:true});}
  if(action==="sellerStatus"){await db.update(sellerApplications).set({status:String(body.status||"").slice(0,50)}).where(eq(sellerApplications.applicationId,String(body.applicationId||"")));return Response.json({ok:true});}
  if(action==="ticketStatus"){await db.update(tickets).set({status:String(body.status||"").slice(0,50),updatedAt:new Date().toISOString()}).where(eq(tickets.ticketId,String(body.ticketId||"")));return Response.json({ok:true});}
