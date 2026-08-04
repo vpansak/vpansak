@@ -1,6 +1,7 @@
 import { getDb } from "../../../../db";
 import { notifications, orderItems, orders } from "../../../../db/schema";
 import { basicAuth, calculateCheckout, razorpayConfig, validRazorpaySignature } from "../../../lib/payment";
+import { saveOrderToSupabase } from "../../../lib/supabase";
 
 export async function POST(request: Request) {
   try {
@@ -21,6 +22,7 @@ export async function POST(request: Request) {
     if(required.some((key)=>!String(payload[key]||"").trim())) return Response.json({error:"Delivery details complete karein."},{status:400});
     const db=await getDb(); const ownerEmail=request.headers.get("oai-authenticated-user-email")?.toLowerCase()||null;
     const [saved]=await db.insert(orders).values({orderId:vpOrderId,ownerEmail,customerName:String(payload.customerName).trim().slice(0,100),mobile:String(payload.mobile).trim().slice(0,20),address:String(payload.address).trim().slice(0,300),city:String(payload.city).trim().slice(0,100),pinCode:String(payload.pinCode).trim().slice(0,12),paymentMethod:`Razorpay • ${paymentId}`.slice(0,50),total:checkout.total,status:"Order Confirmed"}).returning();
+    await saveOrderToSupabase({order_id:vpOrderId,owner_email:ownerEmail,customer_name:String(payload.customerName).trim().slice(0,100),mobile:String(payload.mobile).trim().slice(0,20),address:String(payload.address).trim().slice(0,300),city:String(payload.city).trim().slice(0,100),pin_code:String(payload.pinCode).trim().slice(0,12),payment_method:`Razorpay • ${paymentId}`.slice(0,50),total:checkout.total,status:"Order Confirmed"});
     await db.insert(orderItems).values(checkout.items.map((item)=>({...item,orderId:vpOrderId})));
     if(ownerEmail) await db.insert(notifications).values({ownerEmail,title:"Payment successful",message:`Payment received and order ${vpOrderId} confirmed.`,type:"order"});
     return Response.json({order:{orderId:saved.orderId,total:saved.total,status:saved.status,paymentMethod:saved.paymentMethod}});

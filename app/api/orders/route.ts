@@ -1,6 +1,7 @@
 import { desc, eq } from "drizzle-orm";
 import { getDb } from "../../../db";
 import { notifications, orderItems, orders } from "../../../db/schema";
+import { saveOrderToSupabase } from "../../lib/supabase";
 
 const publicOrder = (order: typeof orders.$inferSelect) => ({
   orderId: order.orderId,
@@ -55,8 +56,10 @@ export async function POST(request: Request) {
     const items = Array.isArray(payload.items) ? payload.items as unknown as Array<Record<string, unknown>> : [];
     if (items.length) await db.insert(orderItems).values(items.slice(0,50).map((item) => ({ orderId, productId:String(item.productId||"").slice(0,80), productName:String(item.productName||"").slice(0,160), price:Math.round(Number(item.price)||0), quantity:Math.max(1,Math.min(20,Number(item.quantity)||1)) })));
     if (ownerEmail) await db.insert(notifications).values({ ownerEmail, title:"Order confirmed", message:`Your order ${orderId} has been created successfully.`, type:"order" });
+    await saveOrderToSupabase({ order_id: orderId, customer_name: String(payload.customerName).trim().slice(0,100), mobile: String(payload.mobile).trim().slice(0,20), address: String(payload.address).trim().slice(0,300), city: String(payload.city).trim().slice(0,100), pin_code: String(payload.pinCode).trim().slice(0,12), payment_method: String(payload.paymentMethod).trim().slice(0,50), total: Math.round(Number(payload.total)), status: "Order Confirmed" });
     return Response.json({ order: publicOrder(order) }, { status: 201 });
-  } catch {
+  } catch (err) {
+    console.error("Create order error:", err);
     return Response.json({ error: "We could not create the order. Please try again." }, { status: 500 });
   }
 }

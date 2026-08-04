@@ -1,6 +1,7 @@
 import { asc, desc, eq } from "drizzle-orm";
 import { getDb } from "../../../db";
 import { officers, ticketReplies, tickets } from "../../../db/schema";
+import { saveTicketToSupabase } from "../../lib/supabase";
 
 const publicTicket = (ticket: typeof tickets.$inferSelect) => ({ ticketId: ticket.ticketId, customerName: `${ticket.customerName.slice(0, 1)}***`, category: ticket.category, subject: ticket.subject, priority: ticket.priority, status: ticket.status, createdAt: ticket.createdAt, updatedAt: ticket.updatedAt });
 
@@ -12,7 +13,7 @@ export async function GET(request: Request) {
     const [ticket] = await db.select().from(tickets).where(eq(tickets.ticketId, id)).limit(1);
     if (!ticket) return Response.json({ error: "Ticket not found." }, { status: 404 });
     const replies = await db.select({ authorType: ticketReplies.authorType, authorName: ticketReplies.authorName, message: ticketReplies.message, createdAt: ticketReplies.createdAt }).from(ticketReplies).where(eq(ticketReplies.ticketId, id)).orderBy(asc(ticketReplies.createdAt));
-    return Response.json({ ticket: publicTicket(ticket), replies: replies.map((reply)=>({...reply,authorName:reply.authorType==="customer"?"Customer":reply.authorName})) });
+    return Response.json({ ticket: publicTicket(ticket), replies: replies.map((reply: { authorType: string; authorName: string; message: string; createdAt: string })=>({...reply,authorName:reply.authorType==="customer"?"Customer":reply.authorName})) });
   } catch { return Response.json({ error: "Ticket tracking is temporarily unavailable." }, { status: 503 }); }
 }
 
@@ -25,9 +26,14 @@ export async function POST(request: Request) {
     const db = await getDb();
     const [officer] = await db.select().from(officers).where(eq(officers.active, true)).orderBy(asc(officers.assignedCount), asc(officers.id)).limit(1);
     const orderReference=body.orderId?.trim().toUpperCase();
-    await db.insert(tickets).values({ ticketId, customerName: body.customerName.trim().slice(0,100), email: body.email.trim().toLowerCase().slice(0,150), mobile: body.mobile?.trim().slice(0,20) || "", category: body.category.trim().slice(0,50), subject: body.subject.trim().slice(0,150), description: `${orderReference?`Order: ${orderReference}\n`:""}${body.description.trim()}`.slice(0,2000), priority: body.priority?.trim().slice(0,20) || "Normal", assignedOfficer: officer?.email ?? null });
+    const descriptionText = `${orderReference?`Order: ${orderReference}\n`:""}${body.description.trim()}`.slice(0,2000);
+    await db.insert(tickets).values({ ticketId, customerName: body.customerName.trim().slice(0,100), email: body.email.trim().toLowerCase().slice(0,150), mobile: body.mobile?.trim().slice(0,20) || "", category: body.category.trim().slice(0,50), subject: body.subject.trim().slice(0,150), description: descriptionText, priority: body.priority?.trim().slice(0,20) || "Normal", assignedOfficer: officer?.email ?? null });
     await db.insert(ticketReplies).values({ ticketId, authorType: "system", authorName: "VPANSAK Support", message: "Your request has been received. Our support team will review it and share an update here." });
     if (officer) await db.update(officers).set({ assignedCount: officer.assignedCount + 1 }).where(eq(officers.id, officer.id));
+    await saveTicketToSupabase({ ticket_id: ticketId, customer_name: body.customerName.trim().slice(0,100), email: body.email.trim().toLowerCase().slice(0,150), mobile: body.mobile?.trim().slice(0,20) || "", category: body.category.trim().slice(0,50), subject: body.subject.trim().slice(0,150), description: descriptionText, priority: body.priority?.trim().slice(0,20) || "Normal", status: "Open" });
     return Response.json({ ticketId, status: "Open", assigned: Boolean(officer) }, { status: 201 });
-  } catch { return Response.json({ error: "Ticket could not be created. Please try again." }, { status: 500 }); }
+  } catch (err) {
+    console.error("Create ticket error:", err);
+    return Response.json({ error: "Ticket could not be created. Please try again." }, { status: 500 });
+  }
 }
