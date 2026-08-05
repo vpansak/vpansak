@@ -554,7 +554,7 @@ function FoundationContent() {
 
           {/* STATE 3: Verified Certificate Display */}
           {statusType === "verified" && certificate && (
-            <article className="donation-certificate">
+            <article id="certificate" className="donation-certificate">
               <div className="certificate-border">
                 <header>
                   <img src="/vpansak-logo-light.jpeg" alt="VPANSAK logo" />
