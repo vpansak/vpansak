@@ -72,6 +72,48 @@ export async function POST(request: Request) {
       await db.update(notifications).set({ read: true }).where(and(eq(notifications.id, Number(body.id)), eq(notifications.ownerEmail, email)));
       return Response.json({ ok: true });
     }
+    if (action === "mergeGuestData") {
+      const guestCart = Array.isArray(body.cart) ? (body.cart as Array<{ productId: string; quantity: number }>) : [];
+      const guestWishlist = Array.isArray(body.wishlist) ? (body.wishlist as Array<string | { productId: string }>) : [];
+
+      for (const item of guestCart) {
+        const productId = String(item.productId || "").slice(0, 80);
+        const qty = Math.max(1, Math.min(20, Number(item.quantity) || 1));
+        if (!productId) continue;
+
+        const [existing] = await db
+          .select()
+          .from(persistentCartItems)
+          .where(and(eq(persistentCartItems.ownerEmail, email), eq(persistentCartItems.productId, productId)))
+          .limit(1);
+
+        if (existing) {
+          await db
+            .update(persistentCartItems)
+            .set({ quantity: Math.min(20, existing.quantity + qty), updatedAt: new Date().toISOString() })
+            .where(eq(persistentCartItems.id, existing.id));
+        } else {
+          await db.insert(persistentCartItems).values({ ownerEmail: email, productId, quantity: qty });
+        }
+      }
+
+      for (const item of guestWishlist) {
+        const productId = typeof item === "string" ? item : String((item as any)?.productId || "").slice(0, 80);
+        if (!productId) continue;
+
+        const [existing] = await db
+          .select()
+          .from(wishlistItems)
+          .where(and(eq(wishlistItems.ownerEmail, email), eq(wishlistItems.productId, productId)))
+          .limit(1);
+
+        if (!existing) {
+          await db.insert(wishlistItems).values({ ownerEmail: email, productId });
+        }
+      }
+
+      return Response.json({ ok: true, mergedCartCount: guestCart.length, mergedWishlistCount: guestWishlist.length });
+    }
     return Response.json({ error: "Unsupported account action." }, { status: 400 });
   } catch {
     return Response.json({ error: "Your changes could not be saved." }, { status: 500 });

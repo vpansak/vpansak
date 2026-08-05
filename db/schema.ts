@@ -168,19 +168,35 @@ export const officers = sqliteTable("officers", {
   createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });
 
-export const donations = sqliteTable("donations", {
+export const contributions = sqliteTable("contributions", {
   id: integer("id").primaryKey({ autoIncrement: true }),
-  donationId: text("donation_id").notNull().unique(),
-  donorName: text("donor_name").notNull(),
+  verificationId: text("verification_id").notNull().unique(),
+  certificateNumber: text("certificate_number").unique(),
+  fullName: text("full_name").notNull(),
   email: text("email").notNull(),
   mobile: text("mobile").notNull(),
   amount: integer("amount").notNull(),
-  paymentMethod: text("payment_method").notNull().default("Manual"),
-  paymentStatus: text("payment_status").notNull().default("Pending Verification"),
-  certificateId: text("certificate_id").notNull().unique(),
-  appreciationMessage: text("appreciation_message").notNull(),
+  paymentMethod: text("payment_method").notNull().default("manual"),
+  transactionId: text("transaction_id"),
+  paymentScreenshotUrl: text("payment_screenshot_url"),
+  razorpayOrderId: text("razorpay_order_id"),
+  razorpayPaymentId: text("razorpay_payment_id").unique(),
+  razorpaySignature: text("razorpay_signature"),
+  paymentStatus: text("payment_status").notNull().default("pending_verification"),
+  verificationMethod: text("verification_method"),
+  rejectionReason: text("rejection_reason"),
+  publicRejectionReason: text("public_rejection_reason"),
+  adminNote: text("admin_note"),
+  submittedAt: text("submitted_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  verifiedAt: text("verified_at"),
+  verifiedBy: text("verified_by"),
+  certificateGeneratedAt: text("certificate_generated_at"),
   createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });
+
+export const donations = contributions;
+
 
 export const users = sqliteTable("users", {
   id: integer("id").primaryKey({ autoIncrement: true }),
@@ -189,8 +205,25 @@ export const users = sqliteTable("users", {
   fullName: text("full_name").notNull(),
   mobile: text("mobile").notNull().default(""),
   role: text("role").notNull().default("customer"),
+  profileImage: text("profile_image"),
+  authProvider: text("auth_provider").notNull().default("email"),
+  googleUserId: text("google_user_id").unique(),
+  emailVerified: integer("email_verified", { mode: "boolean" }).notNull().default(false),
+  accountStatus: text("account_status").notNull().default("active"),
+  lastLoginAt: text("last_login_at"),
   createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
   updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const otpCodes = sqliteTable("otp_codes", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  email: text("email").notNull(),
+  code: text("code").notNull(),
+  purpose: text("purpose").notNull().default("email_verification"),
+  expiresAt: text("expires_at").notNull(),
+  attempts: integer("attempts").notNull().default(0),
+  used: integer("used", { mode: "boolean" }).notNull().default(false),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });
 
 export const passwordResets = sqliteTable("password_resets", {

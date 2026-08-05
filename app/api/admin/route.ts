@@ -105,18 +105,62 @@ export async function POST(request: Request) {
       return Response.json({ ok: true });
     }
 
-    if (action === "donationStatus") {
-      const donationId = String(body.donationId || "");
-      const status = String(body.status || "").slice(0, 50);
-      await db.update(donations).set({ paymentStatus: status }).where(eq(donations.donationId, donationId));
-      const [row] = await db.select().from(donations).where(eq(donations.donationId, donationId)).limit(1);
-      if (status === "Verified" && row) {
-        const certificateUrl = `${new URL(request.url).origin}/foundation?certificate=${encodeURIComponent(row.certificateId)}`;
-        const subject = `VPANSAK Certificate ${row.certificateId}`;
-        const bodyText = `Hello ${row.donorName},\n\nYour contribution has been verified. Your permanent certificate ID is ${row.certificateId}.\n\nView and download your certificate: ${certificateUrl}\n\nRegards,\nVPANSAK Support Fund`;
+    if (action === "donationStatus" || action === "verifyContribution" || action === "rejectContribution") {
+      const verificationId = String(body.verificationId || body.donationId || "").trim().toUpperCase();
+      const targetStatus = String(body.status || (action === "rejectContribution" ? "rejected" : "verified")).trim().toLowerCase();
+      const internalNote = String(body.adminNote || body.rejectionReason || "").slice(0, 500);
+      const publicRejectionReason = String(body.publicRejectionReason || "Verification failed").slice(0, 300);
+
+      const [row] = await db.select().from(contributions).where(eq(contributions.verificationId, verificationId)).limit(1);
+      if (!row) return Response.json({ error: "Contribution record not found." }, { status: 404 });
+
+      const adminUser = await getAuthUserFromRequest(request);
+      const adminEmail = adminUser?.email || "aloksingh84959@gmail.com";
+      const now = new Date().toISOString();
+
+      if (targetStatus === "verified") {
+        if (row.paymentStatus === "verified") {
+          return Response.json({ error: "Contribution is already verified." }, { status: 400 });
+        }
+        const { generateCertificateNumber } = await import("../../lib/contributions");
+        const certificateNumber = row.certificateNumber || (await generateCertificateNumber(db));
+
+        await db.update(contributions).set({
+          paymentStatus: "verified",
+          verificationMethod: row.verificationMethod || "manual_admin",
+          verifiedAt: now,
+          verifiedBy: adminEmail,
+          certificateNumber,
+          certificateGeneratedAt: now,
+          adminNote: internalNote || row.adminNote,
+          updatedAt: now,
+        }).where(eq(contributions.id, row.id));
+
+        const certificateUrl = `${new URL(request.url).origin}/foundation?certificate=${encodeURIComponent(row.verificationId)}`;
+        const subject = `VPANSAK Support Certificate ${certificateNumber}`;
+        const bodyText = `Hello ${row.fullName},\n\nYour support contribution payment has been verified successfully!\n\nVerification ID: ${row.verificationId}\nCertificate Number: ${certificateNumber}\n\nView and download your official Certificate of Appreciation:\n${certificateUrl}\n\nThank you for supporting VPANSAK community initiatives.\n\nWarm regards,\nAlok Singh\nFounder & Authorized Signatory\nVPANSAK Support Foundation`;
         const composeUrl = `https://outlook.live.com/mail/0/deeplink/compose?${new URLSearchParams({ to: row.email, subject, body: bodyText })}`;
-        return Response.json({ ok: true, composeUrl });
+        return Response.json({ ok: true, certificateNumber, verificationId: row.verificationId, composeUrl });
       }
+
+      if (targetStatus === "rejected") {
+        await db.update(contributions).set({
+          paymentStatus: "rejected",
+          rejectionReason: internalNote || "Manual rejection by admin",
+          publicRejectionReason,
+          adminNote: internalNote || row.adminNote,
+          updatedAt: now,
+        }).where(eq(contributions.id, row.id));
+        return Response.json({ ok: true, verificationId: row.verificationId, status: "rejected" });
+      }
+
+      // Other status updates (pending_verification, failed, refunded)
+      await db.update(contributions).set({
+        paymentStatus: targetStatus,
+        adminNote: internalNote || row.adminNote,
+        updatedAt: now,
+      }).where(eq(contributions.id, row.id));
+
       return Response.json({ ok: true });
     }
 

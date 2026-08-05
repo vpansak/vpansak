@@ -25,6 +25,33 @@ const SCHEMA_SQL = `
       created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
 
+    CREATE TABLE IF NOT EXISTS contributions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      verification_id TEXT NOT NULL UNIQUE,
+      certificate_number TEXT UNIQUE,
+      full_name TEXT NOT NULL,
+      email TEXT NOT NULL,
+      mobile TEXT NOT NULL,
+      amount INTEGER NOT NULL,
+      payment_method TEXT NOT NULL DEFAULT 'manual',
+      transaction_id TEXT,
+      payment_screenshot_url TEXT,
+      razorpay_order_id TEXT,
+      razorpay_payment_id TEXT UNIQUE,
+      razorpay_signature TEXT,
+      payment_status TEXT NOT NULL DEFAULT 'pending_verification',
+      verification_method TEXT,
+      rejection_reason TEXT,
+      public_rejection_reason TEXT,
+      admin_note TEXT,
+      submitted_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      verified_at TEXT,
+      verified_by TEXT,
+      certificate_generated_at TEXT,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+
     CREATE TABLE IF NOT EXISTS donations (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       donation_id TEXT NOT NULL UNIQUE,
@@ -198,8 +225,25 @@ const SCHEMA_SQL = `
       full_name TEXT NOT NULL,
       mobile TEXT NOT NULL DEFAULT '',
       role TEXT NOT NULL DEFAULT 'customer',
+      profile_image TEXT,
+      auth_provider TEXT NOT NULL DEFAULT 'email',
+      google_user_id TEXT UNIQUE,
+      email_verified INTEGER NOT NULL DEFAULT 0,
+      account_status TEXT NOT NULL DEFAULT 'active',
+      last_login_at TEXT,
       created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
       updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS otp_codes (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      email TEXT NOT NULL,
+      code TEXT NOT NULL,
+      purpose TEXT NOT NULL DEFAULT 'email_verification',
+      expires_at TEXT NOT NULL,
+      attempts INTEGER NOT NULL DEFAULT 0,
+      used INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
 
     CREATE TABLE IF NOT EXISTS password_resets (
@@ -243,6 +287,23 @@ async function initLocalDb() {
   const client = createClient({ url: `file:${dbPath}` });
 
   await client.executeMultiple(SCHEMA_SQL);
+
+  const migrations = [
+    "ALTER TABLE users ADD COLUMN profile_image TEXT",
+    "ALTER TABLE users ADD COLUMN auth_provider TEXT NOT NULL DEFAULT 'email'",
+    "ALTER TABLE users ADD COLUMN google_user_id TEXT",
+    "ALTER TABLE users ADD COLUMN email_verified INTEGER NOT NULL DEFAULT 0",
+    "ALTER TABLE users ADD COLUMN account_status TEXT NOT NULL DEFAULT 'active'",
+    "ALTER TABLE users ADD COLUMN last_login_at TEXT",
+  ];
+
+  for (const sqlStmt of migrations) {
+    try {
+      await client.execute(sqlStmt);
+    } catch {
+      // Column may already exist
+    }
+  }
 
   localDbInstance = drizzleLibsql(client, { schema });
   return localDbInstance;

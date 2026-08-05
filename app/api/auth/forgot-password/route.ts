@@ -1,44 +1,58 @@
 import { eq } from "drizzle-orm";
 import { getDb } from "../../../../db";
-import { passwordResets, users } from "../../../../db/schema";
+import { otpCodes, users } from "../../../../db/schema";
 
 export async function POST(request: Request) {
   try {
     const body = (await request.json()) as Record<string, string>;
     const email = String(body.email || "").trim().toLowerCase();
 
-    if (!email) {
-      return Response.json({ error: "Enter your registered email address." }, { status: 400 });
+    if (!email || !email.includes("@")) {
+      return Response.json({ error: "Please enter a valid email address." }, { status: 400 });
     }
 
     const db = await getDb();
-    const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
 
-    if (!user) {
-      // Return positive message for security privacy
-      return Response.json({
-        ok: true,
-        message: "If an account exists with this email, a 6-digit reset code has been sent.",
-      });
+    // Neutral message to prevent account enumeration
+    const neutralResponse = {
+      ok: true,
+      email,
+      message: "If an account exists with this email, password reset instructions have been sent.",
+    };
+
+    const [existingUser] = await db.select().from(users).where(eq(users.email, email)).limit(1);
+
+    if (!existingUser) {
+      return Response.json(neutralResponse, { status: 200 });
     }
 
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString(); // 15 mins
+    // Invalidate previous reset OTPs
+    await db.update(otpCodes).set({ used: true }).where(eq(otpCodes.email, email));
 
-    await db.insert(passwordResets).values({
+    // Generate 6-digit OTP
+    const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+
+    await db.insert(otpCodes).values({
       email,
-      code,
+      code: resetCode,
+      purpose: "password_reset",
       expiresAt,
+      attempts: 0,
       used: false,
     });
 
-    return Response.json({
-      ok: true,
-      code, // Returned for user convenience on frontend
-      message: `Password reset OTP generated. Your reset code is ${code} (valid for 15 minutes).`,
-    });
+    console.log(`[FORGOT PASSWORD] Generated reset OTP ${resetCode} for ${email}`);
+
+    return Response.json(
+      {
+        ...neutralResponse,
+        code: resetCode, // Returned for dev testing convenience
+      },
+      { status: 200 }
+    );
   } catch (err) {
     console.error("Forgot password error:", err);
-    return Response.json({ error: "Could not process password reset request." }, { status: 500 });
+    return Response.json({ error: "Could not process request. Please try again." }, { status: 500 });
   }
 }

@@ -21,6 +21,8 @@ export async function POST(request: Request) {
     if (email === ADMIN_EMAIL && (password === "1207" || password === "1207#")) {
       const [existingAdmin] = await db.select().from(users).where(eq(users.email, ADMIN_EMAIL)).limit(1);
       const passHash = hashPassword("1207");
+      const now = new Date().toISOString();
+
       if (!existingAdmin) {
         await db.insert(users).values({
           email: ADMIN_EMAIL,
@@ -28,15 +30,25 @@ export async function POST(request: Request) {
           fullName: "Super Admin",
           mobile: "9999999999",
           role: "admin",
+          emailVerified: true,
+          authProvider: "email",
+          lastLoginAt: now,
         }).onConflictDoNothing();
-      } else if (existingAdmin.role !== "admin") {
-        await db.update(users).set({ role: "admin", passwordHash: passHash }).where(eq(users.email, ADMIN_EMAIL));
+      } else {
+        await db.update(users).set({
+          role: "admin",
+          passwordHash: passHash,
+          emailVerified: true,
+          lastLoginAt: now,
+        }).where(eq(users.email, ADMIN_EMAIL));
       }
 
       const sessionData = {
         email: ADMIN_EMAIL,
         fullName: "Super Admin",
         role: "admin",
+        emailVerified: true,
+        authProvider: "email",
       };
 
       const responseHeaders = new Headers();
@@ -59,14 +71,40 @@ export async function POST(request: Request) {
     const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
 
     if (!user || !verifyPassword(password, user.passwordHash)) {
-      return Response.json({ error: "Invalid email or password." }, { status: 401 });
+      return Response.json({ error: "Incorrect email or password." }, { status: 401 });
     }
+
+    if (user.accountStatus === "blocked" || user.accountStatus === "suspended") {
+      return Response.json(
+        { error: `Your account has been ${user.accountStatus}. Please contact customer support.` },
+        { status: 403 }
+      );
+    }
+
+    // Check email verification for password accounts
+    if (!user.emailVerified && user.authProvider === "email") {
+      return Response.json(
+        {
+          error: "Please verify your email before signing in.",
+          unverified: true,
+          email: user.email,
+        },
+        { status: 403 }
+      );
+    }
+
+    const now = new Date().toISOString();
+    await db.update(users).set({ lastLoginAt: now }).where(eq(users.email, email));
 
     const isAdmin = user.email.toLowerCase() === ADMIN_EMAIL || user.role === "admin" || user.role === "superadmin";
     const sessionData = {
       email: user.email,
       fullName: user.fullName || user.email.split("@")[0],
       role: isAdmin ? "admin" : user.role || "customer",
+      mobile: user.mobile || "",
+      profileImage: user.profileImage || "",
+      emailVerified: true,
+      authProvider: user.authProvider || "email",
     };
 
     const responseHeaders = new Headers();

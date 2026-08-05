@@ -21,6 +21,10 @@ export type AuthSessionData = {
   email: string;
   fullName: string;
   role: string;
+  mobile?: string;
+  profileImage?: string;
+  emailVerified?: boolean;
+  authProvider?: string;
 };
 
 export function encodeSession(data: AuthSessionData): string {
@@ -40,6 +44,10 @@ export function decodeSession(token: string | null | undefined): AuthSessionData
         email,
         fullName: parsed.fullName || (isAdmin ? "Super Admin" : email.split("@")[0]),
         role: isAdmin ? "admin" : parsed.role || "customer",
+        mobile: parsed.mobile || "",
+        profileImage: parsed.profileImage || "",
+        emailVerified: typeof parsed.emailVerified === "boolean" ? parsed.emailVerified : true,
+        authProvider: parsed.authProvider || "email",
       };
     }
   } catch {
