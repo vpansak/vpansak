@@ -279,56 +279,67 @@ export default function ProductPage() {
         </div>
 
         {/* Product Purchase Summary */}
-        <div className="product-summary">
-          <div className="product-meta-header">
+        <div className="product-summary product-details-card">
+          <div className="product-meta-header product-meta-top">
             <small>{product.brand} • {product.category}</small>
             <span className="stock-badge in-stock">
               <Check size={12} /> {product.stock > 0 ? "In Stock" : "Out of Stock"}
             </span>
           </div>
 
-          <h1>{product.name}</h1>
+          <h1 className="product-title">{product.name}</h1>
 
-          <div className="detail-rating">
-            <strong>
-              {(product.rating / 10).toFixed(1)} <Star fill="currentColor" size={12} />
-            </strong>
-            <span>{product.reviewCount.toLocaleString("en-IN")} verified ratings</span>
-            <span className="sku-tag">SKU: {product.sku}</span>
+          <div className="detail-rating rating-sku-row">
+            <div className="rating-group">
+              <strong>
+                {(product.rating / 10).toFixed(1)} <Star fill="currentColor" size={12} />
+              </strong>
+              <span>{product.reviewCount.toLocaleString("en-IN")} verified ratings</span>
+            </div>
+            <span className="sku-tag sku-text">SKU: {product.sku}</span>
           </div>
 
           <p className="product-description">{product.description}</p>
 
           {/* Pricing & Discount */}
-          <div className="detail-price">
-            <strong>{money(product.price)}</strong>
+          <div className="detail-price price-row">
+            <strong className="selling-price">{money(product.price)}</strong>
             <s>{money(product.mrp)}</s>
             <span className="discount-tag">{discountPercent}% OFF</span>
             <small className="price-savings">Save {money(product.mrp - product.price)}</small>
           </div>
-          <p className="tax-note">Inclusive of all taxes & free shipping</p>
+          <p className="tax-note">Inclusive of all taxes &amp; free shipping</p>
 
           {/* Key Highlights Pills */}
-          <div className="highlights-pills">
-            <span>SPF 50 PA++++</span>
-            <span>Aqua Gel Texture</span>
-            <span>Oil-Free & Fragrance-Free</span>
-            <span>1% Hyaluronic Acid</span>
-            <span>Lightweight Matte Finish</span>
+          <div className="highlights-pills product-feature-chips">
+            <span className="product-feature-chip">SPF 50 PA++++</span>
+            <span className="product-feature-chip">Aqua Gel Texture</span>
+            <span className="product-feature-chip long-chip">Oil-Free &amp; Fragrance-Free</span>
+            <span className="product-feature-chip">1% Hyaluronic Acid</span>
+            <span className="product-feature-chip">Lightweight Matte Finish</span>
           </div>
 
           {/* Offers */}
-          <div className="offer-box">
+          <div className="offer-box offers-card">
             <b>Available Offers</b>
-            <p>
-              <BadgeCheck /> Welcome offer: Use <strong>VPANSAK10</strong> for 10% instant discount
-            </p>
-            <p>
-              <BadgeCheck /> Free express delivery on prepaid & COD orders
-            </p>
-            <p>
-              <BadgeCheck /> 100% Genuine product sourced directly from brand
-            </p>
+            <div className="offer-item">
+              <BadgeCheck className="offer-icon" size={16} />
+              <div className="offer-text">
+                Welcome offer: Use <strong className="coupon-code">VPANSAK10</strong> for 10% instant discount
+              </div>
+            </div>
+            <div className="offer-item">
+              <BadgeCheck className="offer-icon" size={16} />
+              <div className="offer-text">
+                Free express delivery on prepaid &amp; COD orders
+              </div>
+            </div>
+            <div className="offer-item">
+              <BadgeCheck className="offer-icon" size={16} />
+              <div className="offer-text">
+                100% Genuine product sourced directly from brand
+              </div>
+            </div>
           </div>
 
           {/* Delivery Pincode Checker */}
