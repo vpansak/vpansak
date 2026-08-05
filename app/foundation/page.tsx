@@ -82,7 +82,7 @@ function FoundationContent() {
   const [statusRecord, setStatusRecord] = useState<StatusRecord | null>(null);
   const [certificate, setCertificate] = useState<VerifiedCertificate | null>(null);
   const [statusType, setStatusType] = useState<
-    "idle" | "pending_verification" | "verified" | "rejected" | "failed" | "verification_failed" | "refunded" | "invalid_id" | "submitted_ack"
+    "idle" | "pending_verification" | "verified" | "rejected" | "failed" | "verification_failed" | "refunded" | "invalid_id" | "submitted_ack" | "cancelled"
   >("idle");
 
   const [submittedId, setSubmittedId] = useState("");
@@ -92,6 +92,14 @@ function FoundationContent() {
   const [busyText, setBusyText] = useState("");
   const [method, setMethod] = useState("razorpay");
   const [copied, setCopied] = useState("");
+  const [toast, setToast] = useState("");
+
+  // Central strict verification check for certificate display
+  const canShowCertificate =
+    statusType === "verified" &&
+    certificate !== null &&
+    Boolean(certificate.certificateNumber) &&
+    certificate.paymentStatus === "verified";
 
   // Deep-link certificate/verification search via query string ?certificate=VPC123456
   useEffect(() => {
@@ -103,8 +111,8 @@ function FoundationContent() {
 
   const copy = async (value: string, label: string) => {
     await navigator.clipboard?.writeText(value);
-    setCopied(`${label} copied`);
-    setTimeout(() => setCopied(""), 1800);
+    setToast(`${label} copied!`);
+    setTimeout(() => setToast(""), 1800);
   };
 
   const checkStatusById = async (id: string) => {
@@ -116,6 +124,8 @@ function FoundationContent() {
     setError("");
     setCertificate(null);
     setStatusRecord(null);
+    setStatusType("idle");
+    setSubmittedId("");
 
     try {
       const res = await fetch(`/api/contributions/${encodeURIComponent(cleanId)}/status`);
@@ -132,7 +142,6 @@ function FoundationContent() {
       const st = rec.paymentStatus.toLowerCase();
 
       if (st === "verified") {
-        // Fetch protected certificate endpoint ONLY for verified records
         const certRes = await fetch(`/api/contributions/${encodeURIComponent(cleanId)}/certificate`);
         const certData = await certRes.json();
 
@@ -179,6 +188,10 @@ function FoundationContent() {
 
     setBusy(true);
     setError("");
+    setCertificate(null);
+    setStatusRecord(null);
+    setStatusType("idle");
+    setSubmittedId("");
 
     try {
       if (method === "razorpay") {
@@ -212,7 +225,13 @@ function FoundationContent() {
             },
             theme: { color: "#1766ef" },
             modal: {
-              ondismiss: () => reject(new Error("Payment was cancelled.")),
+              ondismiss: () => {
+                setCertificate(null);
+                setStatusRecord(null);
+                setStatusType("cancelled");
+                setSubmittedId("");
+                reject(new Error("Payment cancel kar diya gaya."));
+              },
             },
             handler: async (response: Record<string, string>) => {
               setBusyText("Verifying payment on server…");
@@ -269,7 +288,17 @@ function FoundationContent() {
         element.reset();
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Contribution could not be completed.");
+      const msg = err instanceof Error ? err.message : "Contribution could not be completed.";
+      setCertificate(null);
+      setStatusRecord(null);
+      setSubmittedId("");
+      if (msg.includes("cancel")) {
+        setStatusType("cancelled");
+        setError("Payment cancel kar diya gaya.");
+      } else {
+        setStatusType("idle");
+        setError(msg);
+      }
     } finally {
       setBusy(false);
       setBusyText("");
@@ -278,6 +307,13 @@ function FoundationContent() {
 
   return (
     <main className="foundation-page">
+      {toast && (
+        <div className="toast">
+          <Check size={16} />
+          {toast}
+        </div>
+      )}
+
       <header className="sub-header">
         <Link className="shop-brand" href="/">
           <img className="brand-logo" src="/vpansak-logo-dark.jpeg" alt="VPANSAK" />
@@ -287,369 +323,426 @@ function FoundationContent() {
           </span>
         </Link>
         <nav>
-          <Link href="/">Main store</Link>
+          <Link href="/">
+            <ArrowLeft /> Store
+          </Link>
           <Link href="/support">Support Hub</Link>
-          <a href="mailto:support.vpansak@gmail.com">Contact</a>
         </nav>
       </header>
 
       <section className="foundation-hero">
         <div>
-          <small>VPANSAK SUPPORT FUND</small>
-          <h1>Support that creates opportunity.</h1>
+          <small>VPANSAK COMMUNITY &amp; SUPPORT INITIATIVE</small>
+          <h1>Empowering progress through community support.</h1>
           <p>
-            Choose a secure contribution method, receive a verifiable Verification ID, and unlock your official Certificate of Appreciation upon backend verification.
+            Contributions directly power public digital tools, open educational resources, merchant onboarding programs, and community welfare initiatives by VPANSAK.
           </p>
           <span>
-            <ShieldCheck /> Voluntary support • No 80G tax-exemption claim
+            <ShieldCheck /> Transparent • Verified • Official Records
           </span>
         </div>
         <div className="foundation-mark">
-          <HeartHandshake />
-          <b>A&amp;A</b>
-          <small>COMMUNITY INITIATIVE</small>
+          <Award />
+          <b>VPANSAK</b>
+          <small>SUPPORT FOUNDATION</small>
         </div>
-      </section>
-
-      <section className="support-payment-grid">
-        <button className={method === "razorpay" ? "active" : ""} onClick={() => setMethod("razorpay")}>
-          <CreditCard />
-          <span>
-            <strong>Razorpay Automatic</strong>
-            <small>Instant verification via UPI, cards &amp; netbanking</small>
-          </span>
-        </button>
-        <a href="https://rzp.io/rzp/suppovpansak" target="_blank" rel="noreferrer">
-          <ExternalLink />
-          <span>
-            <strong>Razorpay Payment Page</strong>
-            <small>Open secure hosted payment link</small>
-          </span>
-        </a>
-        <button className={method === "bank" ? "active" : ""} onClick={() => setMethod("bank")}>
-          <Banknote />
-          <span>
-            <strong>Bank Transfer</strong>
-            <small>NEFT / IMPS / Direct bank deposit</small>
-          </span>
-        </button>
-        <button className={method === "upi" ? "active" : ""} onClick={() => setMethod("upi")}>
-          <QrCode />
-          <span>
-            <strong>QR / UPI Manual</strong>
-            <small>Scan QR code or copy VPANSAK UPI ID</small>
-          </span>
-        </button>
-      </section>
-
-      <section className="support-payment-details">
-        {method === "bank" && (
-          <article>
-            <h3>Bank transfer details</h3>
-            <dl>
-              <div>
-                <dt>Account number</dt>
-                <dd>
-                  6057110365{" "}
-                  <button type="button" onClick={() => copy("6057110365", "Account number")}>
-                    <Copy />
-                  </button>
-                </dd>
-              </div>
-              <div>
-                <dt>IFSC code</dt>
-                <dd>
-                  KKBK0005359{" "}
-                  <button type="button" onClick={() => copy("KKBK0005359", "IFSC")}>
-                    <Copy />
-                  </button>
-                </dd>
-              </div>
-              <div>
-                <dt>Home branch</dt>
-                <dd>GORAKHPUR – TARAMANDAL</dd>
-              </div>
-              <div>
-                <dt>Bank UPI ID</dt>
-                <dd>
-                  8738869635@kotakbank{" "}
-                  <button type="button" onClick={() => copy("8738869635@kotakbank", "UPI ID")}>
-                    <Copy />
-                  </button>
-                </dd>
-              </div>
-            </dl>
-          </article>
-        )}
-
-        {method === "upi" && (
-          <article className="support-qr">
-            <img src="/vpansak-support-qr.jpeg" alt="VPANSAK support UPI QR code" />
-            <div>
-              <h3>Scan and pay</h3>
-              <p>Scan with any UPI app (GPay, PhonePe, Paytm, BHIM) or copy the UPI ID below.</p>
-              <button type="button" onClick={() => copy("alookk@ptyes", "UPI ID")}>
-                <Copy />
-                alookk@ptyes
-              </button>
-            </div>
-          </article>
-        )}
-
-        {copied && <span className="support-copy-toast">{copied}</span>}
       </section>
 
       <section className="foundation-shell">
-        {/* Left Side: Form */}
-        <div className="donation-form">
-          <small>SUPPORT CONTRIBUTION</small>
-          <h2>{method === "razorpay" ? "Pay securely with Razorpay" : "Submit payment reference"}</h2>
-          <p>
-            {method === "razorpay"
-              ? "Razorpay API payments are verified automatically by the server."
-              : "Bank and QR contributions require UTR submission and are reviewed by an authorized admin."}
-          </p>
+        <div className="support-payment-grid" style={{ gridColumn: "1 / -1", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 8 }}>
+          <button
+            type="button"
+            className={method === "razorpay" ? "active" : ""}
+            onClick={() => {
+              setMethod("razorpay");
+              setError("");
+            }}
+            style={{
+              padding: 16,
+              borderRadius: 10,
+              border: method === "razorpay" ? "2px solid #1766ef" : "1px solid #dce4ee",
+              background: method === "razorpay" ? "#eff5ff" : "white",
+              cursor: "pointer",
+              textAlign: "left",
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+            }}
+          >
+            <CreditCard color={method === "razorpay" ? "#1766ef" : "#64748b"} size={22} />
+            <div>
+              <strong style={{ display: "block", color: method === "razorpay" ? "#1766ef" : "#1e293b", fontSize: 13 }}>Razorpay (Instant)</strong>
+              <small style={{ color: "#64748b", fontSize: 11 }}>Cards, NetBanking, UPI, Wallets</small>
+            </div>
+          </button>
 
-          {error && (
-            <button type="button" className="support-alert" onClick={() => setError("")}>
-              {error}
-            </button>
-          )}
+          <button
+            type="button"
+            className={method === "bank" ? "active" : ""}
+            onClick={() => {
+              setMethod("bank");
+              setError("");
+            }}
+            style={{
+              padding: 16,
+              borderRadius: 10,
+              border: method === "bank" ? "2px solid #1766ef" : "1px solid #dce4ee",
+              background: method === "bank" ? "#eff5ff" : "white",
+              cursor: "pointer",
+              textAlign: "left",
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+            }}
+          >
+            <Building2 color={method === "bank" ? "#1766ef" : "#64748b"} size={22} />
+            <div>
+              <strong style={{ display: "block", color: method === "bank" ? "#1766ef" : "#1e293b", fontSize: 13 }}>Bank Account (NEFT/IMPS)</strong>
+              <small style={{ color: "#64748b", fontSize: 11 }}>Direct Kotak Mahindra Bank transfer</small>
+            </div>
+          </button>
 
-          <form onSubmit={handleCreateContribution}>
-            <label>
-              Full name
-              <input name="name" required maxLength={100} placeholder="e.g. Alok Singh" />
-            </label>
-            <label>
-              Email address
-              <input name="email" type="email" required maxLength={150} placeholder="your.name@example.com" />
-            </label>
-            <label>
-              Mobile number
-              <input
-                name="mobile"
-                required
-                inputMode="numeric"
-                pattern="[6-9][0-9]{9}"
-                maxLength={10}
-                placeholder="10-digit mobile number"
-              />
-            </label>
-            <label>
-              Contribution amount (₹)
-              <input name="amount" type="number" min="1" max="1000000" step="1" required placeholder="Amount in INR" />
-            </label>
-
-            {method !== "razorpay" && (
-              <label>
-                Transaction / UTR ID
-                <input
-                  name="transactionId"
-                  required
-                  maxLength={80}
-                  placeholder="Enter 12-digit UTR or Transaction ID"
-                />
-              </label>
-            )}
-
-            <button disabled={busy}>
-              {busy ? (busyText || "Processing…") : method === "razorpay" ? "Pay securely" : "Submit for verification"}
-              <Award />
-            </button>
-          </form>
-
-          <div className="donation-safety">
-            <ShieldCheck />
-            <p>
-              <strong>Payment safety</strong>
-              <br />
-              Never share OTP, UPI PIN, card PIN or passwords. Voluntary support contributions are non-refundable once verified.
-            </p>
-          </div>
+          <button
+            type="button"
+            className={method === "upi" ? "active" : ""}
+            onClick={() => {
+              setMethod("upi");
+              setError("");
+            }}
+            style={{
+              padding: 16,
+              borderRadius: 10,
+              border: method === "upi" ? "2px solid #1766ef" : "1px solid #dce4ee",
+              background: method === "upi" ? "#eff5ff" : "white",
+              cursor: "pointer",
+              textAlign: "left",
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+            }}
+          >
+            <QrCode color={method === "upi" ? "#1766ef" : "#64748b"} size={22} />
+            <div>
+              <strong style={{ display: "block", color: method === "upi" ? "#1766ef" : "#1e293b", fontSize: 13 }}>Scan QR / UPI</strong>
+              <small style={{ color: "#64748b", fontSize: 11 }}>GPay, PhonePe, Paytm, BHIM</small>
+            </div>
+          </button>
         </div>
 
-        {/* Right Side: Status Checking & Protection Area */}
-        <div className="certificate-area">
-          <div className="certificate-toolbar">
-            <form onSubmit={handleSearchSubmit}>
-              <Search />
-              <input
-                value={lookup}
-                onChange={(e) => setLookup(e.target.value.toUpperCase())}
-                placeholder="Enter Verification ID (VPC692515)"
-                maxLength={9}
-              />
-              <button disabled={busy}>{busy ? "Checking…" : "Check Status"}</button>
-            </form>
-
-            {statusType === "verified" && certificate && (
-              <button type="button" onClick={() => window.print()}>
-                <Printer /> Print / Save PDF
-              </button>
-            )}
-          </div>
-
-          {/* STATE 1: Submitted Acknowledgement for Manual Payments */}
-          {statusType === "submitted_ack" && (
-            <div className="certificate-placeholder" style={{ textAlign: "center", padding: 30, background: "#f8fafc", borderRadius: 16, border: "1px solid #e2e8f0" }}>
-              <div style={{ width: 56, height: 56, margin: "0 auto 12px", borderRadius: "50%", background: "#e0f2fe", display: "grid", placeItems: "center", color: "#0284c7" }}>
-                <Clock size={32} />
-              </div>
-              <h3 style={{ fontSize: 20, color: "#0f172a" }}>Your payment reference has been submitted for verification.</h3>
-              <div style={{ margin: "16px 0", padding: 16, background: "white", borderRadius: 10, border: "1px solid #cbd5e1", display: "inline-block" }}>
-                <small style={{ color: "#64748b", fontWeight: 700 }}>VERIFICATION ID</small>
-                <div style={{ fontSize: 26, fontWeight: 900, color: "#1766ef", letterSpacing: "0.05em" }}>{submittedId}</div>
-              </div>
-              <p style={{ color: "#475569", fontSize: 13, maxWidth: 420, margin: "0 auto 18px" }}>
-                Save this ID to check your contribution status later. Your certificate will become available only after successful payment verification by our team.
-              </p>
-              <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
-                <button
-                  type="button"
-                  onClick={() => copy(submittedId, "Verification ID")}
-                  style={{ background: "#1766ef", color: "white", padding: "8px 16px", borderRadius: 8, border: 0, fontWeight: 700, fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}
-                >
-                  <Copy size={14} /> Copy Verification ID
-                </button>
-                <button
-                  type="button"
-                  onClick={() => checkStatusById(submittedId)}
-                  style={{ background: "#f1f5f9", color: "#334155", padding: "8px 16px", borderRadius: 8, border: "1px solid #cbd5e1", fontWeight: 700, fontSize: 12, cursor: "pointer" }}
-                >
-                  Check Status
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* STATE 2: Pending Verification Card */}
-          {statusType === "pending_verification" && statusRecord && (
-            <div className="certificate-placeholder" style={{ padding: 28, background: "#fffbe6", borderRadius: 16, border: "1px solid #ffe58f", textAlign: "left" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
-                <Clock color="#d48806" size={28} />
+        <section style={{ gridColumn: "1 / -1" }}>
+          {method === "bank" && (
+            <article className="support-payment-details" style={{ background: "#f8fafc", padding: 20, borderRadius: 12, border: "1px solid #e2e8f0" }}>
+              <h3 style={{ margin: "0 0 12px", color: "#0f172a" }}>Kotak Mahindra Bank Transfer Details</h3>
+              <dl style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14, margin: 0, fontSize: 13 }}>
                 <div>
-                  <h3 style={{ margin: 0, color: "#873800", fontSize: 18 }}>Payment Under Review</h3>
-                  <small style={{ color: "#d48806", fontWeight: 700 }}>Verification ID: {statusRecord.verificationId}</small>
+                  <dt style={{ color: "#64748b", fontSize: 11 }}>Account holder</dt>
+                  <dd style={{ margin: 0, fontWeight: 700, color: "#0f172a" }}>ALOK SINGH</dd>
                 </div>
-              </div>
-
-              <div style={{ background: "white", padding: 16, borderRadius: 10, border: "1px solid #ffe58f", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, fontSize: 13, margin: "14px 0" }}>
-                <div><span style={{ color: "#8c8c8c" }}>Contributor:</span> <strong style={{ color: "#262626" }}>{statusRecord.maskedName}</strong></div>
-                <div><span style={{ color: "#8c8c8c" }}>Amount:</span> <strong style={{ color: "#262626" }}>{money(statusRecord.amount)}</strong></div>
-                <div><span style={{ color: "#8c8c8c" }}>Payment Method:</span> <strong style={{ color: "#262626" }}>{statusRecord.paymentMethod}</strong></div>
-                <div><span style={{ color: "#8c8c8c" }}>Submitted Date:</span> <strong style={{ color: "#262626" }}>{new Date(statusRecord.submittedAt).toLocaleDateString("en-IN")}</strong></div>
-              </div>
-
-              <div style={{ background: "#fff1b8", padding: 12, borderRadius: 8, color: "#613b00", fontSize: 13, lineHeight: 1.5 }}>
-                <p style={{ margin: 0 }}>
-                  <strong>Your payment details have been received and are currently being reviewed.</strong>
-                </p>
-                <p style={{ margin: "4px 0 0" }}>
-                  Your Certificate of Appreciation will become available only after successful payment verification.
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* STATE 3: Verified Certificate Display */}
-          {statusType === "verified" && certificate && (
-            <article id="certificate" className="donation-certificate">
-              <div className="certificate-border">
-                <header>
-                  <img src="/vpansak-logo-light.jpeg" alt="VPANSAK logo" />
-                  <div>
-                    <strong>VPANSAK</strong>
-                    <span>SUPPORT FUND</span>
-                  </div>
-                </header>
-
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", margin: "8px 0" }}>
-                  <Sparkles />
-                  <span style={{ background: "#dcfce7", color: "#15803d", border: "1px solid #86efac", padding: "4px 10px", borderRadius: 20, fontSize: 11, fontWeight: 800, display: "inline-flex", alignItems: "center", gap: 4 }}>
-                    <CheckCircle2 size={13} /> VERIFIED CONTRIBUTION
-                  </span>
+                <div>
+                  <dt style={{ color: "#64748b", fontSize: 11 }}>Account number</dt>
+                  <dd style={{ margin: 0, fontWeight: 700, color: "#0f172a" }}>
+                    6057110365{" "}
+                    <button type="button" onClick={() => copy("6057110365", "Account number")} style={{ background: 0, border: 0, color: "#1766ef", cursor: "pointer" }}>
+                      <Copy size={13} />
+                    </button>
+                  </dd>
                 </div>
-
-                <small>CERTIFICATE OF APPRECIATION</small>
-                <h2>Presented with gratitude to</h2>
-                <h1>{certificate.fullName}</h1>
-                <p>{certificate.appreciationMessage}</p>
-
-                <div className="certificate-amount">
-                  <span>CONTRIBUTION RECORDED</span>
-                  <strong>{money(certificate.amount)}</strong>
-                  <small>
-                    Issued on{" "}
-                    {new Date(certificate.verifiedAt).toLocaleDateString("en-IN", {
-                      day: "2-digit",
-                      month: "long",
-                      year: "numeric",
-                    })}
-                  </small>
+                <div>
+                  <dt style={{ color: "#64748b", fontSize: 11 }}>IFSC code</dt>
+                  <dd style={{ margin: 0, fontWeight: 700, color: "#0f172a" }}>
+                    KKBK0005359{" "}
+                    <button type="button" onClick={() => copy("KKBK0005359", "IFSC")} style={{ background: 0, border: 0, color: "#1766ef", cursor: "pointer" }}>
+                      <Copy size={13} />
+                    </button>
+                  </dd>
                 </div>
-
-                <footer>
-                  <div className="founder-sign">
-                    <img
-                      src="/assets/certificate/alok-singh-signature.png?v=2"
-                      alt="Alok Singh Signature"
-                      className="certificate-signature"
-                    />
-                    <b>Alok Singh</b>
-                    <span>Founder &amp; Authorized Signatory</span>
-                  </div>
-                  <div style={{ textAlign: "right", display: "flex", flexDirection: "column", gap: 3 }}>
-                    <b style={{ color: "#1766ef", fontSize: 14 }}>{certificate.certificateNumber}</b>
-                    <div style={{ fontSize: 11, color: "#475569" }}>
-                      Verification ID: <strong>{certificate.verificationId}</strong>
-                    </div>
-                    <div style={{ fontSize: 10, color: "#64748b" }}>
-                      Verified Date: <strong>{new Date(certificate.verifiedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "long", year: "numeric" })}</strong>
-                    </div>
-                  </div>
-                </footer>
-
-                <div className="certificate-status">
-                  <CheckCircle2 /> Payment verified successfully • Certificate Ready
+                <div>
+                  <dt style={{ color: "#64748b", fontSize: 11 }}>Bank UPI ID</dt>
+                  <dd style={{ margin: 0, fontWeight: 700, color: "#0f172a" }}>
+                    8738869635@kotakbank{" "}
+                    <button type="button" onClick={() => copy("8738869635@kotakbank", "UPI ID")} style={{ background: 0, border: 0, color: "#1766ef", cursor: "pointer" }}>
+                      <Copy size={13} />
+                    </button>
+                  </dd>
                 </div>
-              </div>
+              </dl>
             </article>
           )}
 
-          {/* STATE 4: Rejected Status */}
-          {statusType === "rejected" && (
-            <div className="certificate-placeholder" style={{ padding: 28, background: "#fef2f2", borderRadius: 16, border: "1px solid #fecaca", textAlign: "left" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
-                <XCircle color="#dc2626" size={28} />
-                <div>
-                  <h3 style={{ margin: 0, color: "#991b1b", fontSize: 18 }}>Payment Verification Failed</h3>
-                  {statusRecord && <small style={{ color: "#b91c1c", fontWeight: 700 }}>Verification ID: {statusRecord.verificationId}</small>}
-                </div>
+          {method === "upi" && (
+            <article className="support-qr" style={{ display: "flex", alignItems: "center", gap: 20, background: "#f8fafc", padding: 20, borderRadius: 12, border: "1px solid #e2e8f0" }}>
+              <img src="/vpansak-support-qr.jpeg" alt="VPANSAK support UPI QR code" style={{ width: 140, height: 140, objectFit: "contain", borderRadius: 8, border: "1px solid #cbd5e1" }} />
+              <div>
+                <h3 style={{ margin: "0 0 6px", color: "#0f172a" }}>Scan and pay via UPI</h3>
+                <p style={{ margin: "0 0 10px", color: "#475569", fontSize: 13 }}>Scan with any UPI app (GPay, PhonePe, Paytm, BHIM) or copy the UPI ID below.</p>
+                <button
+                  type="button"
+                  onClick={() => copy("alookk@ptyes", "UPI ID")}
+                  style={{ background: "#1766ef", color: "white", padding: "8px 14px", borderRadius: 6, border: 0, fontWeight: 700, fontSize: 12, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6 }}
+                >
+                  <Copy size={14} /> alookk@ptyes
+                </button>
               </div>
+            </article>
+          )}
+        </section>
 
-              <p style={{ color: "#7f1d1d", fontSize: 13, lineHeight: 1.5, margin: "10px 0" }}>
-                Payment verification could not be completed for this contribution reference.
-              </p>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 18, width: "100%", gridColumn: "1 / -1" }}>
+          <div className="donation-form">
+            <small>SUPPORT CONTRIBUTION</small>
+            <h2>{method === "razorpay" ? "Pay securely with Razorpay" : "Submit payment reference"}</h2>
+            <p>
+              {method === "razorpay"
+                ? "Razorpay API payments are verified automatically. Bank/QR payments remain Pending Verification until checked."
+                : "Bank and QR contributions require UTR submission and are reviewed by an authorized admin."}
+            </p>
 
-              {statusRecord?.publicRejectionReason && (
-                <div style={{ background: "white", padding: 12, borderRadius: 8, border: "1px solid #fca5a5", color: "#991b1b", fontSize: 12, margin: "12px 0" }}>
-                  <strong>Reason:</strong> {statusRecord.publicRejectionReason}
-                </div>
+            {error && (
+              <button type="button" className="support-alert" onClick={() => setError("")}>
+                {error}
+              </button>
+            )}
+
+            <form onSubmit={handleCreateContribution}>
+              <label>
+                Full name
+                <input name="name" required maxLength={100} placeholder="e.g. Alok Singh" />
+              </label>
+              <label>
+                Email address
+                <input name="email" type="email" required maxLength={150} placeholder="your.name@example.com" />
+              </label>
+              <label>
+                Mobile number
+                <input name="mobile" type="tel" required maxLength={15} placeholder="e.g. 9876543210" />
+              </label>
+              <label>
+                Contribution amount (₹)
+                <input name="amount" type="number" min="1" max="1000000" step="1" required placeholder="Amount in INR" />
+              </label>
+
+              {method !== "razorpay" && (
+                <label>
+                  Transaction / UTR ID
+                  <input
+                    name="transactionId"
+                    required
+                    maxLength={80}
+                    placeholder="Enter 12-digit UTR or Transaction ID"
+                  />
+                </label>
               )}
 
-              <button
-                type="button"
-                onClick={() => {
-                  setStatusType("idle");
-                  setError("");
-                }}
-                style={{ background: "#dc2626", color: "white", padding: "8px 16px", borderRadius: 8, border: 0, fontWeight: 700, fontSize: 12, cursor: "pointer", marginTop: 8 }}
-              >
-                Resubmit Payment Details
+              <button disabled={busy}>
+                {busy ? (busyText || "Processing…") : method === "razorpay" ? "Pay securely" : "Submit for verification"}
+                <Award />
               </button>
+            </form>
+
+            <div className="donation-safety">
+              <ShieldCheck />
+              <p>
+                <strong>Payment safety</strong>
+                <br />
+                Never share OTP, UPI PIN, card PIN or banking password. Contributions are not currently advertised as eligible for 80G tax deduction.
+              </p>
             </div>
-          )}
+          </div>
+
+          {/* Right Side: Status Checking & Protection Area */}
+          <div className="certificate-area">
+            <div className="certificate-toolbar">
+              <form onSubmit={handleSearchSubmit}>
+                <Search />
+                <input
+                  value={lookup}
+                  onChange={(e) => setLookup(e.target.value.toUpperCase())}
+                  placeholder="Enter Verification ID (VPC692515)"
+                  maxLength={9}
+                />
+                <button disabled={busy}>{busy ? "Checking…" : "Check Status"}</button>
+              </form>
+
+              {canShowCertificate && (
+                <button type="button" onClick={() => window.print()}>
+                  <Printer /> Print / Save PDF
+                </button>
+              )}
+            </div>
+
+            {/* STATE 0: Cancelled Payment State */}
+            {statusType === "cancelled" && (
+              <div className="certificate-placeholder" style={{ padding: 28, background: "#fef2f2", borderRadius: 16, border: "1px solid #fecaca", textAlign: "center" }}>
+                <XCircle size={32} color="#dc2626" style={{ margin: "0 auto 10px" }} />
+                <h3 style={{ color: "#991b1b" }}>Payment Cancelled</h3>
+                <p style={{ color: "#7f1d1d", fontSize: 13, maxWidth: 420, margin: "0 auto" }}>
+                  The payment process was cancelled before completion. No verified contribution record or certificate was generated.
+                </p>
+              </div>
+            )}
+
+            {/* STATE 1: Submitted Acknowledgement for Manual Payments */}
+            {statusType === "submitted_ack" && (
+              <div className="certificate-placeholder" style={{ textAlign: "center", padding: 30, background: "#f8fafc", borderRadius: 16, border: "1px solid #e2e8f0" }}>
+                <div style={{ width: 56, height: 56, margin: "0 auto 12px", borderRadius: "50%", background: "#e0f2fe", display: "grid", placeItems: "center", color: "#0284c7" }}>
+                  <Clock size={32} />
+                </div>
+                <h3 style={{ fontSize: 20, color: "#0f172a" }}>Your payment reference has been submitted for verification.</h3>
+                <div style={{ margin: "16px 0", padding: 16, background: "white", borderRadius: 10, border: "1px solid #cbd5e1", display: "inline-block" }}>
+                  <small style={{ color: "#64748b", fontWeight: 700 }}>VERIFICATION ID</small>
+                  <div style={{ fontSize: 26, fontWeight: 900, color: "#1766ef", letterSpacing: "0.05em" }}>{submittedId}</div>
+                </div>
+                <p style={{ color: "#475569", fontSize: 13, maxWidth: 420, margin: "0 auto 18px" }}>
+                  Save this ID to check your contribution status later. Your certificate will become available only after successful payment verification by our team.
+                </p>
+                <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
+                  <button
+                    type="button"
+                    onClick={() => copy(submittedId, "Verification ID")}
+                    style={{ background: "#1766ef", color: "white", padding: "8px 16px", borderRadius: 8, border: 0, fontWeight: 700, fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}
+                  >
+                    <Copy size={14} /> Copy Verification ID
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => checkStatusById(submittedId)}
+                    style={{ background: "#f1f5f9", color: "#334155", padding: "8px 16px", borderRadius: 8, border: "1px solid #cbd5e1", fontWeight: 700, fontSize: 12, cursor: "pointer" }}
+                  >
+                    Check Status
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* STATE 2: Pending Verification Card */}
+            {statusType === "pending_verification" && statusRecord && (
+              <div className="certificate-placeholder" style={{ padding: 28, background: "#fffbe6", borderRadius: 16, border: "1px solid #ffe58f", textAlign: "left" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+                  <Clock color="#d48806" size={28} />
+                  <div>
+                    <h3 style={{ margin: 0, color: "#873800", fontSize: 18 }}>Payment Under Review</h3>
+                    <small style={{ color: "#d48806", fontWeight: 700 }}>Verification ID: {statusRecord.verificationId}</small>
+                  </div>
+                </div>
+
+                <div style={{ background: "white", padding: 16, borderRadius: 10, border: "1px solid #ffe58f", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, fontSize: 13, margin: "14px 0" }}>
+                  <div><span style={{ color: "#8c8c8c" }}>Contributor:</span> <strong style={{ color: "#262626" }}>{statusRecord.maskedName}</strong></div>
+                  <div><span style={{ color: "#8c8c8c" }}>Amount:</span> <strong style={{ color: "#262626" }}>{money(statusRecord.amount)}</strong></div>
+                  <div><span style={{ color: "#8c8c8c" }}>Payment Method:</span> <strong style={{ color: "#262626" }}>{statusRecord.paymentMethod}</strong></div>
+                  <div><span style={{ color: "#8c8c8c" }}>Submitted Date:</span> <strong style={{ color: "#262626" }}>{new Date(statusRecord.submittedAt).toLocaleDateString("en-IN")}</strong></div>
+                </div>
+
+                <div style={{ background: "#fff1b8", padding: 12, borderRadius: 8, color: "#613b00", fontSize: 13, lineHeight: 1.5 }}>
+                  <p style={{ margin: 0 }}>
+                    <strong>Your payment details have been received and are currently being reviewed.</strong>
+                  </p>
+                  <p style={{ margin: "4px 0 0" }}>
+                    Your Certificate of Appreciation will become available only after successful payment verification.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* STATE 3: Verified Certificate Display - STRICT CAN SHOW CERTIFICATE ONLY */}
+            {canShowCertificate && certificate && (
+              <article id="certificate" className="donation-certificate">
+                <div className="certificate-border">
+                  <header>
+                    <img src="/vpansak-logo-light.jpeg" alt="VPANSAK logo" />
+                    <div>
+                      <strong>VPANSAK</strong>
+                      <span>SUPPORT FUND</span>
+                    </div>
+                  </header>
+
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", margin: "8px 0" }}>
+                    <Sparkles />
+                    <span style={{ background: "#dcfce7", color: "#15803d", border: "1px solid #86efac", padding: "4px 10px", borderRadius: 20, fontSize: 11, fontWeight: 800, display: "inline-flex", alignItems: "center", gap: 4 }}>
+                      <CheckCircle2 size={13} /> VERIFIED CONTRIBUTION
+                    </span>
+                  </div>
+
+                  <small>CERTIFICATE OF APPRECIATION</small>
+                  <h2>Presented with gratitude to</h2>
+                  <h1>{certificate.fullName}</h1>
+                  <p>{certificate.appreciationMessage}</p>
+
+                  <div className="certificate-amount">
+                    <span>CONTRIBUTION RECORDED</span>
+                    <strong>{money(certificate.amount)}</strong>
+                    <small>
+                      Issued on{" "}
+                      {new Date(certificate.verifiedAt).toLocaleDateString("en-IN", {
+                        day: "2-digit",
+                        month: "long",
+                        year: "numeric",
+                      })}
+                    </small>
+                  </div>
+
+                  <div className="certificate-footer">
+                    <div className="signatory-section">
+                      <img
+                        src="/assets/certificate/alok-singh-signature.png?v=4"
+                        alt="Alok Singh signature"
+                        className="certificate-signature"
+                      />
+                      <div className="signature-line" />
+                      <strong>Alok Singh</strong>
+                      <span>Founder &amp; Authorized Signatory</span>
+                    </div>
+
+                    <div className="certificate-identifiers" style={{ textAlign: "right", display: "flex", flexDirection: "column", gap: 3 }}>
+                      <strong style={{ color: "#1766ef", fontSize: 14 }}>{certificate.certificateNumber}</strong>
+                      <span style={{ fontSize: 11, color: "#475569" }}>
+                        Verification ID: <strong>{certificate.verificationId}</strong>
+                      </span>
+                      <span style={{ fontSize: 10, color: "#64748b" }}>
+                        Verified Date: <strong>{new Date(certificate.verifiedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "long", year: "numeric" })}</strong>
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="certificate-status">
+                    <CheckCircle2 /> Payment verified successfully • Certificate Ready
+                  </div>
+                </div>
+              </article>
+            )}
+
+            {/* STATE 4: Rejected Status */}
+            {statusType === "rejected" && (
+              <div className="certificate-placeholder" style={{ padding: 28, background: "#fef2f2", borderRadius: 16, border: "1px solid #fecaca", textAlign: "left" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+                  <XCircle color="#dc2626" size={28} />
+                  <div>
+                    <h3 style={{ margin: 0, color: "#991b1b", fontSize: 18 }}>Payment Verification Failed</h3>
+                    {statusRecord && <small style={{ color: "#b91c1c", fontWeight: 700 }}>Verification ID: {statusRecord.verificationId}</small>}
+                  </div>
+                </div>
+
+                <p style={{ color: "#7f1d1d", fontSize: 13, lineHeight: 1.5, margin: "10px 0" }}>
+                  Payment verification could not be completed for this contribution reference.
+                </p>
+
+                {statusRecord?.publicRejectionReason && (
+                  <div style={{ background: "white", padding: 12, borderRadius: 8, border: "1px solid #fca5a5", color: "#991b1b", fontSize: 12, margin: "12px 0" }}>
+                    <strong>Reason:</strong> {statusRecord.publicRejectionReason}
+                  </div>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setStatusType("idle");
+                    setError("");
+                  }}
+                  style={{ background: "#dc2626", color: "white", padding: "8px 16px", borderRadius: 8, border: 0, fontWeight: 700, fontSize: 12, cursor: "pointer", marginTop: 8 }}
+                >
+                  Resubmit Payment Details
+                </button>
+              </div>
+            )}
 
           {/* STATE 5: Refunded / Failed */}
           {statusType === "refunded" && (
@@ -682,7 +775,8 @@ function FoundationContent() {
             </div>
           )}
         </div>
-      </section>
+      </div>
+    </section>
 
       <section className="foundation-values">
         <article>
