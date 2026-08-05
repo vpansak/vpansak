@@ -76,7 +76,7 @@ export async function POST(request: Request) {
           paymentStatus: "verified",
           founderName: "Alok Singh",
           founderDesignation: "Founder & Authorized Signatory",
-          signatureUrl: "/assets/certificate/alok-singh-signature.png",
+          signatureUrl: "/assets/certificate/alok-singh-signature.png?v=2",
         },
       });
     }

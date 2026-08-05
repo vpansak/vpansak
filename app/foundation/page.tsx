@@ -591,14 +591,22 @@ function FoundationContent() {
 
                 <footer>
                   <div className="founder-sign">
-                    <img src="/assets/certificate/alok-singh-signature.png" alt="Alok Singh signature" />
+                    <img
+                      src="/assets/certificate/alok-singh-signature.png?v=2"
+                      alt="Alok Singh Signature"
+                      className="certificate-signature"
+                    />
                     <b>Alok Singh</b>
                     <span>Founder &amp; Authorized Signatory</span>
                   </div>
-                  <div style={{ textAlign: "right" }}>
+                  <div style={{ textAlign: "right", display: "flex", flexDirection: "column", gap: 3 }}>
                     <b style={{ color: "#1766ef", fontSize: 14 }}>{certificate.certificateNumber}</b>
-                    <div style={{ fontSize: 11, color: "#64748b", marginTop: 2 }}>Verification ID: <strong>{certificate.verificationId}</strong></div>
-                    <span style={{ fontSize: 10, color: "#94a3b8" }}>Permanent Verifiable Certificate ID</span>
+                    <div style={{ fontSize: 11, color: "#475569" }}>
+                      Verification ID: <strong>{certificate.verificationId}</strong>
+                    </div>
+                    <div style={{ fontSize: 10, color: "#64748b" }}>
+                      Verified Date: <strong>{new Date(certificate.verifiedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "long", year: "numeric" })}</strong>
+                    </div>
                   </div>
                 </footer>
 
