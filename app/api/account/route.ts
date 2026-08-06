@@ -1,28 +1,36 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, or } from "drizzle-orm";
 import { getDb } from "../../../db";
 import { addresses, notifications, orders, persistentCartItems, profiles, wishlistItems } from "../../../db/schema";
 import { getAuthUserFromRequest } from "../../lib/auth-session";
 
 async function emailFrom(request: Request) {
   const user = await getAuthUserFromRequest(request);
-  return user?.email || null;
+  return user?.email?.toLowerCase() || null;
 }
 
 export async function GET(request: Request) {
-  const email = await emailFrom(request);
-  if (!email) return Response.json({ error: "Sign in to access your account." }, { status: 401 });
+  const user = await getAuthUserFromRequest(request);
+  if (!user || !user.email) return Response.json({ error: "Sign in to access your account." }, { status: 401 });
+  const email = user.email.toLowerCase();
+  const mobile = user.mobile?.trim() || "";
   try {
     const db = await getDb();
-    const [[profile], addressRows, wishlist, cart, orderRows, notificationRows] = await Promise.all([
-      db.select().from(profiles).where(eq(profiles.email, email)).limit(1),
+    const [profile] = await db.select().from(profiles).where(eq(profiles.email, email)).limit(1);
+    const userMobile = profile?.mobile?.trim() || mobile;
+
+    const [addressRows, wishlist, cart, orderRows, notificationRows] = await Promise.all([
       db.select().from(addresses).where(eq(addresses.ownerEmail, email)).orderBy(desc(addresses.isPrimary)),
       db.select().from(wishlistItems).where(eq(wishlistItems.ownerEmail, email)),
       db.select().from(persistentCartItems).where(eq(persistentCartItems.ownerEmail, email)),
-      db.select().from(orders).where(eq(orders.ownerEmail, email)).orderBy(desc(orders.createdAt)).limit(30),
+      userMobile
+        ? db.select().from(orders).where(or(eq(orders.ownerEmail, email), eq(orders.mobile, userMobile))).orderBy(desc(orders.createdAt)).limit(30)
+        : db.select().from(orders).where(eq(orders.ownerEmail, email)).orderBy(desc(orders.createdAt)).limit(30),
       db.select().from(notifications).where(eq(notifications.ownerEmail, email)).orderBy(desc(notifications.createdAt)).limit(30),
     ]);
+
     return Response.json({ email, profile: profile ?? null, addresses: addressRows, wishlist, cart, orders: orderRows, notifications: notificationRows });
-  } catch {
+  } catch (err) {
+    console.error("Account GET error:", err);
     return Response.json({ error: "Account data is temporarily unavailable." }, { status: 503 });
   }
 }
