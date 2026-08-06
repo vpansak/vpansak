@@ -217,31 +217,69 @@ export default function HomePage() {
     setOrderPlaced(result.order.orderId); setCart({}); setDiscount(0); setCoupon(""); setCheckoutOpen(false);
   };
 
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
+  useEffect(() => {
+    let ticking = false;
+    let lastY = typeof window !== "undefined" ? window.scrollY : 0;
+
+    const handleScroll = () => {
+      if (ticking) return;
+      ticking = true;
+
+      requestAnimationFrame(() => {
+        const currentY = window.scrollY;
+        const difference = currentY - lastY;
+
+        if (currentY <= 15) {
+          setIsCollapsed(false);
+        } else if (difference > 10 && currentY > 60) {
+          setIsCollapsed(true);
+        } else if (difference < -10) {
+          setIsCollapsed(false);
+        }
+
+        lastY = currentY;
+        ticking = false;
+      });
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   const currentHero = heroSlides[hero];
 
   return (
     <main className="vp-store">
       {toast && <div className="vp-toast"><Sparkles /><span>{toast}</span></div>}
 
-      {announcementOpen && <div className="vp-topbar vp-offer-announcement">
-        <span><Gift /> FAST &amp; FREE DELIVERY</span>
-        <p><strong>Free shipping on prepaid &amp; COD orders across India</strong><small>Easy returns • 24/7 customer support</small></p>
-        <div><Link href="/track">Track order</Link><Link href="/support">Help centre</Link><button type="button" onClick={() => setAnnouncementOpen(false)} aria-label="Close announcement"><X /></button></div>
-      </div>}
+      <header className={`vp-header-shell ${isCollapsed ? "is-collapsed" : ""}`} id="top">
+        <div className="mobile-header-collapsible">
+          {announcementOpen && <div className="vp-topbar vp-offer-announcement">
+            <span><Gift /> FAST &amp; FREE DELIVERY</span>
+            <p><strong>Free shipping on prepaid &amp; COD orders across India</strong><small>Easy returns • 24/7 customer support</small></p>
+            <div><Link href="/track">Track order</Link><Link href="/support">Help centre</Link><button type="button" onClick={() => setAnnouncementOpen(false)} aria-label="Close announcement"><X /></button></div>
+          </div>}
 
-      <header className="vp-header" id="top">
-        <Link className="vp-brand" href="/" aria-label="VPANSAK Shopping home"><img src="/vpansak-logo.png" alt="VPANSAK" /><span><strong>VPANSAK</strong><small>SHOPPING</small></span></Link>
-        <button className="vp-location" type="button" onClick={() => notify("Add your delivery PIN at checkout")}><MapPin /><span><small>Delivering across</small>India</span><ChevronDown /></button>
-        <div className="vp-search-wrap">
-          <form className="vp-search" onSubmit={(event) => { event.preventDefault(); document.getElementById("catalog")?.scrollIntoView({ behavior: "smooth" }); }}><Search /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search for products, brands and categories" aria-label="Search products" /><button>Search</button></form>
-          {suggestions.length > 0 && <div className="vp-suggestions"><small>SEARCH SUGGESTIONS</small>{suggestions.map((product) => <Link key={product.id} href={`/product/${product.id}`}><Search /><span>{product.name}<small>{product.category}</small></span><strong>{money(product.price)}</strong></Link>)}</div>}
+          <div className="vp-brand-row">
+            <Link className="vp-brand" href="/" aria-label="VPANSAK Shopping home"><img src="/vpansak-logo.png" alt="VPANSAK" /><span><strong>VPANSAK</strong><small>SHOPPING</small></span></Link>
+            <button className="vp-location" type="button" onClick={() => notify("Add your delivery PIN at checkout")}><MapPin /><span><small>Delivering across</small>India</span><ChevronDown /></button>
+            <div className="vp-header-actions">
+              <Link href={authUser ? "/account" : "/login"}><UserRound /><span><small>{authUser ? `Hello, ${authUser.fullName || authUser.email.split("@")[0]}` : "Hello, sign in"}</small>My Account</span></Link>
+              <Link href={authUser ? "/account" : "/login"}><Heart /><span><small>{wishlist.length} saved</small>Wishlist</span></Link>
+              <button type="button" onClick={() => setCartOpen(true)}><ShoppingCart /><span><small>{cartCount} items</small>{cartCount ? money(subtotal) : "My Cart"}</span>{cartCount > 0 && <i>{cartCount}</i>}</button>
+            </div>
+            <button className="vp-mobile-menu" type="button" onClick={() => setMenuOpen((open) => !open)} aria-label="Open menu">{menuOpen ? <X /> : <Menu />}</button>
+          </div>
         </div>
-        <div className="vp-header-actions">
-          <Link href={authUser ? "/account" : "/login"}><UserRound /><span><small>{authUser ? `Hello, ${authUser.fullName || authUser.email.split("@")[0]}` : "Hello, sign in"}</small>My Account</span></Link>
-          <Link href={authUser ? "/account" : "/login"}><Heart /><span><small>{wishlist.length} saved</small>Wishlist</span></Link>
-          <button type="button" onClick={() => setCartOpen(true)}><ShoppingCart /><span><small>{cartCount} items</small>{cartCount ? money(subtotal) : "My Cart"}</span>{cartCount > 0 && <i>{cartCount}</i>}</button>
+
+        <div className="mobile-search-sticky">
+          <div className="vp-search-wrap">
+            <form className="vp-search" onSubmit={(event) => { event.preventDefault(); document.getElementById("catalog")?.scrollIntoView({ behavior: "smooth" }); }}><Search /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search for products, brands and categories" aria-label="Search products" /><button>Search</button></form>
+            {suggestions.length > 0 && <div className="vp-suggestions"><small>SEARCH SUGGESTIONS</small>{suggestions.map((product) => <Link key={product.id} href={`/product/${product.id}`}><Search /><span>{product.name}<small>{product.category}</small></span><strong>{money(product.price)}</strong></Link>)}</div>}
+          </div>
         </div>
-        <button className="vp-mobile-menu" type="button" onClick={() => setMenuOpen((open) => !open)} aria-label="Open menu">{menuOpen ? <X /> : <Menu />}</button>
       </header>
 
       <nav className={menuOpen ? "vp-main-nav open" : "vp-main-nav"} aria-label="Main navigation">

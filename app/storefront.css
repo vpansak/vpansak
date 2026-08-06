@@ -41,7 +41,10 @@
 .vp-offer-announcement > div > button { width: 25px; height: 25px; display: grid; place-items: center; border: 0; border-radius: 50%; background: #ffffff12; color: white; }
 .vp-offer-announcement > div > button svg { width: 13px; }
 
-.vp-header { height: 78px; padding: 0 max(24px, calc((100vw - 1480px) / 2)); display: flex; align-items: center; gap: 20px; position: relative; z-index: 40; background: var(--vp-navy); color: white; }
+.vp-header-shell { width: 100%; position: relative; z-index: 40; background: var(--vp-navy); color: white; }
+.mobile-header-collapsible { width: 100%; }
+.vp-brand-row { height: 78px; padding: 0 max(24px, calc((100vw - 1480px) / 2)); display: flex; align-items: center; gap: 20px; position: relative; background: var(--vp-navy); color: white; }
+.mobile-search-sticky { position: absolute; left: 50%; transform: translateX(-50%); bottom: 16px; width: min(700px, 46vw); z-index: 50; }
 .vp-brand { display: flex; align-items: center; gap: 10px; flex: 0 0 auto; }
 .vp-brand img { width: 48px; height: 48px; border-radius: 10px; object-fit: contain; background: transparent; box-shadow: 0 0 0 1px rgba(255,255,255,.16); }
 .vp-brand > span { display: flex; flex-direction: column; line-height: 1; }
@@ -52,7 +55,7 @@
 .vp-location > svg:last-child { width: 12px; color: #8196b2; }
 .vp-location span { display: flex; flex-direction: column; font-size: 10px; font-weight: 800; }
 .vp-location small { color: #7f93ad; font-size: 8px; font-weight: 500; }
-.vp-search-wrap { max-width: 700px; flex: 1; position: relative; }
+.vp-search-wrap { width: 100%; max-width: 700px; position: relative; }
 .vp-search { height: 46px; display: flex; align-items: center; border-radius: 8px; overflow: hidden; background: white; color: #778599; box-shadow: 0 0 0 3px #ffffff0b; }
 .vp-search > svg { width: 19px; margin-left: 14px; }
 .vp-search input { min-width: 0; height: 100%; flex: 1; padding: 0 12px; border: 0; outline: 0; color: #182437; font-size: 12px; }
@@ -373,7 +376,30 @@
   .vp-topbar { height: 27px; padding: 0 10px; font-size: 7px; }
   .vp-topbar > div { gap: 10px; }
   .vp-topbar > div a:first-child { display: none; }
-  .vp-header { min-height: 112px; height: auto; padding: 9px 10px 10px; flex-wrap: wrap; gap: 8px; }
+  .vp-header-shell {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    width: 100%;
+    background: var(--vp-navy);
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+  .mobile-header-collapsible {
+    width: 100%;
+    transform: translateY(0);
+    opacity: 1;
+    max-height: 180px;
+    overflow: hidden;
+    will-change: transform, opacity, max-height;
+    transition: transform 220ms ease, opacity 180ms ease, max-height 220ms ease;
+  }
+  .vp-header-shell.is-collapsed .mobile-header-collapsible {
+    transform: translateY(-100%);
+    opacity: 0;
+    max-height: 0px;
+    pointer-events: none;
+  }
+  .vp-brand-row { height: 52px; padding: 8px 10px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
   .vp-brand img { width: 38px; height: 38px; border-radius: 7px; }
   .vp-brand strong { font-size: 15px; }
   .vp-brand small { font-size: 5px; }
@@ -385,7 +411,23 @@
   .vp-header-actions i { left: 20px; top: -2px; }
   .vp-mobile-menu { width: 35px; height: 35px; display: grid; place-items: center; border: 0; border-radius: 7px; background: #ffffff10; color: white; }
   .vp-mobile-menu svg { width: 20px; }
-  .vp-search-wrap { min-width: 100%; order: 5; }
+  .mobile-search-sticky {
+    position: relative;
+    left: auto;
+    bottom: auto;
+    transform: none;
+    width: 100%;
+    max-width: 100%;
+    padding: 6px 10px 9px;
+    background: var(--vp-navy);
+    z-index: 1001;
+    transition: padding 200ms ease, box-shadow 200ms ease;
+  }
+  .vp-header-shell.is-collapsed .mobile-search-sticky {
+    padding: 6px 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
   .vp-search { height: 42px; }
   .vp-search input { font-size: 10px; }
   .vp-search button { padding: 0 13px; font-size: 9px; }
