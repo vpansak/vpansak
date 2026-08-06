@@ -171,6 +171,11 @@ export default function HomePage() {
     return [...rows].sort((a, b) => sort === "price-low" ? a.price - b.price : sort === "price-high" ? b.price - a.price : sort === "rating" ? b.rating - a.rating : b.reviewCount - a.reviewCount);
   }, [category, search, sort]);
 
+  const isInfoQuery = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return ["info", "about", "vpansak", "founder", "seller", "refund", "return", "support", "contact", "company", "policy"].some((kw) => q.includes(kw));
+  }, [search]);
+
   const suggestions = useMemo(() => search.trim().length > 1 ? catalogProducts.filter((product) => `${product.name} ${product.category}`.toLowerCase().includes(search.toLowerCase())).slice(0, 5) : [], [search]);
   const cartItems = catalogProducts.filter((product) => cart[product.id]);
   const cartCount = Object.values(cart).reduce((sum, quantity) => sum + quantity, 0);
@@ -277,7 +282,7 @@ export default function HomePage() {
         <div className="mobile-search-sticky">
           <div className="vp-search-wrap">
             <form className="vp-search" onSubmit={(event) => { event.preventDefault(); document.getElementById("catalog")?.scrollIntoView({ behavior: "smooth" }); }}><Search /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search for products, brands and categories" aria-label="Search products" /><button>Search</button></form>
-            {suggestions.length > 0 && <div className="vp-suggestions"><small>SEARCH SUGGESTIONS</small>{suggestions.map((product) => <Link key={product.id} href={`/product/${product.id}`}><Search /><span>{product.name}<small>{product.category}</small></span><strong>{money(product.price)}</strong></Link>)}</div>}
+            {(suggestions.length > 0 || isInfoQuery) && <div className="vp-suggestions"><small>SEARCH SUGGESTIONS</small>{isInfoQuery && <Link href="/info" style={{ background: "#edf4ff", borderLeft: "3px solid #1766ef" }}><Search /><span>About VPANSAK Shopping<small>Company Info, Founders, Refunds, Sellers &amp; Policies</small></span><strong>View Info</strong></Link>}{suggestions.map((product) => <Link key={product.id} href={`/product/${product.id}`}><Search /><span>{product.name}<small>{product.category}</small></span><strong>{money(product.price)}</strong></Link>)}</div>}
           </div>
         </div>
       </header>
