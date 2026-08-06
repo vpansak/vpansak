@@ -467,6 +467,8 @@
   .vp-bottom-nav a, .vp-bottom-nav button { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; border: 0; background: transparent; color: #758296; font-size: 7px; }
   .vp-bottom-nav svg { width: 19px; }
   .vp-bottom-nav a:first-child { color: var(--vp-blue); }
+  .vp-bottom-nav .vp-donate-item { color: #dc2626 !important; font-weight: 800; }
+  .vp-bottom-nav .vp-donate-item svg { color: #dc2626 !important; }
   .vp-bottom-nav i { min-width: 16px; height: 16px; position: absolute; top: 0; right: 22%; display: grid; place-items: center; border-radius: 20px; background: var(--vp-orange); color: #172337; font-size: 6px; font-style: normal; font-weight: 900; }
   .vp-cart-benefit { margin: 10px 12px 0; }
   .vp-cart-items { padding: 8px 12px; }
