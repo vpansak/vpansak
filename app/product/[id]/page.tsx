@@ -325,7 +325,7 @@ export default function ProductPage() {
             <div className="offer-item">
               <BadgeCheck className="offer-icon" size={16} />
               <div className="offer-text">
-                Welcome offer: Use <strong className="coupon-code">VPANSAK10</strong> for 10% instant discount
+                Special discounts &amp; promo codes applicable at checkout
               </div>
             </div>
             <div className="offer-item">
