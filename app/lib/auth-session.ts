@@ -39,10 +39,10 @@ export function decodeSession(token: string | null | undefined): AuthSessionData
     const parsed = JSON.parse(raw);
     if (parsed && typeof parsed.email === "string") {
       const email = parsed.email.toLowerCase().trim();
-      const isAdmin = email === ADMIN_EMAIL || parsed.role === "admin" || parsed.role === "superadmin";
+      const isAdmin = parsed.role === "admin" || parsed.role === "superadmin";
       return {
         email,
-        fullName: parsed.fullName || (isAdmin ? "Super Admin" : email.split("@")[0]),
+        fullName: parsed.fullName || (isAdmin ? "Admin User" : email.split("@")[0]),
         role: isAdmin ? "admin" : parsed.role || "customer",
         mobile: parsed.mobile || "",
         profileImage: parsed.profileImage || "",
@@ -59,9 +59,9 @@ export function decodeSession(token: string | null | undefined): AuthSessionData
 export function isAdminUser(session: AuthSessionData | null | string): boolean {
   if (!session) return false;
   if (typeof session === "string") {
-    return session.toLowerCase().trim() === ADMIN_EMAIL;
+    return false;
   }
-  return session.email.toLowerCase().trim() === ADMIN_EMAIL || session.role === "admin" || session.role === "superadmin";
+  return session.role === "admin" || session.role === "superadmin";
 }
 
 export async function getAuthUserFromRequest(request: Request): Promise<AuthSessionData | null> {

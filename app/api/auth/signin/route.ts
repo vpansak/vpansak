@@ -1,9 +1,7 @@
 import { eq } from "drizzle-orm";
 import { getDb } from "../../../../db";
 import { users } from "../../../../db/schema";
-import { hashPassword, setSessionCookieHeaders, verifyPassword } from "../../../lib/auth-session";
-
-const ADMIN_EMAIL = "aloksingh84959@gmail.com";
+import { setSessionCookieHeaders, verifyPassword } from "../../../lib/auth-session";
 
 export async function POST(request: Request) {
   try {
@@ -16,58 +14,6 @@ export async function POST(request: Request) {
     }
 
     const db = await getDb();
-
-    // Special handler for Super Admin: aloksingh84959@gmail.com with password 1207
-    if (email === ADMIN_EMAIL && (password === "1207" || password === "1207#")) {
-      const [existingAdmin] = await db.select().from(users).where(eq(users.email, ADMIN_EMAIL)).limit(1);
-      const passHash = hashPassword("1207");
-      const now = new Date().toISOString();
-
-      if (!existingAdmin) {
-        await db.insert(users).values({
-          email: ADMIN_EMAIL,
-          passwordHash: passHash,
-          fullName: "Super Admin",
-          mobile: "9999999999",
-          role: "admin",
-          emailVerified: true,
-          authProvider: "email",
-          lastLoginAt: now,
-        }).onConflictDoNothing();
-      } else {
-        await db.update(users).set({
-          role: "admin",
-          passwordHash: passHash,
-          emailVerified: true,
-          lastLoginAt: now,
-        }).where(eq(users.email, ADMIN_EMAIL));
-      }
-
-      const sessionData = {
-        email: ADMIN_EMAIL,
-        fullName: "Super Admin",
-        role: "admin",
-        emailVerified: true,
-        authProvider: "email",
-      };
-
-      const responseHeaders = new Headers();
-      setSessionCookieHeaders(responseHeaders, sessionData);
-
-      return new Response(
-        JSON.stringify({
-          ok: true,
-          user: sessionData,
-          redirect: "/admin/manage",
-        }),
-        {
-          status: 200,
-          headers: responseHeaders,
-        }
-      );
-    }
-
-    // Regular User Signin
     const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
 
     if (!user) {
@@ -94,11 +40,10 @@ export async function POST(request: Request) {
     const now = new Date().toISOString();
     await db.update(users).set({ lastLoginAt: now }).where(eq(users.email, email));
 
-    const isAdmin = user.email.toLowerCase() === ADMIN_EMAIL || user.role === "admin" || user.role === "superadmin";
     const sessionData = {
       email: user.email,
       fullName: user.fullName || user.email.split("@")[0],
-      role: isAdmin ? "admin" : user.role || "customer",
+      role: user.role || "customer",
       mobile: user.mobile || "",
       profileImage: user.profileImage || "",
       emailVerified: true,
@@ -112,7 +57,7 @@ export async function POST(request: Request) {
       JSON.stringify({
         ok: true,
         user: sessionData,
-        redirect: isAdmin ? "/admin/manage" : "/account",
+        redirect: "/account",
       }),
       {
         status: 200,
