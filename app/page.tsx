@@ -180,9 +180,24 @@ export default function HomePage() {
   const budget = catalogProducts.filter((product) => product.price < 1000).slice(0, 6);
 
   const notify = (message: string) => { setToast(message); window.setTimeout(() => setToast(""), 2200); };
-  const addToCart = (id: string) => { setCart((current) => ({ ...current, [id]: (current[id] || 0) + 1 })); notify("Added to your cart"); };
+  const addToCart = (id: string) => {
+    if (!authUser) {
+      window.location.href = `/login?return_to=${encodeURIComponent("/")}`;
+      return;
+    }
+    setCart((current) => ({ ...current, [id]: (current[id] || 0) + 1 }));
+    notify("Added to your cart");
+  };
   const changeQuantity = (id: string, change: number) => setCart((current) => { const next = (current[id] || 0) + change; const updated = { ...current }; if (next <= 0) delete updated[id]; else updated[id] = next; return updated; });
-  const toggleWishlist = (id: string) => { const exists = wishlist.includes(id); setWishlist((current) => exists ? current.filter((item) => item !== id) : [...current, id]); notify(exists ? "Removed from wishlist" : "Saved to wishlist"); };
+  const toggleWishlist = (id: string) => {
+    if (!authUser) {
+      window.location.href = `/login?return_to=${encodeURIComponent("/")}`;
+      return;
+    }
+    const exists = wishlist.includes(id);
+    setWishlist((current) => exists ? current.filter((item) => item !== id) : [...current, id]);
+    notify(exists ? "Removed from wishlist" : "Saved to wishlist");
+  };
   const chooseCategory = (value: string) => { setCategory(value); setSearch(""); setMenuOpen(false); document.getElementById("catalog")?.scrollIntoView({ behavior: "smooth" }); };
 
   const applyCoupon = async () => {

@@ -13,6 +13,20 @@ async function loadRazorpay(){if(window.Razorpay)return true;return new Promise<
 function CheckoutContent(){
  const query=useSearchParams();const product=catalogProducts.find((p)=>p.id===query.get("product"))||catalogProducts[0];const qty=Math.max(1,Math.min(10,Number(query.get("qty"))||1));const subtotal=product.price*qty;
  const [coupon,setCoupon]=useState("");const [discount,setDiscount]=useState(0);const [message,setMessage]=useState("");const [busy,setBusy]=useState(false);const [orderId,setOrderId]=useState("");const [method,setMethod]=useState("Razorpay");const total=Math.max(0,subtotal-discount);const items=[{productId:product.id,quantity:qty}];
+ useState(() => {
+   if (typeof window !== "undefined") {
+     fetch("/api/auth/me")
+       .then((res) => res.json())
+       .then((data) => {
+         if (!data || !data.user) {
+           window.location.href = `/login?return_to=${encodeURIComponent(window.location.pathname + window.location.search)}`;
+         }
+       })
+       .catch(() => {
+         window.location.href = `/login?return_to=${encodeURIComponent(window.location.pathname + window.location.search)}`;
+       });
+   }
+ });
  const applyCoupon=async()=>{const res=await fetch(`/api/coupons?code=${encodeURIComponent(coupon)}&total=${subtotal}`);const data=await res.json();if(res.ok){setDiscount(data.coupon?.discount||0);setMessage("Coupon applied successfully")}else{setDiscount(0);setMessage(data.error||"Coupon is not valid")}};
  const createCod=async(details:Record<string,unknown>)=>{const res=await fetch("/api/orders",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({...details,paymentMethod:"Cash on Delivery",total,items:[{productId:product.id,productName:product.name,price:product.price,quantity:qty}]})});const data=await res.json();if(!res.ok)throw new Error(data.error||"Could not place order");setOrderId(data.order.orderId)};
  const createOnline=async(details:Record<string,unknown>)=>{if(!(await loadRazorpay()))throw new Error("Razorpay checkout load nahi hua. Internet check karein.");const create=await fetch("/api/payments/create",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({items,couponCode:coupon})});const setup=await create.json();if(!create.ok)throw new Error(setup.error||"Payment start nahi hua");await new Promise<void>((resolve,reject)=>{const checkout=new window.Razorpay!({key:setup.keyId,amount:setup.order.amount,currency:"INR",name:"VPANSAK",description:`Order payment • ${product.name}`,image:"/vpansak-logo-light.jpeg",order_id:setup.order.id,prefill:{name:details.customerName,contact:details.mobile},theme:{color:"#1766ef"},modal:{ondismiss:()=>reject(new Error("Payment cancel kar diya gaya."))},handler:async(response:Record<string,string>)=>{const verify=await fetch("/api/payments/verify",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({...details,...response,vpOrderId:setup.vpOrderId,items,couponCode:coupon})});const result=await verify.json();if(!verify.ok){reject(new Error(result.error||"Payment verification failed"));return}setOrderId(result.order.orderId);resolve()}});checkout.on("payment.failed",(response)=>reject(new Error(response.error?.description||"Payment failed")));checkout.open()})};

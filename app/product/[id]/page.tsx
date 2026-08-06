@@ -91,7 +91,22 @@ export default function ProductPage() {
     touchStartX.current = null;
   };
 
+  const [authUser, setAuthUser] = useState<unknown | null>(null);
+
+  useEffect(() => {
+    fetch("/api/auth/me")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && data.user) setAuthUser(data.user);
+      })
+      .catch(() => {});
+  }, []);
+
   const add = async () => {
+    if (!authUser) {
+      window.location.href = `/login?return_to=${encodeURIComponent(window.location.pathname)}`;
+      return;
+    }
     try {
       const response = await fetch("/api/account", {
         method: "POST",
@@ -99,7 +114,6 @@ export default function ProductPage() {
         body: JSON.stringify({ action: "cart", productId: product.id, quantity: qty }),
       });
       if (response.ok) notice("Saved to your account cart");
-      else if (response.status === 401) notice("Sign in to save this cart across devices");
       else notice("Cart could not be saved");
     } catch {
       notice("Cart could not be saved");
@@ -107,6 +121,10 @@ export default function ProductPage() {
   };
 
   const toggleWish = async () => {
+    if (!authUser) {
+      window.location.href = `/login?return_to=${encodeURIComponent(window.location.pathname)}`;
+      return;
+    }
     setWish(!wish);
     try {
       const response = await fetch("/api/account", {
@@ -114,8 +132,7 @@ export default function ProductPage() {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ action: "wishlist", productId: product.id }),
       });
-      if (response.status === 401) notice("Sign in to sync your wishlist");
-      else notice(wish ? "Removed from wishlist" : "Saved to wishlist");
+      notice(wish ? "Removed from wishlist" : "Saved to wishlist");
     } catch {
       notice("Wishlist updated on this page");
     }
@@ -385,6 +402,10 @@ export default function ProductPage() {
             <button
               className="buy-detail"
               onClick={() => {
+                if (!authUser) {
+                  window.location.href = `/login?return_to=${encodeURIComponent(`/checkout?product=${product.id}&qty=${qty}`)}`;
+                  return;
+                }
                 window.location.href = `/checkout?product=${product.id}&qty=${qty}`;
               }}
             >
