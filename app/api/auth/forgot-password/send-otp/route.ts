@@ -25,6 +25,8 @@ async function sendEmailJsOtp(toEmail: string, userName: string, otpCode: string
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "Origin": "https://vpansak.vercel.app",
+        "User-Agent": "Mozilla/5.0 (VPANSAK Backend Email Service)",
       },
       body: JSON.stringify({
         service_id: serviceId,
@@ -33,6 +35,9 @@ async function sendEmailJsOtp(toEmail: string, userName: string, otpCode: string
         accessToken: privateKey,
         template_params: {
           to_email: toEmail,
+          user_email: toEmail,
+          email: toEmail,
+          reply_to: toEmail,
           user_name: userName || "VPANSAK User",
           otp_code: otpCode,
           expiry_minutes: "10",
