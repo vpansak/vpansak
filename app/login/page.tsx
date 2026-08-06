@@ -57,7 +57,7 @@ function LoginForm() {
       }
 
       // Safe internal redirect
-      let target = data.redirect || "/account";
+      let target = data.redirect || "/";
       if (returnTo && returnTo.startsWith("/") && !returnTo.startsWith("//")) {
         target = returnTo;
       }

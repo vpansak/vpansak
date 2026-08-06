@@ -57,7 +57,7 @@ export async function POST(request: Request) {
       JSON.stringify({
         ok: true,
         user: sessionData,
-        redirect: "/account",
+        redirect: "/",
       }),
       {
         status: 200,
