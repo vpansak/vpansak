@@ -170,10 +170,10 @@ function SignInContent() {
     setError("");
     setGoogleBusy(true);
 
-    const win = typeof window !== "undefined" ? (window as unknown as Record<string, Record<string, Record<string, (cb?: (n: Record<string, unknown>) => void) => void>>>) : undefined;
+    const win = typeof window !== "undefined" ? (window as any) : undefined;
     if (win?.google?.accounts?.id?.prompt) {
       try {
-        win.google.accounts.id.prompt((notification?: Record<string, unknown>) => {
+        win.google.accounts.id.prompt((notification?: any) => {
           if (notification && (Boolean(notification.isNotDisplayed) || Boolean(notification.isSkippedMoment))) {
             console.log("Google Popup not displayed, falling back to OAuth redirect.");
             redirectToGoogleOAuth();

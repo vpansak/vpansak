@@ -1,6 +1,6 @@
 import { desc, eq } from "drizzle-orm";
 import { getDb } from "../../../db";
-import { coupons, donations, notifications, officers, orders, products, reviews, sellerApplications, ticketReplies, tickets, users } from "../../../db/schema";
+import { contributions, coupons, donations, notifications, officers, orders, products, reviews, sellerApplications, ticketReplies, tickets, users } from "../../../db/schema";
 import { getAuthUserFromRequest, isAdminUser } from "../../lib/auth-session";
 
 const ADMIN = "aloksingh84959@gmail.com";

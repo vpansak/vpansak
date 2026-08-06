@@ -2,8 +2,11 @@
 
 import {
   AlertCircle,
+  ArrowLeft,
   Award,
   Banknote,
+  Building2,
+  Check,
   CheckCircle2,
   Clock,
   Copy,
@@ -349,24 +352,13 @@ function FoundationContent() {
       </section>
 
       <section className="foundation-shell">
-        <div className="support-payment-grid" style={{ gridColumn: "1 / -1", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 8 }}>
+        <div className="support-payment-grid">
           <button
             type="button"
             className={method === "razorpay" ? "active" : ""}
             onClick={() => {
               setMethod("razorpay");
               setError("");
-            }}
-            style={{
-              padding: 16,
-              borderRadius: 10,
-              border: method === "razorpay" ? "2px solid #1766ef" : "1px solid #dce4ee",
-              background: method === "razorpay" ? "#eff5ff" : "white",
-              cursor: "pointer",
-              textAlign: "left",
-              display: "flex",
-              alignItems: "center",
-              gap: 12,
             }}
           >
             <CreditCard color={method === "razorpay" ? "#1766ef" : "#64748b"} size={22} />
@@ -383,17 +375,6 @@ function FoundationContent() {
               setMethod("bank");
               setError("");
             }}
-            style={{
-              padding: 16,
-              borderRadius: 10,
-              border: method === "bank" ? "2px solid #1766ef" : "1px solid #dce4ee",
-              background: method === "bank" ? "#eff5ff" : "white",
-              cursor: "pointer",
-              textAlign: "left",
-              display: "flex",
-              alignItems: "center",
-              gap: 12,
-            }}
           >
             <Building2 color={method === "bank" ? "#1766ef" : "#64748b"} size={22} />
             <div>
@@ -409,17 +390,6 @@ function FoundationContent() {
               setMethod("upi");
               setError("");
             }}
-            style={{
-              padding: 16,
-              borderRadius: 10,
-              border: method === "upi" ? "2px solid #1766ef" : "1px solid #dce4ee",
-              background: method === "upi" ? "#eff5ff" : "white",
-              cursor: "pointer",
-              textAlign: "left",
-              display: "flex",
-              alignItems: "center",
-              gap: 12,
-            }}
           >
             <QrCode color={method === "upi" ? "#1766ef" : "#64748b"} size={22} />
             <div>
@@ -431,9 +401,9 @@ function FoundationContent() {
 
         <section style={{ gridColumn: "1 / -1" }}>
           {method === "bank" && (
-            <article className="support-payment-details" style={{ background: "#f8fafc", padding: 20, borderRadius: 12, border: "1px solid #e2e8f0" }}>
+            <article className="support-payment-details">
               <h3 style={{ margin: "0 0 12px", color: "#0f172a" }}>Kotak Mahindra Bank Transfer Details</h3>
-              <dl style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14, margin: 0, fontSize: 13 }}>
+              <dl className="support-payment-dl">
                 <div>
                   <dt style={{ color: "#64748b", fontSize: 11 }}>Account holder</dt>
                   <dd style={{ margin: 0, fontWeight: 700, color: "#0f172a" }}>ALOK SINGH</dd>
@@ -470,7 +440,7 @@ function FoundationContent() {
           )}
 
           {method === "upi" && (
-            <article className="support-qr" style={{ display: "flex", alignItems: "center", gap: 20, background: "#f8fafc", padding: 20, borderRadius: 12, border: "1px solid #e2e8f0" }}>
+            <article className="support-qr-box">
               <img src="/vpansak-support-qr.jpeg" alt="VPANSAK support UPI QR code" style={{ width: 140, height: 140, objectFit: "contain", borderRadius: 8, border: "1px solid #cbd5e1" }} />
               <div>
                 <h3 style={{ margin: "0 0 6px", color: "#0f172a" }}>Scan and pay via UPI</h3>
@@ -487,7 +457,7 @@ function FoundationContent() {
           )}
         </section>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 18, width: "100%", gridColumn: "1 / -1" }}>
+        <div className="support-contribution-grid">
           <div className="donation-form">
             <small>SUPPORT CONTRIBUTION</small>
             <h2>{method === "razorpay" ? "Pay securely with Razorpay" : "Submit payment reference"}</h2>
