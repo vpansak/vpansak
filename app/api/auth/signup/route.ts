@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 import { getDb } from "../../../../db";
 import { profiles, users } from "../../../../db/schema";
 import { hashPassword, hashSecurityAnswer, SECURITY_QUESTIONS, validatePasswordStrength } from "../../../lib/auth-session";
+import { saveUserToSupabase } from "../../../lib/supabase";
 
 export async function POST(request: Request) {
   try {
@@ -87,6 +88,20 @@ export async function POST(request: Request) {
       securityAnswerHash,
       createdAt: now,
       updatedAt: now,
+    });
+
+    await saveUserToSupabase({
+      email,
+      password_hash: passwordHash,
+      full_name: fullName,
+      mobile,
+      role: "customer",
+      auth_provider: "email",
+      email_verified: 1,
+      account_status: "active",
+      security_question_id: securityQuestionId,
+      security_answer_hash: securityAnswerHash,
+      created_at: now,
     });
 
     await db.insert(profiles).values({

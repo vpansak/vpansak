@@ -98,3 +98,37 @@ export async function getOrderFromSupabase(orderId: string) {
     return null;
   }
 }
+
+export async function saveUserToSupabase(userData: Record<string, unknown>) {
+  if (!supabase) return null;
+  try {
+    const { data, error } = await supabase.from("users").upsert(userData, { onConflict: "email" }).select();
+    if (error) console.error("Supabase user upsert notice:", error.message);
+    return data;
+  } catch (err) {
+    console.error("Supabase user upsert catch:", err);
+    return null;
+  }
+}
+
+export async function getUserFromSupabase(email: string) {
+  if (!supabase) return null;
+  try {
+    const { data, error } = await supabase.from("users").select("*").eq("email", email.toLowerCase()).single();
+    if (error || !data) return null;
+    return {
+      email: String(data.email || "").toLowerCase(),
+      passwordHash: String(data.password_hash || data.passwordHash || ""),
+      fullName: String(data.full_name || data.fullName || ""),
+      mobile: String(data.mobile || ""),
+      role: String(data.role || "customer"),
+      securityQuestionId: String(data.security_question_id || data.securityQuestionId || ""),
+      securityAnswerHash: String(data.security_answer_hash || data.securityAnswerHash || ""),
+      accountStatus: String(data.account_status || data.accountStatus || "active"),
+      createdAt: String(data.created_at || data.createdAt || new Date().toISOString()),
+    };
+  } catch {
+    return null;
+  }
+}
+

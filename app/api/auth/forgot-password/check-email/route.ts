@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 import { getDb } from "../../../../../db";
 import { users } from "../../../../../db/schema";
 import { SECURITY_QUESTIONS } from "../../../../lib/auth-session";
+import { getUserFromSupabase } from "../../../../lib/supabase";
 
 export async function POST(request: Request) {
   try {
@@ -14,7 +15,30 @@ export async function POST(request: Request) {
     }
 
     const db = await getDb();
-    const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
+    let [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
+
+    if (!user) {
+      const remoteUser = await getUserFromSupabase(email);
+      if (remoteUser && remoteUser.passwordHash) {
+        const [restored] = await db
+          .insert(users)
+          .values({
+            email: remoteUser.email,
+            passwordHash: remoteUser.passwordHash,
+            fullName: remoteUser.fullName,
+            mobile: remoteUser.mobile,
+            role: remoteUser.role,
+            authProvider: "email",
+            emailVerified: true,
+            accountStatus: remoteUser.accountStatus || "active",
+            securityQuestionId: remoteUser.securityQuestionId,
+            securityAnswerHash: remoteUser.securityAnswerHash,
+            createdAt: remoteUser.createdAt,
+          })
+          .returning();
+        user = restored;
+      }
+    }
 
     if (!user) {
       return Response.json(

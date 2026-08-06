@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 import { getDb } from "../../../../../db";
 import { passwordResets, users } from "../../../../../db/schema";
 import { hashPassword, validatePasswordStrength } from "../../../../lib/auth-session";
+import { saveUserToSupabase } from "../../../../lib/supabase";
 
 export async function POST(request: Request) {
   try {
@@ -56,6 +57,13 @@ export async function POST(request: Request) {
         updatedAt: now,
       })
       .where(eq(users.email, email));
+
+    await saveUserToSupabase({
+      email,
+      password_hash: newPasswordHash,
+      password_updated_at: now,
+      updated_at: now,
+    });
 
     // Mark token used
     await db.update(passwordResets).set({ used: true }).where(eq(passwordResets.id, tokenRecord.id));
