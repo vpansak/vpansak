@@ -70,25 +70,23 @@ export async function POST(request: Request) {
     // Regular User Signin
     const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
 
-    if (!user || !verifyPassword(password, user.passwordHash)) {
-      return Response.json({ error: "Incorrect email or password." }, { status: 401 });
+    if (!user) {
+      return Response.json(
+        { error: "Account not found. No account is registered with this email address.", notFound: true },
+        { status: 404 }
+      );
+    }
+
+    if (!verifyPassword(password, user.passwordHash)) {
+      return Response.json(
+        { error: "Incorrect password. Please try again or reset your password." },
+        { status: 401 }
+      );
     }
 
     if (user.accountStatus === "blocked" || user.accountStatus === "suspended") {
       return Response.json(
-        { error: `Your account has been ${user.accountStatus}. Please contact customer support.` },
-        { status: 403 }
-      );
-    }
-
-    // Check email verification for password accounts
-    if (!user.emailVerified && user.authProvider === "email") {
-      return Response.json(
-        {
-          error: "Please verify your email before signing in.",
-          unverified: true,
-          email: user.email,
-        },
+        { error: "Your account is currently unavailable. Please contact VPANSAK Support." },
         { status: 403 }
       );
     }

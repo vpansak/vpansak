@@ -1,61 +1,53 @@
-import { eq, or } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { getDb } from "../../../../db";
-import { otpCodes, profiles, users } from "../../../../db/schema";
-import { hashPassword } from "../../../lib/auth-session";
-
-export function validatePasswordStrength(password: string): { isValid: boolean; message?: string } {
-  if (password.length < 8) {
-    return { isValid: false, message: "Password must be at least 8 characters long." };
-  }
-  if (!/[A-Z]/.test(password)) {
-    return { isValid: false, message: "Password must contain at least one uppercase letter." };
-  }
-  if (!/[a-z]/.test(password)) {
-    return { isValid: false, message: "Password must contain at least one lowercase letter." };
-  }
-  if (!/[0-9]/.test(password)) {
-    return { isValid: false, message: "Password must contain at least one number." };
-  }
-  if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
-    return { isValid: false, message: "Password must contain at least one special character." };
-  }
-  return { isValid: true };
-}
+import { profiles, users } from "../../../../db/schema";
+import { hashPassword, hashSecurityAnswer, SECURITY_QUESTIONS, validatePasswordStrength } from "../../../lib/auth-session";
 
 export async function POST(request: Request) {
   try {
     const body = (await request.json()) as Record<string, string>;
-    const fullName = String(body.fullName || "").trim().slice(0, 100);
-    const email = String(body.email || "").trim().toLowerCase().slice(0, 150);
-    const mobile = String(body.mobile || "").trim().replace(/\D/g, "").slice(0, 15);
+    const fullName = String(body.fullName || "").trim();
+    const email = String(body.email || "").trim().toLowerCase();
+    const rawMobile = String(body.mobile || "").trim();
+    const mobile = rawMobile.replace(/\D/g, "").slice(-10);
     const password = String(body.password || "").trim();
     const confirmPassword = String(body.confirmPassword || "").trim();
-    const termsAccepted = body.termsAccepted === "true" || body.termsAccepted === "1" || (body as any).termsAccepted === true;
+    const securityQuestionId = String(body.securityQuestionId || "").trim();
+    const securityAnswer = String(body.securityAnswer || "").trim();
 
-    if (!termsAccepted) {
-      return Response.json({ error: "You must accept the Terms and Conditions and Privacy Policy to create an account." }, { status: 400 });
-    }
-
-    if (!fullName || !email || !mobile || !password) {
-      return Response.json({ error: "Full Name, Email, Mobile Number and Password are required." }, { status: 400 });
+    if (!fullName || fullName.length < 2 || fullName.length > 60) {
+      return Response.json({ error: "Full Name must be between 2 and 60 characters." }, { status: 400 });
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    if (!email || !emailRegex.test(email)) {
       return Response.json({ error: "Please enter a valid email address." }, { status: 400 });
     }
 
-    if (mobile.length < 10) {
+    if (!mobile || mobile.length !== 10) {
       return Response.json({ error: "Please enter a valid 10-digit mobile number." }, { status: 400 });
     }
 
-    if (confirmPassword && password !== confirmPassword) {
+    if (!password) {
+      return Response.json({ error: "Please enter your password." }, { status: 400 });
+    }
+
+    if (password !== confirmPassword) {
       return Response.json({ error: "Passwords do not match." }, { status: 400 });
     }
 
     const passCheck = validatePasswordStrength(password);
-    if (!passCheck.isValid) {
-      return Response.json({ error: passCheck.message }, { status: 400 });
+    if (!passCheck.valid) {
+      return Response.json({ error: passCheck.error || "Password does not meet complexity requirements." }, { status: 400 });
+    }
+
+    const validQuestion = SECURITY_QUESTIONS.find((q) => q.id === securityQuestionId);
+    if (!validQuestion) {
+      return Response.json({ error: "Please select a valid security question." }, { status: 400 });
+    }
+
+    if (!securityAnswer || securityAnswer.length < 2) {
+      return Response.json({ error: "Security Answer must be at least 2 characters long." }, { status: 400 });
     }
 
     const db = await getDb();
@@ -63,78 +55,57 @@ export async function POST(request: Request) {
     // Check duplicate email
     const [existingEmail] = await db.select().from(users).where(eq(users.email, email)).limit(1);
     if (existingEmail) {
-      if (existingEmail.emailVerified) {
-        return Response.json({ error: "This email address is already registered." }, { status: 409 });
-      }
+      return Response.json(
+        { error: "This email address is already associated with a VPANSAK account. Please log in or reset your password." },
+        { status: 409 }
+      );
     }
 
     // Check duplicate mobile number
     const [existingMobile] = await db.select().from(users).where(eq(users.mobile, mobile)).limit(1);
-    if (existingMobile && existingMobile.email !== email) {
-      return Response.json({ error: "This mobile number is already registered with another account." }, { status: 409 });
+    if (existingMobile) {
+      return Response.json(
+        { error: "This mobile number is already associated with another account." },
+        { status: 409 }
+      );
     }
 
     const passwordHash = hashPassword(password);
+    const securityAnswerHash = hashSecurityAnswer(securityAnswer);
+    const now = new Date().toISOString();
 
-    if (existingEmail) {
-      // Update existing unverified user password/name/mobile
-      await db.update(users).set({
-        fullName,
-        mobile,
-        passwordHash,
-        updatedAt: new Date().toISOString(),
-      }).where(eq(users.email, email));
-    } else {
-      // Insert new unverified user
-      await db.insert(users).values({
-        email,
-        passwordHash,
-        fullName,
-        mobile,
-        role: "customer",
-        authProvider: "email",
-        emailVerified: false,
-        accountStatus: "active",
-      });
-    }
+    await db.insert(users).values({
+      email,
+      passwordHash,
+      fullName,
+      mobile,
+      role: "customer",
+      authProvider: "email",
+      emailVerified: true,
+      accountStatus: "active",
+      securityQuestionId,
+      securityAnswerHash,
+      createdAt: now,
+      updatedAt: now,
+    });
 
     await db.insert(profiles).values({
       email,
       fullName,
       mobile,
+      createdAt: now,
+      updatedAt: now,
     }).onConflictDoUpdate({
       target: profiles.email,
-      set: { fullName, mobile, updatedAt: new Date().toISOString() },
+      set: { fullName, mobile, updatedAt: now },
     });
-
-    // Generate 6-digit OTP
-    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString(); // 10 minutes expiry
-
-    // Invalidate previous OTPs for this email & purpose
-    await db.update(otpCodes).set({ used: true }).where(eq(otpCodes.email, email));
-
-    // Save new OTP
-    await db.insert(otpCodes).values({
-      email,
-      code: otpCode,
-      purpose: "email_verification",
-      expiresAt,
-      attempts: 0,
-      used: false,
-    });
-
-    console.log(`[OTP VERIFICATION] Sent 6-digit OTP ${otpCode} to ${email}`);
 
     return Response.json(
       {
         ok: true,
-        email,
-        requireOtp: true,
-        message: `We sent a 6-digit verification code to ${email.replace(/(.{2})(.*)(?=@)/, (_m, p1, p2) => p1 + "*".repeat(p2.length))}.`,
-        otpCode, // Returned for dev testing convenience
+        message: "Your VPANSAK account has been created successfully. You can now log in.",
       },
-      { status: 200 }
+      { status: 201 }
     );
   } catch (err) {
     console.error("Signup error:", err);

@@ -124,3 +124,42 @@ export function clearSessionCookieHeaders(headers: Headers) {
     `vpansak_admin_key=; Path=/; HttpOnly; SameSite=Lax; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Max-Age=0`
   );
 }
+
+export const SECURITY_QUESTIONS = [
+  { id: "school", question: "What was the name of your first school?" },
+  { id: "friend", question: "What is the name of your childhood best friend?" },
+  { id: "teacher", question: "What is the name of your favourite teacher?" },
+  { id: "pet", question: "What was the name of your first pet?" },
+  { id: "birthplace", question: "What is the name of the place where you were born?" },
+  { id: "nickname", question: "What was your childhood nickname?" },
+  { id: "memorable_place", question: "What is the name of a memorable place from your childhood?" },
+];
+
+export function normalizeSecurityAnswer(answer: string): string {
+  return String(answer || "").trim().toLowerCase().replace(/\s+/g, " ");
+}
+
+export function hashSecurityAnswer(answer: string): string {
+  const normalized = normalizeSecurityAnswer(answer);
+  const salt = crypto.randomBytes(16).toString("hex");
+  const hash = crypto.pbkdf2Sync(normalized, salt, 10000, 64, "sha512").toString("hex");
+  return `${salt}:${hash}`;
+}
+
+export function verifySecurityAnswer(answer: string, storedHash: string): boolean {
+  if (!storedHash || !storedHash.includes(":")) return false;
+  const [salt, originalHash] = storedHash.split(":");
+  if (!salt || !originalHash) return false;
+  const normalized = normalizeSecurityAnswer(answer);
+  const hash = crypto.pbkdf2Sync(normalized, salt, 10000, 64, "sha512").toString("hex");
+  return hash === originalHash;
+}
+
+export function validatePasswordStrength(password: string): { valid: boolean; error?: string } {
+  if (password.length < 8) return { valid: false, error: "Password must be at least 8 characters long." };
+  if (!/[A-Z]/.test(password)) return { valid: false, error: "Password must contain at least one uppercase letter." };
+  if (!/[a-z]/.test(password)) return { valid: false, error: "Password must contain at least one lowercase letter." };
+  if (!/[0-9]/.test(password)) return { valid: false, error: "Password must contain at least one number." };
+  if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) return { valid: false, error: "Password must contain at least one special character." };
+  return { valid: true };
+}

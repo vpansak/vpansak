@@ -210,7 +210,10 @@ export const users = sqliteTable("users", {
   googleUserId: text("google_user_id").unique(),
   emailVerified: integer("email_verified", { mode: "boolean" }).notNull().default(false),
   accountStatus: text("account_status").notNull().default("active"),
+  securityQuestionId: text("security_question_id"),
+  securityAnswerHash: text("security_answer_hash"),
   lastLoginAt: text("last_login_at"),
+  passwordUpdatedAt: text("password_updated_at"),
   createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
   updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });

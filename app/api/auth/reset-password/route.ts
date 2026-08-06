@@ -1,8 +1,7 @@
 import { and, desc, eq } from "drizzle-orm";
 import { getDb } from "../../../../db";
 import { otpCodes, users } from "../../../../db/schema";
-import { hashPassword } from "../../../lib/auth-session";
-import { validatePasswordStrength } from "../signup/route";
+import { hashPassword, validatePasswordStrength } from "../../../lib/auth-session";
 
 export async function POST(request: Request) {
   try {
@@ -16,8 +15,8 @@ export async function POST(request: Request) {
     }
 
     const passCheck = validatePasswordStrength(newPassword);
-    if (!passCheck.isValid) {
-      return Response.json({ error: passCheck.message }, { status: 400 });
+    if (!passCheck.valid) {
+      return Response.json({ error: passCheck.error }, { status: 400 });
     }
 
     const db = await getDb();

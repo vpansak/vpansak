@@ -230,7 +230,10 @@ const SCHEMA_SQL = `
       google_user_id TEXT UNIQUE,
       email_verified INTEGER NOT NULL DEFAULT 0,
       account_status TEXT NOT NULL DEFAULT 'active',
+      security_question_id TEXT,
+      security_answer_hash TEXT,
       last_login_at TEXT,
+      password_updated_at TEXT,
       created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
       updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
     );

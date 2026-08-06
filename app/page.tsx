@@ -221,8 +221,8 @@ export default function HomePage() {
           {suggestions.length > 0 && <div className="vp-suggestions"><small>SEARCH SUGGESTIONS</small>{suggestions.map((product) => <Link key={product.id} href={`/product/${product.id}`}><Search /><span>{product.name}<small>{product.category}</small></span><strong>{money(product.price)}</strong></Link>)}</div>}
         </div>
         <div className="vp-header-actions">
-          <Link href={authUser ? "/account" : "/signin"}><UserRound /><span><small>{authUser ? `Hello, ${authUser.fullName || authUser.email.split("@")[0]}` : "Hello, sign in"}</small>My Account</span></Link>
-          <Link href={authUser ? "/account" : "/signin"}><Heart /><span><small>{wishlist.length} saved</small>Wishlist</span></Link>
+          <Link href={authUser ? "/account" : "/login"}><UserRound /><span><small>{authUser ? `Hello, ${authUser.fullName || authUser.email.split("@")[0]}` : "Hello, sign in"}</small>My Account</span></Link>
+          <Link href={authUser ? "/account" : "/login"}><Heart /><span><small>{wishlist.length} saved</small>Wishlist</span></Link>
           <button type="button" onClick={() => setCartOpen(true)}><ShoppingCart /><span><small>{cartCount} items</small>{cartCount ? money(subtotal) : "My Cart"}</span>{cartCount > 0 && <i>{cartCount}</i>}</button>
         </div>
         <button className="vp-mobile-menu" type="button" onClick={() => setMenuOpen((open) => !open)} aria-label="Open menu">{menuOpen ? <X /> : <Menu />}</button>
