@@ -383,9 +383,6 @@ export function ProfileContent({ paramsTab }: { paramsTab?: string }) {
 
             <div className="profile-meta-grid">
               <span>
-                <FileText size={13} /> <b>User ID:</b> VPU-{String(user.id).padStart(4, "0")}
-              </span>
-              <span>
                 <UserRound size={13} /> <b>Email:</b> {maskEmail(user.email)}
               </span>
               <span>
