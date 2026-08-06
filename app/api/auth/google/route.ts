@@ -51,38 +51,63 @@ export async function POST(request: Request) {
       }
     }
 
-    // 2. Or verify via OAuth Authorization Code grant if client secret is configured
+    // 2. Exchange Supabase PKCE code or Google OAuth code
     if (!email && code) {
-      const clientId = process.env.GOOGLE_CLIENT_ID || process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "";
-      const clientSecret = process.env.GOOGLE_CLIENT_SECRET || "";
-      const redirectUri = process.env.AUTH_CALLBACK_URL || `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/api/auth/google/callback`;
-
-      if (clientId && clientSecret) {
-        try {
-          const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: new URLSearchParams({
-              code,
-              client_id: clientId,
-              client_secret: clientSecret,
-              redirect_uri: redirectUri,
-              grant_type: "authorization_code",
-            }),
-          });
-          const tokenData = await tokenRes.json();
-          if (tokenData.id_token) {
-            const parsed = parseGoogleJwt(tokenData.id_token);
-            if (parsed && parsed.email) {
-              email = parsed.email.toLowerCase().trim();
-              fullName = parsed.name || parsed.given_name || email.split("@")[0];
-              picture = parsed.picture || "";
-              googleUserId = parsed.sub || "";
-              emailVerified = Boolean(parsed.email_verified);
+      try {
+        const { createClient } = await import("@supabase/supabase-js");
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || "https://lffcguvwibkpwzzihpcp.supabase.co";
+        const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || "";
+        if (supabaseUrl && supabaseKey) {
+          const supabaseClient = createClient(supabaseUrl, supabaseKey);
+          const { data: sessionData } = await supabaseClient.auth.exchangeCodeForSession(code);
+          if (sessionData?.user && sessionData.user.email) {
+            const sUser = sessionData.user;
+            const sEmail = sUser.email;
+            if (sEmail) {
+              email = sEmail.toLowerCase().trim();
+              fullName = String(sUser.user_metadata?.full_name || sUser.user_metadata?.name || sUser.user_metadata?.given_name || email.split("@")[0]).trim();
+              picture = String(sUser.user_metadata?.avatar_url || sUser.user_metadata?.picture || "").trim();
+              googleUserId = sUser.id || String(sUser.user_metadata?.sub || "");
+              emailVerified = true;
             }
           }
-        } catch (err) {
-          console.error("Google OAuth token exchange error:", err);
+        }
+      } catch (err) {
+        console.error("Supabase OAuth code exchange catch:", err);
+      }
+
+      if (!email) {
+        const clientId = process.env.GOOGLE_CLIENT_ID || process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "";
+        const clientSecret = process.env.GOOGLE_CLIENT_SECRET || "";
+        const redirectUri = process.env.AUTH_CALLBACK_URL || `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/api/auth/google/callback`;
+
+        if (clientId && clientSecret) {
+          try {
+            const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
+              method: "POST",
+              headers: { "Content-Type": "application/x-www-form-urlencoded" },
+              body: new URLSearchParams({
+                code,
+                client_id: clientId,
+                client_secret: clientSecret,
+                redirect_uri: redirectUri,
+                grant_type: "authorization_code",
+              }),
+            });
+            const tokenData = await tokenRes.json();
+            if (tokenData.id_token) {
+              const parsed = parseGoogleJwt(tokenData.id_token);
+              if (parsed && parsed.email) {
+                email = parsed.email.toLowerCase().trim();
+                fullName = parsed.name || parsed.given_name || email.split("@")[0];
+                picture = parsed.picture || "";
+                googleUserId = parsed.sub || "";
+                emailVerified = Boolean(parsed.email_verified);
+              }
+            }
+          } catch (err) {
+            console.error("Google OAuth token exchange error:", err);
+          }
         }
       }
     }

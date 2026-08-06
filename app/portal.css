@@ -618,6 +618,58 @@ main:not(.vp-store) td{font-size:13px}
   cursor: not-allowed;
 }
 
+.vp-auth-divider {
+  display: flex;
+  align-items: center;
+  margin: 16px 0;
+  color: #94a3b8;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+.vp-auth-divider::before,
+.vp-auth-divider::after {
+  content: "";
+  flex: 1;
+  border-bottom: 1px solid #e2e8f0;
+}
+.vp-auth-divider span {
+  padding: 0 10px;
+}
+
+.vp-auth-google-btn {
+  width: 100%;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #1e293b;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
+  transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+
+.vp-auth-google-btn:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+}
+
+.vp-auth-google-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.vp-google-icon {
+  flex-shrink: 0;
+}
+
 .vp-auth-links {
   margin-top: 22px;
   text-align: center;
