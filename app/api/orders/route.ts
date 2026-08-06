@@ -52,7 +52,7 @@ export async function POST(request: Request) {
     }
 
     if (String(payload.paymentMethod) !== "Cash on Delivery") {
-      return Response.json({ error: "Online payments must be verified through Razorpay." }, { status: 400 });
+      return Response.json({ error: "Online payments must be verified before confirmation." }, { status: 400 });
     }
 
     const orderId = `VPO${Math.floor(100000 + Math.random() * 900000)}`;

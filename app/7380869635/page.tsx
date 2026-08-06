@@ -833,7 +833,7 @@ export default function SecretAdminPage() {
                       <div>Mobile: <strong>{r.mobile || "N/A"}</strong></div>
                       <div>Method: <strong>{r.paymentMethod}</strong></div>
                       <div>Submitted: <strong>{r.submittedAt ? new Date(r.submittedAt).toLocaleDateString("en-IN") : "N/A"}</strong></div>
-                      {r.razorpayPaymentId && <div>Razorpay Pay ID: <code style={{ color: "#38bdf8" }}>{r.razorpayPaymentId}</code></div>}
+                      {r.razorpayPaymentId && <div>Txn ID: <code style={{ color: "#38bdf8" }}>{r.razorpayPaymentId}</code></div>}
                       {r.verifiedAt && <div>Verified Date: <strong>{new Date(r.verifiedAt).toLocaleDateString("en-IN")}</strong></div>}
                     </div>
 

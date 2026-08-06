@@ -363,7 +363,7 @@ function FoundationContent() {
           >
             <CreditCard color={method === "razorpay" ? "#1766ef" : "#64748b"} size={22} />
             <div>
-              <strong style={{ display: "block", color: method === "razorpay" ? "#1766ef" : "#1e293b", fontSize: 13 }}>Razorpay (Instant)</strong>
+              <strong style={{ display: "block", color: method === "razorpay" ? "#1766ef" : "#1e293b", fontSize: 13 }}>UPI &amp; Online Payment (Instant)</strong>
               <small style={{ color: "#64748b", fontSize: 11 }}>Cards, NetBanking, UPI, Wallets</small>
             </div>
           </button>
@@ -460,10 +460,10 @@ function FoundationContent() {
         <div className="support-contribution-grid">
           <div className="donation-form">
             <small>SUPPORT CONTRIBUTION</small>
-            <h2>{method === "razorpay" ? "Pay securely with Razorpay" : "Submit payment reference"}</h2>
+            <h2>{method === "razorpay" ? "Pay securely online" : "Submit payment reference"}</h2>
             <p>
               {method === "razorpay"
-                ? "Razorpay API payments are verified automatically. Bank/QR payments remain Pending Verification until checked."
+                ? "Online payments are verified automatically. Bank/QR payments remain Pending Verification until checked."
                 : "Bank and QR contributions require UTR submission and are reviewed by an authorized admin."}
             </p>
 
@@ -752,7 +752,7 @@ function FoundationContent() {
         <article>
           <span>01</span>
           <h3>Automatic verification</h3>
-          <p>Razorpay API payments are verified server-side with HMAC signatures before unlocking a certificate.</p>
+          <p>Online payments are verified server-side with secure encryption before unlocking a certificate.</p>
         </article>
         <article>
           <span>02</span>

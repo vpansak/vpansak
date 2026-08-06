@@ -192,7 +192,7 @@ export async function POST(request: Request) {
         certificateNumber,
         fullName: row.fullName,
         amount: row.amount,
-        paymentMethod: `Razorpay • ${paymentId}`,
+        paymentMethod: `Online • ${paymentId}`,
         appreciationMessage,
         submittedAt: row.submittedAt,
         verifiedAt: now,
