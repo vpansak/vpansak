@@ -380,7 +380,7 @@
   .vp-header-actions { margin-left: auto; }
   .vp-header-actions > a span, .vp-header-actions > button span { display: none; }
   .vp-header-actions > a, .vp-header-actions > button { width: 35px; height: 35px; justify-content: center; }
-  .vp-header-actions > a:first-child { display: flex; }
+  .vp-header-actions > a:first-child { display: none; }
   .vp-header-actions svg { width: 20px; }
   .vp-header-actions i { left: 20px; top: -2px; }
   .vp-mobile-menu { width: 35px; height: 35px; display: grid; place-items: center; border: 0; border-radius: 7px; background: #ffffff10; color: white; }
