@@ -102,7 +102,22 @@ export async function getOrderFromSupabase(orderId: string) {
 export async function saveUserToSupabase(userData: Record<string, unknown>) {
   if (!supabase) return null;
   try {
-    const { data, error } = await supabase.from("users").upsert(userData, { onConflict: "email" }).select();
+    const payload: Record<string, unknown> = {};
+    if (userData.email) payload.email = String(userData.email).toLowerCase().trim();
+    if (userData.password_hash || userData.passwordHash) payload.password_hash = String(userData.password_hash || userData.passwordHash);
+    if (userData.full_name || userData.fullName) payload.full_name = String(userData.full_name || userData.fullName);
+    if (userData.mobile !== undefined) payload.mobile = String(userData.mobile);
+    if (userData.role) payload.role = String(userData.role);
+    if (userData.profile_image !== undefined || userData.profileImage !== undefined) payload.profile_image = userData.profile_image ?? userData.profileImage ?? null;
+    if (userData.auth_provider || userData.authProvider) payload.auth_provider = String(userData.auth_provider || userData.authProvider);
+    if (userData.email_verified !== undefined || userData.emailVerified !== undefined) payload.email_verified = userData.email_verified ?? userData.emailVerified ? 1 : 0;
+    if (userData.account_status || userData.accountStatus) payload.account_status = String(userData.account_status || userData.accountStatus);
+    if (userData.security_question_id || userData.securityQuestionId) payload.security_question_id = String(userData.security_question_id || userData.securityQuestionId);
+    if (userData.security_answer_hash || userData.securityAnswerHash) payload.security_answer_hash = String(userData.security_answer_hash || userData.securityAnswerHash);
+    if (userData.created_at || userData.createdAt) payload.created_at = String(userData.created_at || userData.createdAt);
+    if (userData.updated_at || userData.updatedAt) payload.updated_at = String(userData.updated_at || userData.updatedAt || new Date().toISOString());
+
+    const { data, error } = await supabase.from("users").upsert(payload, { onConflict: "email" }).select();
     if (error) console.error("Supabase user upsert notice:", error.message);
     return data;
   } catch (err) {

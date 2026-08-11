@@ -1,7 +1,8 @@
 import crypto from "node:crypto";
 import { desc, eq } from "drizzle-orm";
 import { getDb } from "../../../../../db";
-import { otpCodes, users } from "../../../../../db/schema";
+import { otpCodes, profiles, users } from "../../../../../db/schema";
+import { getUserFromSupabase } from "../../../../lib/supabase";
 
 function generateCryptographicOtp(): string {
   const buffer = crypto.randomBytes(4);
@@ -69,7 +70,40 @@ export async function POST(request: Request) {
     }
 
     const db = await getDb();
-    const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
+    let [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
+
+    if (!user) {
+      const remoteUser = await getUserFromSupabase(email);
+      if (remoteUser && remoteUser.passwordHash) {
+        const [restored] = await db
+          .insert(users)
+          .values({
+            email: remoteUser.email,
+            passwordHash: remoteUser.passwordHash,
+            fullName: remoteUser.fullName,
+            mobile: remoteUser.mobile,
+            role: remoteUser.role,
+            authProvider: "email",
+            emailVerified: true,
+            accountStatus: remoteUser.accountStatus || "active",
+            securityQuestionId: remoteUser.securityQuestionId,
+            securityAnswerHash: remoteUser.securityAnswerHash,
+            createdAt: remoteUser.createdAt,
+          })
+          .returning();
+        user = restored;
+
+        await db.insert(profiles).values({
+          email: remoteUser.email,
+          fullName: remoteUser.fullName,
+          mobile: remoteUser.mobile,
+          createdAt: remoteUser.createdAt,
+        }).onConflictDoUpdate({
+          target: profiles.email,
+          set: { fullName: remoteUser.fullName, mobile: remoteUser.mobile },
+        });
+      }
+    }
 
     if (!user) {
       return Response.json(

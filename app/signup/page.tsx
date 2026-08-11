@@ -1,9 +1,22 @@
 "use client";
 
-import { CheckCircle2, Eye, EyeOff, HelpCircle, Lock, Mail, Phone, ShieldAlert, Sparkles, User } from "lucide-react";
+import {
+  ArrowLeft,
+  CheckCircle2,
+  Eye,
+  EyeOff,
+  HelpCircle,
+  Lock,
+  Mail,
+  Phone,
+  RefreshCw,
+  ShieldAlert,
+  Sparkles,
+  User,
+} from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { FormEvent, Suspense, useState } from "react";
+import { FormEvent, Suspense, useEffect, useState } from "react";
 import { SECURITY_QUESTIONS } from "../lib/auth-session";
 
 function SignupForm() {
@@ -23,7 +36,26 @@ function SignupForm() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const [successMsg, setSuccessMsg] = useState("");
+
+  // Verification Pending State
+  const [isPendingVerification, setIsPendingVerification] = useState(false);
+  const [pendingEmail, setPendingEmail] = useState("");
+  const [pendingMaskedEmail, setPendingMaskedEmail] = useState("");
+  const [resendCooldown, setResendCooldown] = useState(60);
+  const [resendBusy, setResendBusy] = useState(false);
+  const [resendMsg, setResendMsg] = useState("");
+  const [resendError, setResendError] = useState("");
+
+  // Countdown timer for resend button
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (isPendingVerification && resendCooldown > 0) {
+      timer = setInterval(() => {
+        setResendCooldown((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [isPendingVerification, resendCooldown]);
 
   // Password strength calculation
   const getPasswordStrength = (pass: string) => {
@@ -49,7 +81,9 @@ function SignupForm() {
     try {
       const { createClient } = await import("@supabase/supabase-js");
       const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://lffcguvwibkpwzzihpcp.supabase.co";
-      const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxmZmNndXZ3aWJrcHd6emlocGNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU3NzUxMjMsImV4cCI6MjEwMTM1MTEyM30.lQXIRxcMGpoXVfcXyB_yCArWhBeaExjp5a6y_Uy6Rv8";
+      const supabaseAnonKey =
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxmZmNndXZ3aWJrcHd6emlocGNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU3NzUxMjMsImV4cCI6MjEwMTM1MTEyM30.lQXIRxcMGpoXVfcXyB_yCArWhBeaExjp5a6y_Uy6Rv8";
 
       const supabaseClient = createClient(supabaseUrl, supabaseAnonKey);
       const redirectTarget = `${window.location.origin}/api/auth/google/callback`;
@@ -79,7 +113,6 @@ function SignupForm() {
     if (busy) return;
 
     setError("");
-    setSuccessMsg("");
 
     const cleanName = fullName.trim();
     const cleanEmail = email.trim().toLowerCase();
@@ -115,7 +148,9 @@ function SignupForm() {
     }
 
     if (strength.score < 2) {
-      setError("Password must be at least 8 characters long, contain uppercase, lowercase, number and a special character.");
+      setError(
+        "Password must be at least 8 characters long, contain uppercase, lowercase, number and a special character."
+      );
       return;
     }
 
@@ -144,20 +179,169 @@ function SignupForm() {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error || "Could not create account. Please check your information.");
+        setError(data.error || "Could not process registration. Please check your information.");
         return;
       }
 
-      setSuccessMsg(data.message || "Your VPANSAK account has been created successfully. You can now log in.");
-      setTimeout(() => {
-        router.push(`/login?email=${encodeURIComponent(cleanEmail)}`);
-      }, 2000);
+      if (data.pending) {
+        setPendingEmail(cleanEmail);
+        setPendingMaskedEmail(data.maskedEmail || cleanEmail);
+        setIsPendingVerification(true);
+        setResendCooldown(60);
+      } else {
+        router.push(data.redirect || "/login");
+      }
     } catch {
       setError("We couldn’t complete your request right now. Please try again.");
     } finally {
       setBusy(false);
     }
   };
+
+  const handleResend = async () => {
+    if (resendCooldown > 0 || resendBusy) return;
+
+    setResendBusy(true);
+    setResendMsg("");
+    setResendError("");
+
+    try {
+      const res = await fetch("/api/auth/resend-verification", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: pendingEmail }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setResendError(data.error || "Could not resend verification email.");
+        if (data.remainingSeconds) {
+          setResendCooldown(data.remainingSeconds);
+        }
+        return;
+      }
+
+      setResendMsg(data.message || "Verification email sent. Please check your email.");
+      setResendCooldown(60);
+    } catch {
+      setResendError("We couldn’t send the verification email right now. Please try again.");
+    } finally {
+      setResendBusy(false);
+    }
+  };
+
+  // Render "Check your email" view if pending verification
+  if (isPendingVerification) {
+    return (
+      <div className="vp-auth-page">
+        <div className="vp-auth-card text-center" style={{ maxWidth: "480px" }}>
+          {/* Header logo */}
+          <div className="vp-auth-brand-row" style={{ justifyContent: "center" }}>
+            <img src="/vpansak-logo.png" alt="VPANSAK" className="vp-auth-logo" />
+            <span className="vp-auth-brand-name">VPANSAK</span>
+          </div>
+
+          <div
+            style={{
+              width: "64px",
+              height: "64px",
+              margin: "16px auto 8px auto",
+              borderRadius: "50%",
+              backgroundColor: "#eff6ff",
+              color: "#2563eb",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Mail size={32} />
+          </div>
+
+          <h1 className="vp-auth-title" style={{ marginBottom: "8px" }}>
+            Check your email
+          </h1>
+
+          <p style={{ color: "#475569", fontSize: "0.95rem", lineHeight: "1.5", marginBottom: "16px" }}>
+            We sent a verification link to your email address:
+          </p>
+
+          <div
+            style={{
+              display: "inline-block",
+              padding: "6px 16px",
+              backgroundColor: "#f1f5f9",
+              borderRadius: "20px",
+              fontWeight: "600",
+              color: "#0f172a",
+              marginBottom: "20px",
+              fontSize: "0.95rem",
+            }}
+          >
+            {pendingMaskedEmail}
+          </div>
+
+          <p style={{ color: "#64748b", fontSize: "0.9rem", lineHeight: "1.5", marginBottom: "24px" }}>
+            Open the email and select <strong>‘Verify Email & Create Account’</strong> to complete your registration.
+          </p>
+
+          {resendMsg && (
+            <div className="vp-auth-alert success" role="status" style={{ marginBottom: "16px" }}>
+              <CheckCircle2 size={18} />
+              <p>{resendMsg}</p>
+            </div>
+          )}
+
+          {resendError && (
+            <div className="vp-auth-alert error" role="alert" style={{ marginBottom: "16px" }}>
+              <ShieldAlert size={18} />
+              <p>{resendError}</p>
+            </div>
+          )}
+
+          <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginTop: "8px" }}>
+            <button
+              type="button"
+              onClick={handleResend}
+              disabled={resendCooldown > 0 || resendBusy}
+              className="vp-auth-submit-btn"
+              style={{
+                backgroundColor: resendCooldown > 0 ? "#94a3b8" : "#2563eb",
+                cursor: resendCooldown > 0 ? "not-allowed" : "pointer",
+              }}
+            >
+              {resendBusy ? (
+                <>
+                  <RefreshCw className="animate-spin" size={16} /> Sending link…
+                </>
+              ) : resendCooldown > 0 ? (
+                `Resend Verification Email (${resendCooldown}s)`
+              ) : (
+                "Resend Verification Email"
+              )}
+            </button>
+
+            <Link
+              href="/login"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "8px",
+                padding: "10px 16px",
+                color: "#475569",
+                fontWeight: "500",
+                fontSize: "0.9rem",
+                textDecoration: "none",
+              }}
+            >
+              <ArrowLeft size={16} /> Back to Login
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="vp-auth-page">
@@ -176,14 +360,6 @@ function SignupForm() {
           <div className="vp-auth-alert error" role="alert">
             <ShieldAlert size={18} />
             <p>{error}</p>
-          </div>
-        )}
-
-        {/* Success Alert */}
-        {successMsg && (
-          <div className="vp-auth-alert success" role="status">
-            <CheckCircle2 size={18} />
-            <p>{successMsg}</p>
           </div>
         )}
 

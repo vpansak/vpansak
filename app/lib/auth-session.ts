@@ -163,3 +163,76 @@ export function validatePasswordStrength(password: string): { valid: boolean; er
   if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) return { valid: false, error: "Password must contain at least one special character." };
   return { valid: true };
 }
+
+export function generateVerificationToken(): string {
+  return crypto.randomBytes(32).toString("hex");
+}
+
+export function hashVerificationToken(token: string): string {
+  return crypto.createHash("sha256").update(token).digest("hex");
+}
+
+export function maskEmail(email: string): string {
+  const parts = email.split("@");
+  if (parts.length !== 2) return email;
+  const username = parts[0];
+  const domain = parts[1];
+  const maskedUser = username.length <= 2 ? username + "***" : username.slice(0, 2) + "***";
+  return `${maskedUser}@${domain}`;
+}
+
+export async function sendVerificationEmail(
+  toEmail: string,
+  userName: string,
+  verificationLink: string
+): Promise<{ success: boolean; error?: string }> {
+  const serviceId = process.env.EMAILJS_SERVICE_ID || "service_15li5i6";
+  const templateId = process.env.EMAILJS_TEMPLATE_ID || "template_yv895a7";
+  const publicKey = process.env.EMAILJS_PUBLIC_KEY || "K2hOwDJVfSGpJ3nih";
+  const privateKey = process.env.EMAILJS_PRIVATE_KEY || "30mafPjRgPPn5im53Idzh";
+  const origin = process.env.APP_URL || "https://vpansak.vercel.app";
+
+  try {
+    const payload: Record<string, unknown> = {
+      service_id: serviceId,
+      template_id: templateId,
+      user_id: publicKey,
+      template_params: {
+        to_email: toEmail,
+        user_email: toEmail,
+        email: toEmail,
+        reply_to: toEmail,
+        user_name: userName || "VPANSAK User",
+        verification_link: verificationLink,
+        expiry_minutes: "15",
+      },
+    };
+
+    if (privateKey) {
+      payload.accessToken = privateKey;
+    }
+
+    const response = await fetch("https://api.emailjs.com/api/v1.0/email/send", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Origin": origin.startsWith("http") ? origin : `https://${origin}`,
+        "User-Agent": "Mozilla/5.0 (VPANSAK Backend Email Service)",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (response.ok) {
+      return { success: true };
+    } else {
+      const errText = await response.text();
+      console.error(`[EMAILJS VERIFY FAIL] ${response.status}: ${errText}`);
+      return { success: false, error: errText || `EmailJS returned ${response.status}` };
+    }
+  } catch (err) {
+    console.error("[EMAILJS VERIFY ERROR]", err);
+    return { success: false, error: err instanceof Error ? err.message : "Network error" };
+  }
+}
+
+

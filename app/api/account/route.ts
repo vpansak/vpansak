@@ -1,7 +1,7 @@
 import { and, desc, eq, or } from "drizzle-orm";
 import { getDb } from "../../../db";
 import { addresses, notifications, orders, persistentCartItems, profiles, reviews, sellerApplications, tickets, users, wishlistItems } from "../../../db/schema";
-import { getAuthUserFromRequest, hashPassword, verifyPassword } from "../../lib/auth-session";
+import { getAuthUserFromRequest, hashPassword, setSessionCookieHeaders, verifyPassword } from "../../lib/auth-session";
 import { saveUserToSupabase } from "../../lib/supabase";
 
 async function emailFrom(request: Request) {
@@ -89,7 +89,23 @@ export async function POST(request: Request) {
       const [updatedUser] = await db.select().from(users).where(eq(users.email, email)).limit(1);
       if (updatedUser) await saveUserToSupabase(updatedUser);
 
-      return Response.json({ ok: true, message: "Your profile has been updated successfully." });
+      const sessionData = {
+        email,
+        fullName: updatedUser?.fullName || fullName || userSession.fullName,
+        role: updatedUser?.role || userSession.role || "customer",
+        mobile: updatedUser?.mobile || mobile || userSession.mobile || "",
+        profileImage: updatedUser?.profileImage || avatarUrl || userSession.profileImage || "",
+        emailVerified: userSession.emailVerified ?? true,
+        authProvider: userSession.authProvider || "email",
+      };
+
+      const responseHeaders = new Headers({ "content-type": "application/json" });
+      setSessionCookieHeaders(responseHeaders, sessionData);
+
+      return new Response(
+        JSON.stringify({ ok: true, message: "Your profile has been updated successfully.", user: sessionData }),
+        { status: 200, headers: responseHeaders }
+      );
     }
 
     if (action === "changePassword") {

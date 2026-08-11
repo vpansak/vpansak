@@ -140,25 +140,66 @@ export default function HomePage() {
   useEffect(() => {
     fetch("/api/auth/me")
       .then((res) => res.json())
-      .then((data) => {
-        if (data && data.user) setAuthUser(data.user);
+      .then(async (data) => {
+        if (data && data.user) {
+          setAuthUser(data.user);
+          
+          // Check for guest cart/wishlist to merge
+          let guestCartObj: Record<string, number> = {};
+          let guestWishlistArr: string[] = [];
+          try {
+            guestCartObj = JSON.parse(localStorage.getItem("vpansak_guest_cart") || "{}");
+            guestWishlistArr = JSON.parse(localStorage.getItem("vpansak_guest_wishlist") || "[]");
+          } catch { /* ignore damaged local guest data */ }
+
+          const guestCartItems = Object.entries(guestCartObj).map(([productId, quantity]) => ({ productId, quantity }));
+
+          if (guestCartItems.length > 0 || guestWishlistArr.length > 0) {
+            await fetch("/api/account", {
+              method: "POST",
+              headers: { "content-type": "application/json" },
+              body: JSON.stringify({
+                action: "mergeGuestData",
+                cart: guestCartItems,
+                wishlist: guestWishlistArr,
+              }),
+            }).catch(() => {});
+            localStorage.removeItem("vpansak_guest_cart");
+            localStorage.removeItem("vpansak_guest_wishlist");
+          }
+
+          // Fetch authenticated user's isolated DB cart & wishlist
+          const accRes = await fetch("/api/account");
+          if (accRes.ok) {
+            const accData = await accRes.json();
+            if (Array.isArray(accData.cart)) {
+              const userCartObj: Record<string, number> = {};
+              for (const item of accData.cart) {
+                if (item.productId && item.quantity > 0) {
+                  userCartObj[item.productId] = item.quantity;
+                }
+              }
+              setCart(userCartObj);
+            }
+            if (Array.isArray(accData.wishlist)) {
+              const userWishlistArr = accData.wishlist.map((w: { productId: string }) => w.productId).filter(Boolean);
+              setWishlist(userWishlistArr);
+            }
+          }
+        } else {
+          setAuthUser(null);
+          try {
+            setCart(JSON.parse(localStorage.getItem("vpansak_guest_cart") || "{}"));
+            setWishlist(JSON.parse(localStorage.getItem("vpansak_guest_wishlist") || "[]"));
+          } catch { /* ignore */ }
+        }
+        setHydrated(true);
       })
-      .catch(() => {});
+      .catch(() => {
+        setHydrated(true);
+      });
   }, []);
 
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      try {
-        setCart(JSON.parse(localStorage.getItem("vpansak-cart") || "{}"));
-        setWishlist(JSON.parse(localStorage.getItem("vpansak-wishlist") || "[]"));
-      } catch { /* ignore damaged local data */ }
-      setHydrated(true);
-    }, 0);
-    return () => window.clearTimeout(timer);
-  }, []);
-
-  useEffect(() => { if (hydrated) localStorage.setItem("vpansak-cart", JSON.stringify(cart)); }, [cart, hydrated]);
-  useEffect(() => { if (hydrated) localStorage.setItem("vpansak-wishlist", JSON.stringify(wishlist)); }, [wishlist, hydrated]);
   useEffect(() => { const timer = window.setInterval(() => setHero((value) => (value + 1) % heroSlides.length), 6500); return () => window.clearInterval(timer); }, []);
 
   const filteredProducts = useMemo(() => {
@@ -186,24 +227,69 @@ export default function HomePage() {
   const budget = catalogProducts.filter((product) => product.price < 1000).slice(0, 6);
 
   const notify = (message: string) => { setToast(message); window.setTimeout(() => setToast(""), 2200); };
+  
   const addToCart = (id: string) => {
     if (!authUser) {
-      window.location.href = `/login?return_to=${encodeURIComponent("/")}`;
+      const nextCart = { ...cart, [id]: (cart[id] || 0) + 1 };
+      setCart(nextCart);
+      localStorage.setItem("vpansak_guest_cart", JSON.stringify(nextCart));
+      notify("Added to your cart");
       return;
     }
-    setCart((current) => ({ ...current, [id]: (current[id] || 0) + 1 }));
+
+    const nextQty = (cart[id] || 0) + 1;
+    const nextCart = { ...cart, [id]: nextQty };
+    setCart(nextCart);
+
+    fetch("/api/account", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ action: "cart", productId: id, quantity: nextQty }),
+    }).catch(() => {});
+
     notify("Added to your cart");
   };
-  const changeQuantity = (id: string, change: number) => setCart((current) => { const next = (current[id] || 0) + change; const updated = { ...current }; if (next <= 0) delete updated[id]; else updated[id] = next; return updated; });
-  const toggleWishlist = (id: string) => {
-    if (!authUser) {
-      window.location.href = `/login?return_to=${encodeURIComponent("/")}`;
-      return;
+
+  const changeQuantity = (id: string, change: number) => {
+    const currentQty = cart[id] || 0;
+    const nextQty = Math.max(0, currentQty + change);
+    const nextCart = { ...cart };
+    if (nextQty <= 0) {
+      delete nextCart[id];
+    } else {
+      nextCart[id] = nextQty;
     }
+    setCart(nextCart);
+
+    if (authUser) {
+      fetch("/api/account", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ action: "cart", productId: id, quantity: nextQty }),
+      }).catch(() => {});
+    } else {
+      localStorage.setItem("vpansak_guest_cart", JSON.stringify(nextCart));
+    }
+  };
+
+  const toggleWishlist = (id: string) => {
     const exists = wishlist.includes(id);
-    setWishlist((current) => exists ? current.filter((item) => item !== id) : [...current, id]);
+    const nextWishlist = exists ? wishlist.filter((item) => item !== id) : [...wishlist, id];
+    setWishlist(nextWishlist);
+
+    if (authUser) {
+      fetch("/api/account", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ action: "wishlist", productId: id }),
+      }).catch(() => {});
+    } else {
+      localStorage.setItem("vpansak_guest_wishlist", JSON.stringify(nextWishlist));
+    }
+
     notify(exists ? "Removed from wishlist" : "Saved to wishlist");
   };
+
   const chooseCategory = (value: string) => { setCategory(value); setSearch(""); setMenuOpen(false); document.getElementById("catalog")?.scrollIntoView({ behavior: "smooth" }); };
 
   const applyCoupon = async () => {
@@ -219,6 +305,19 @@ export default function HomePage() {
     const response = await fetch("/api/orders", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ customerName: form.get("customerName"), mobile: form.get("mobile"), address: form.get("address"), city: form.get("city"), pinCode: form.get("pinCode"), paymentMethod: form.get("paymentMethod"), total: finalTotal, items: cartItems.map((product) => ({ productId: product.id, productName: product.name, price: product.price, quantity: cart[product.id] })) }) });
     const result = await response.json() as { order?: { orderId: string }; error?: string };
     if (!response.ok || !result.order) { notify(result.error || "Could not place order"); return; }
+    
+    if (authUser) {
+      for (const product of cartItems) {
+        fetch("/api/account", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ action: "cart", productId: product.id, quantity: 0 }),
+        }).catch(() => {});
+      }
+    } else {
+      localStorage.removeItem("vpansak_guest_cart");
+    }
+
     setOrderPlaced(result.order.orderId); setCart({}); setDiscount(0); setCoupon(""); setCheckoutOpen(false);
   };
 

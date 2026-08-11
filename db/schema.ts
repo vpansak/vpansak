@@ -237,3 +237,19 @@ export const passwordResets = sqliteTable("password_resets", {
   used: integer("used", { mode: "boolean" }).notNull().default(false),
   createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });
+
+export const pendingUserRegistrations = sqliteTable("pending_user_registrations", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  fullName: text("full_name").notNull(),
+  email: text("email").notNull().unique(),
+  mobile: text("mobile").notNull(),
+  passwordHash: text("password_hash").notNull(),
+  securityQuestionId: text("security_question_id"),
+  securityAnswerHash: text("security_answer_hash"),
+  verificationTokenHash: text("verification_token_hash").notNull(),
+  verificationExpiresAt: text("verification_expires_at").notNull(),
+  verificationUsedAt: text("verification_used_at"),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+

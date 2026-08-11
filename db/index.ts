@@ -257,6 +257,21 @@ const SCHEMA_SQL = `
       used INTEGER NOT NULL DEFAULT 0,
       created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
+
+    CREATE TABLE IF NOT EXISTS pending_user_registrations (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      full_name TEXT NOT NULL,
+      email TEXT NOT NULL UNIQUE,
+      mobile TEXT NOT NULL,
+      password_hash TEXT NOT NULL,
+      security_question_id TEXT,
+      security_answer_hash TEXT,
+      verification_token_hash TEXT NOT NULL,
+      verification_expires_at TEXT NOT NULL,
+      verification_used_at TEXT,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
 `;
 
 async function initLocalDb() {
@@ -297,6 +312,9 @@ async function initLocalDb() {
     "ALTER TABLE users ADD COLUMN google_user_id TEXT",
     "ALTER TABLE users ADD COLUMN email_verified INTEGER NOT NULL DEFAULT 0",
     "ALTER TABLE users ADD COLUMN account_status TEXT NOT NULL DEFAULT 'active'",
+    "ALTER TABLE users ADD COLUMN security_question_id TEXT",
+    "ALTER TABLE users ADD COLUMN security_answer_hash TEXT",
+    "ALTER TABLE users ADD COLUMN password_updated_at TEXT",
     "ALTER TABLE users ADD COLUMN last_login_at TEXT",
   ];
 

@@ -1,8 +1,16 @@
 import { eq } from "drizzle-orm";
 import { getDb } from "../../../../db";
-import { profiles, users } from "../../../../db/schema";
-import { hashPassword, hashSecurityAnswer, SECURITY_QUESTIONS, validatePasswordStrength } from "../../../lib/auth-session";
-import { saveUserToSupabase } from "../../../lib/supabase";
+import { pendingUserRegistrations, users } from "../../../../db/schema";
+import {
+  generateVerificationToken,
+  hashPassword,
+  hashSecurityAnswer,
+  hashVerificationToken,
+  maskEmail,
+  SECURITY_QUESTIONS,
+  sendVerificationEmail,
+  validatePasswordStrength,
+} from "../../../lib/auth-session";
 
 export async function POST(request: Request) {
   try {
@@ -39,7 +47,10 @@ export async function POST(request: Request) {
 
     const passCheck = validatePasswordStrength(password);
     if (!passCheck.valid) {
-      return Response.json({ error: passCheck.error || "Password does not meet complexity requirements." }, { status: 400 });
+      return Response.json(
+        { error: passCheck.error || "Password does not meet complexity requirements." },
+        { status: 400 }
+      );
     }
 
     const validQuestion = SECURITY_QUESTIONS.find((q) => q.id === securityQuestionId);
@@ -53,77 +64,104 @@ export async function POST(request: Request) {
 
     const db = await getDb();
 
-    // Check duplicate email
+    // Check duplicate active email
     const [existingEmail] = await db.select().from(users).where(eq(users.email, email)).limit(1);
     if (existingEmail) {
       return Response.json(
-        { error: "This email address is already associated with a VPANSAK account. Please log in or reset your password." },
+        { error: "An account is already registered with this email address. Please log in instead." },
         { status: 409 }
       );
     }
 
-    // Check duplicate mobile number
+    // Check duplicate active mobile number
     const [existingMobile] = await db.select().from(users).where(eq(users.mobile, mobile)).limit(1);
     if (existingMobile) {
       return Response.json(
-        { error: "This mobile number is already associated with another account." },
+        { error: "This mobile number is already associated with an existing active account." },
         { status: 409 }
       );
     }
 
     const passwordHash = hashPassword(password);
     const securityAnswerHash = hashSecurityAnswer(securityAnswer);
-    const now = new Date().toISOString();
+    const rawToken = generateVerificationToken();
+    const tokenHash = hashVerificationToken(rawToken);
+    const now = new Date();
+    const expiresAt = new Date(now.getTime() + 15 * 60 * 1000).toISOString(); // 15 minutes
 
-    await db.insert(users).values({
-      email,
-      passwordHash,
-      fullName,
-      mobile,
-      role: "customer",
-      authProvider: "email",
-      emailVerified: true,
-      accountStatus: "active",
-      securityQuestionId,
-      securityAnswerHash,
-      createdAt: now,
-      updatedAt: now,
-    });
+    // Save pending registration safely
+    const [existingPending] = await db
+      .select()
+      .from(pendingUserRegistrations)
+      .where(eq(pendingUserRegistrations.email, email))
+      .limit(1);
 
-    await saveUserToSupabase({
-      email,
-      password_hash: passwordHash,
-      full_name: fullName,
-      mobile,
-      role: "customer",
-      auth_provider: "email",
-      email_verified: 1,
-      account_status: "active",
-      security_question_id: securityQuestionId,
-      security_answer_hash: securityAnswerHash,
-      created_at: now,
-    });
+    if (existingPending) {
+      await db
+        .update(pendingUserRegistrations)
+        .set({
+          fullName,
+          mobile,
+          passwordHash,
+          securityQuestionId,
+          securityAnswerHash,
+          verificationTokenHash: tokenHash,
+          verificationExpiresAt: expiresAt,
+          verificationUsedAt: null,
+          updatedAt: now.toISOString(),
+        })
+        .where(eq(pendingUserRegistrations.email, email));
+    } else {
+      await db.insert(pendingUserRegistrations).values({
+        fullName,
+        email,
+        mobile,
+        passwordHash,
+        securityQuestionId,
+        securityAnswerHash,
+        verificationTokenHash: tokenHash,
+        verificationExpiresAt: expiresAt,
+        createdAt: now.toISOString(),
+        updatedAt: now.toISOString(),
+      });
+    }
 
-    await db.insert(profiles).values({
-      email,
-      fullName,
-      mobile,
-      createdAt: now,
-      updatedAt: now,
-    }).onConflictDoUpdate({
-      target: profiles.email,
-      set: { fullName, mobile, updatedAt: now },
-    });
+    // Construct verification URL
+    let baseUrl = process.env.APP_URL;
+    if (!baseUrl) {
+      const origin = request.headers.get("origin") || request.headers.get("host");
+      if (origin) {
+        baseUrl = origin.startsWith("http") ? origin : `https://${origin}`;
+      } else {
+        baseUrl = "https://vpansak.vercel.app";
+      }
+    }
+    baseUrl = baseUrl.replace(/\/+$/, "");
+
+    const verificationLink = `${baseUrl}/verify-email?token=${rawToken}`;
+
+    // Send verification email via EmailJS
+    const emailResult = await sendVerificationEmail(email, fullName, verificationLink);
+
+    if (!emailResult.success) {
+      return Response.json(
+        { error: "We couldn’t send the verification email right now. Please try again shortly." },
+        { status: 500 }
+      );
+    }
 
     return Response.json(
       {
         ok: true,
-        message: "Your VPANSAK account has been created successfully. You can now log in.",
+        pending: true,
+        email,
+        maskedEmail: maskEmail(email),
+        message: "Verification email sent. Please check your email to complete your VPANSAK registration.",
       },
-      { status: 201 }
+      { status: 200 }
     );
   } catch (err) {
     console.error("Signup error:", err);
-    return Response.json({ error: "Could not create account. Please try again." }, { status: 500 });
+    return Response.json({ error: "Could not process registration. Please try again." }, { status: 500 });
   }
 }

@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { getDb } from "../../../../db";
-import { users } from "../../../../db/schema";
+import { profiles, users } from "../../../../db/schema";
 import { setSessionCookieHeaders, verifyPassword } from "../../../lib/auth-session";
 import { getUserFromSupabase } from "../../../lib/supabase";
 
@@ -37,6 +37,16 @@ export async function POST(request: Request) {
           })
           .returning();
         user = restored;
+
+        await db.insert(profiles).values({
+          email: remoteUser.email,
+          fullName: remoteUser.fullName,
+          mobile: remoteUser.mobile,
+          createdAt: remoteUser.createdAt,
+        }).onConflictDoUpdate({
+          target: profiles.email,
+          set: { fullName: remoteUser.fullName, mobile: remoteUser.mobile },
+        });
       }
     }
 

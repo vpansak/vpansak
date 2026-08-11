@@ -1,7 +1,8 @@
 import { and, desc, eq } from "drizzle-orm";
 import { getDb } from "../../../../db";
-import { otpCodes, users } from "../../../../db/schema";
+import { otpCodes, profiles, users } from "../../../../db/schema";
 import { setSessionCookieHeaders } from "../../../lib/auth-session";
+import { getUserFromSupabase } from "../../../lib/supabase";
 
 export async function POST(request: Request) {
   try {
@@ -67,7 +68,40 @@ export async function POST(request: Request) {
     await db.update(otpCodes).set({ used: true }).where(eq(otpCodes.id, otpRecord.id));
 
     if (purpose === "email_verification") {
-      const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
+      let [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
+
+      if (!user) {
+        const remoteUser = await getUserFromSupabase(email);
+        if (remoteUser && remoteUser.passwordHash) {
+          const [restored] = await db
+            .insert(users)
+            .values({
+              email: remoteUser.email,
+              passwordHash: remoteUser.passwordHash,
+              fullName: remoteUser.fullName,
+              mobile: remoteUser.mobile,
+              role: remoteUser.role,
+              authProvider: "email",
+              emailVerified: true,
+              accountStatus: remoteUser.accountStatus || "active",
+              securityQuestionId: remoteUser.securityQuestionId,
+              securityAnswerHash: remoteUser.securityAnswerHash,
+              createdAt: remoteUser.createdAt,
+            })
+            .returning();
+          user = restored;
+
+          await db.insert(profiles).values({
+            email: remoteUser.email,
+            fullName: remoteUser.fullName,
+            mobile: remoteUser.mobile,
+            createdAt: remoteUser.createdAt,
+          }).onConflictDoUpdate({
+            target: profiles.email,
+            set: { fullName: remoteUser.fullName, mobile: remoteUser.mobile },
+          });
+        }
+      }
 
       if (!user) {
         return Response.json({ error: "User account not found." }, { status: 404 });
