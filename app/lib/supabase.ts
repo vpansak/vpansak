@@ -158,11 +158,22 @@ export async function getUserFromSupabase(email: string) {
   if (!supabase || !email) return null;
   try {
     const cleanEmail = email.toLowerCase().trim();
-    const { data, error } = await supabase.from("users").select("*").eq("email", cleanEmail).limit(1);
-    const userRow = Array.isArray(data) ? data[0] : data;
-    if (error || !userRow) return null;
+
+    // 1. Try exact match
+    let { data, error } = await supabase.from("users").select("*").eq("email", cleanEmail).limit(1);
+    let userRow = Array.isArray(data) && data.length > 0 ? data[0] : null;
+
+    // 2. Try ilike case-insensitive match if exact match returned nothing
+    if (!userRow) {
+      const { data: ilikeData } = await supabase.from("users").select("*").ilike("email", cleanEmail).limit(1);
+      userRow = Array.isArray(ilikeData) && ilikeData.length > 0 ? ilikeData[0] : null;
+    }
+
+    if (error && !userRow) return null;
+    if (!userRow) return null;
+
     return {
-      email: String(userRow.email || cleanEmail).toLowerCase(),
+      email: String(userRow.email || cleanEmail).toLowerCase().trim(),
       passwordHash: String(userRow.password_hash || userRow.passwordHash || ""),
       fullName: String(userRow.full_name || userRow.fullName || cleanEmail.split("@")[0]),
       mobile: String(userRow.mobile || ""),
