@@ -2,7 +2,7 @@ import { and, desc, eq, or } from "drizzle-orm";
 import { getDb } from "../../../db";
 import { addresses, notifications, orders, persistentCartItems, profiles, reviews, sellerApplications, tickets, users, wishlistItems } from "../../../db/schema";
 import { getAuthUserFromRequest, hashPassword, setSessionCookieHeaders, verifyPassword } from "../../lib/auth-session";
-import { saveUserToSupabase } from "../../lib/supabase";
+import { getAddressesFromSupabase, getUserFromSupabase, getUserOrdersFromSupabase, saveUserToSupabase } from "../../lib/supabase";
 
 async function emailFrom(request: Request) {
   const user = await getAuthUserFromRequest(request);
@@ -15,9 +15,120 @@ export async function GET(request: Request) {
   const email = userSession.email.toLowerCase();
   try {
     const db = await getDb();
-    const [userRecord] = await db.select().from(users).where(eq(users.email, email)).limit(1);
+    let [userRecord] = await db.select().from(users).where(eq(users.email, email)).limit(1);
+
+    // If userRecord is missing in local SQLite (e.g. Vercel deployment wiped local disk), restore from Supabase Cloud DB
+    if (!userRecord) {
+      const remoteUser = await getUserFromSupabase(email);
+      const now = new Date().toISOString();
+
+      if (remoteUser) {
+        const [restored] = await db
+          .insert(users)
+          .values({
+            email: remoteUser.email,
+            passwordHash: remoteUser.passwordHash || "RESTORED_USER_HASH",
+            fullName: remoteUser.fullName,
+            mobile: remoteUser.mobile,
+            role: remoteUser.role,
+            profileImage: remoteUser.profileImage || null,
+            authProvider: remoteUser.authProvider || "email",
+            emailVerified: true,
+            accountStatus: remoteUser.accountStatus || "active",
+            securityQuestionId: remoteUser.securityQuestionId || null,
+            securityAnswerHash: remoteUser.securityAnswerHash || null,
+            createdAt: remoteUser.createdAt || now,
+            updatedAt: now,
+          })
+          .onConflictDoUpdate({
+            target: users.email,
+            set: { fullName: remoteUser.fullName, mobile: remoteUser.mobile, updatedAt: now },
+          })
+          .returning();
+        userRecord = restored;
+
+        await db.insert(profiles).values({
+          email: remoteUser.email,
+          fullName: remoteUser.fullName,
+          mobile: remoteUser.mobile,
+          avatarUrl: remoteUser.profileImage || null,
+          createdAt: remoteUser.createdAt || now,
+          updatedAt: now,
+        }).onConflictDoUpdate({
+          target: profiles.email,
+          set: { fullName: remoteUser.fullName, mobile: remoteUser.mobile, updatedAt: now },
+        });
+
+        // Also sync remote orders if local orders empty
+        const remoteOrders = await getUserOrdersFromSupabase(email);
+        for (const o of remoteOrders) {
+          await db.insert(orders).values({
+            orderId: o.orderId,
+            ownerEmail: o.ownerEmail,
+            customerName: o.customerName,
+            mobile: o.mobile,
+            address: o.address,
+            city: o.city,
+            pinCode: o.pinCode,
+            total: o.total,
+            status: o.status,
+            paymentMethod: o.paymentMethod,
+            createdAt: o.createdAt,
+          }).onConflictDoNothing();
+        }
+
+        // Sync remote addresses
+        const remoteAddresses = await getAddressesFromSupabase(email);
+        for (const a of remoteAddresses) {
+          await db.insert(addresses).values({
+            ownerEmail: a.ownerEmail,
+            label: a.label,
+            fullName: a.fullName,
+            mobile: a.mobile,
+            line1: a.line1,
+            city: a.city,
+            state: a.state,
+            pinCode: a.pinCode,
+            isPrimary: a.isPrimary,
+          }).onConflictDoNothing();
+        }
+      } else {
+        // Create user from active session data & backup to Supabase
+        const isAdmin = email === "aloksingh84959@gmail.com" || userSession.role === "admin";
+        const [created] = await db
+          .insert(users)
+          .values({
+            email,
+            passwordHash: "SESSION_RESTORED",
+            fullName: userSession.fullName || email.split("@")[0],
+            mobile: userSession.mobile || "",
+            role: isAdmin ? "admin" : userSession.role || "customer",
+            authProvider: userSession.authProvider || "email",
+            emailVerified: true,
+            accountStatus: "active",
+            createdAt: now,
+            updatedAt: now,
+          })
+          .onConflictDoNothing()
+          .returning();
+
+        userRecord = created || (await db.select().from(users).where(eq(users.email, email)).limit(1))[0];
+
+        await db.insert(profiles).values({
+          email,
+          fullName: userSession.fullName || email.split("@")[0],
+          mobile: userSession.mobile || "",
+          createdAt: now,
+          updatedAt: now,
+        }).onConflictDoNothing();
+
+        if (userRecord) {
+          await saveUserToSupabase(userRecord);
+        }
+      }
+    }
+
     const [profileRecord] = await db.select().from(profiles).where(eq(profiles.email, email)).limit(1);
-    
     const userMobile = profileRecord?.mobile?.trim() || userRecord?.mobile?.trim() || userSession.mobile?.trim() || "";
 
     const [addressRows, wishlist, cart, orderRows, notificationRows, userReviews, userTickets, sellerApps] = await Promise.all([

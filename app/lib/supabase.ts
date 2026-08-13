@@ -145,12 +145,81 @@ export async function getUserFromSupabase(email: string) {
       fullName: String(data.full_name || data.fullName || ""),
       mobile: String(data.mobile || ""),
       role: String(data.role || "customer"),
+      profileImage: String(data.profile_image || data.profileImage || ""),
+      authProvider: String(data.auth_provider || data.authProvider || "email"),
       securityQuestionId: String(data.security_question_id || data.securityQuestionId || ""),
       securityAnswerHash: String(data.security_answer_hash || data.securityAnswerHash || ""),
       accountStatus: String(data.account_status || data.accountStatus || "active"),
       createdAt: String(data.created_at || data.createdAt || new Date().toISOString()),
     };
   } catch {
+    return null;
+  }
+}
+
+export async function getUserOrdersFromSupabase(email: string) {
+  if (!supabase) return [];
+  try {
+    const { data, error } = await supabase.from("orders").select("*").eq("owner_email", email.toLowerCase());
+    if (error || !data) return [];
+    return data.map((row) => ({
+      orderId: String(row.order_id || row.orderId || ""),
+      ownerEmail: String(row.owner_email || email).toLowerCase(),
+      customerName: String(row.customer_name || row.customerName || ""),
+      mobile: String(row.mobile || ""),
+      address: String(row.address || ""),
+      city: String(row.city || ""),
+      pinCode: String(row.pin_code || row.pinCode || ""),
+      total: Number(row.total || 0),
+      status: String(row.status || "Order Confirmed"),
+      paymentMethod: String(row.payment_method || row.paymentMethod || "COD"),
+      createdAt: String(row.created_at || row.createdAt || new Date().toISOString()),
+    }));
+  } catch {
+    return [];
+  }
+}
+
+export async function getAddressesFromSupabase(email: string) {
+  if (!supabase) return [];
+  try {
+    const { data, error } = await supabase.from("addresses").select("*").eq("owner_email", email.toLowerCase());
+    if (error || !data) return [];
+    return data.map((row) => ({
+      ownerEmail: String(row.owner_email || email).toLowerCase(),
+      label: String(row.label || "Home"),
+      fullName: String(row.full_name || row.fullName || ""),
+      mobile: String(row.mobile || ""),
+      line1: String(row.line1 || ""),
+      city: String(row.city || ""),
+      state: String(row.state || ""),
+      pinCode: String(row.pin_code || row.pinCode || ""),
+      isPrimary: Boolean(row.is_primary || row.isPrimary),
+    }));
+  } catch {
+    return [];
+  }
+}
+
+export async function saveAddressToSupabase(addressData: Record<string, unknown>) {
+  if (!supabase) return null;
+  try {
+    const payload = {
+      owner_email: String(addressData.ownerEmail || addressData.owner_email || "").toLowerCase(),
+      label: String(addressData.label || "Home"),
+      full_name: String(addressData.fullName || addressData.full_name || ""),
+      mobile: String(addressData.mobile || ""),
+      line1: String(addressData.line1 || ""),
+      city: String(addressData.city || ""),
+      state: String(addressData.state || ""),
+      pin_code: String(addressData.pinCode || addressData.pin_code || ""),
+      is_primary: Boolean(addressData.isPrimary || addressData.is_primary),
+    };
+    const { data, error } = await supabase.from("addresses").upsert(payload).select();
+    if (error) console.error("Supabase address upsert notice:", error.message);
+    return data;
+  } catch (err) {
+    console.error("Supabase address upsert catch:", err);
     return null;
   }
 }
