@@ -4,18 +4,17 @@ import {
   AlertCircle,
   ArrowLeft,
   Award,
-  Banknote,
   Building2,
   Check,
   CheckCircle2,
   Clock,
   Copy,
   CreditCard,
-  ExternalLink,
+  Download,
+  FileText,
   HeartHandshake,
   Printer,
   QrCode,
-  RefreshCw,
   Search,
   ShieldCheck,
   Sparkles,
@@ -94,7 +93,6 @@ function FoundationContent() {
   const [busy, setBusy] = useState(false);
   const [busyText, setBusyText] = useState("");
   const [method, setMethod] = useState("razorpay");
-  const [copied, setCopied] = useState("");
   const [toast, setToast] = useState("");
 
   // Central strict verification check for certificate display
@@ -116,6 +114,10 @@ function FoundationContent() {
     await navigator.clipboard?.writeText(value);
     setToast(`${label} copied!`);
     setTimeout(() => setToast(""), 1800);
+  };
+
+  const handleDownloadCertificate = () => {
+    window.print();
   };
 
   const checkStatusById = async (id: string) => {
@@ -532,12 +534,6 @@ function FoundationContent() {
                 />
                 <button disabled={busy}>{busy ? "Checking…" : "Check Status"}</button>
               </form>
-
-              {canShowCertificate && (
-                <button type="button" onClick={() => window.print()}>
-                  <Printer /> Print / Save PDF
-                </button>
-              )}
             </div>
 
             {/* STATE 0: Cancelled Payment State */}
@@ -563,7 +559,7 @@ function FoundationContent() {
                   <div style={{ fontSize: 26, fontWeight: 900, color: "#1766ef", letterSpacing: "0.05em" }}>{submittedId}</div>
                 </div>
                 <p style={{ color: "#475569", fontSize: 13, maxWidth: 420, margin: "0 auto 18px" }}>
-                  Save this ID to check your contribution status later. Your certificate will become available only after successful payment verification by our team.
+                  Save this ID to check your contribution status later. Your official 2-page certificate will become available after payment verification.
                 </p>
                 <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
                   <button
@@ -607,77 +603,71 @@ function FoundationContent() {
                     <strong>Your payment details have been received and are currently being reviewed.</strong>
                   </p>
                   <p style={{ margin: "4px 0 0" }}>
-                    Your Certificate of Appreciation will become available only after successful payment verification.
+                    Your official 2-page Certificate of Appreciation &amp; Thanking Letter will become available only after successful payment verification.
                   </p>
                 </div>
               </div>
             )}
 
-            {/* STATE 3: Verified Certificate Display - STRICT CAN SHOW CERTIFICATE ONLY */}
+            {/* STATE 3: Verified Status - CLEAN DOWNLOAD CARD (Certificate not bloated on screen) */}
             {canShowCertificate && certificate && (
-              <article id="certificate" className="donation-certificate">
-                <div className="certificate-border">
-                  <header>
-                    <img src="/vpansak-logo-light.jpeg" alt="VPANSAK logo" />
-                    <div>
-                      <strong>VPANSAK</strong>
-                      <span>SUPPORT FUND</span>
-                    </div>
-                  </header>
-
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", margin: "8px 0" }}>
-                    <Sparkles />
-                    <span style={{ background: "#dcfce7", color: "#15803d", border: "1px solid #86efac", padding: "4px 10px", borderRadius: 20, fontSize: 11, fontWeight: 800, display: "inline-flex", alignItems: "center", gap: 4 }}>
-                      <CheckCircle2 size={13} /> VERIFIED CONTRIBUTION
+              <div className="certificate-verified-card">
+                <div className="verified-card-header">
+                  <div className="verified-badge-icon">
+                    <CheckCircle2 size={32} />
+                  </div>
+                  <div>
+                    <span className="verified-status-tag">
+                      <CheckCircle2 size={12} /> PAYMENT VERIFIED &amp; CONFIRMED
                     </span>
-                  </div>
-
-                  <small>CERTIFICATE OF APPRECIATION</small>
-                  <h2>Presented with gratitude to</h2>
-                  <h1>{certificate.fullName}</h1>
-                  <p>{certificate.appreciationMessage}</p>
-
-                  <div className="certificate-amount">
-                    <span>CONTRIBUTION RECORDED</span>
-                    <strong>{money(certificate.amount)}</strong>
-                    <small>
-                      Issued on{" "}
-                      {new Date(certificate.verifiedAt).toLocaleDateString("en-IN", {
-                        day: "2-digit",
-                        month: "long",
-                        year: "numeric",
-                      })}
-                    </small>
-                  </div>
-
-                  <div className="certificate-footer">
-                    <div className="signatory-section">
-                      <img
-                        src="/assets/certificate/alok-singh-signature.png?v=4"
-                        alt="Alok Singh signature"
-                        className="certificate-signature"
-                      />
-                      <div className="signature-line" />
-                      <strong>Alok Singh</strong>
-                      <span>Founder &amp; Authorized Signatory</span>
-                    </div>
-
-                    <div className="certificate-identifiers" style={{ textAlign: "right", display: "flex", flexDirection: "column", gap: 3 }}>
-                      <strong style={{ color: "#1766ef", fontSize: 14 }}>{certificate.certificateNumber}</strong>
-                      <span style={{ fontSize: 11, color: "#475569" }}>
-                        Verification ID: <strong>{certificate.verificationId}</strong>
-                      </span>
-                      <span style={{ fontSize: 10, color: "#64748b" }}>
-                        Verified Date: <strong>{new Date(certificate.verifiedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "long", year: "numeric" })}</strong>
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="certificate-status">
-                    <CheckCircle2 /> Payment verified successfully • Certificate Ready
+                    <h2>Certificate &amp; Thanking Letter Ready</h2>
+                    <p>Official 2-Page Document issued by VPANSAK Support Foundation</p>
                   </div>
                 </div>
-              </article>
+
+                <div className="verified-meta-grid">
+                  <div className="meta-box">
+                    <span>Contributor Name</span>
+                    <strong>{certificate.fullName}</strong>
+                  </div>
+                  <div className="meta-box">
+                    <span>Amount Recorded</span>
+                    <strong className="amount-text">{money(certificate.amount)}</strong>
+                  </div>
+                  <div className="meta-box">
+                    <span>Certificate Number</span>
+                    <strong className="cert-no">{certificate.certificateNumber}</strong>
+                  </div>
+                  <div className="meta-box">
+                    <span>Verification ID</span>
+                    <strong>{certificate.verificationId}</strong>
+                  </div>
+                </div>
+
+                {/* Primary CTA: Download / Print 2-Page Certificate */}
+                <div className="verified-card-actions">
+                  <button
+                    type="button"
+                    className="btn-download-cert"
+                    onClick={handleDownloadCertificate}
+                  >
+                    <Download size={18} />
+                    Download / Print Official 2-Page Certificate (PDF)
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-copy-id"
+                    onClick={() => copy(certificate.verificationId, "Verification ID")}
+                  >
+                    <Copy size={14} />
+                    Copy ID
+                  </button>
+                </div>
+
+                <div className="verified-card-footer">
+                  <ShieldCheck size={14} /> Includes Official 2-Page Certificate of Appreciation &amp; Transparency Letter with Watermark and Founder Signature.
+                </div>
+              </div>
             )}
 
             {/* STATE 4: Rejected Status */}
@@ -714,39 +704,198 @@ function FoundationContent() {
               </div>
             )}
 
-          {/* STATE 5: Refunded / Failed */}
-          {statusType === "refunded" && (
-            <div className="certificate-placeholder" style={{ padding: 28, background: "#f1f5f9", borderRadius: 16, border: "1px solid #cbd5e1", textAlign: "center" }}>
-              <AlertCircle size={32} color="#64748b" style={{ margin: "0 auto 10px" }} />
-              <h3 style={{ color: "#334155" }}>Contribution Refunded</h3>
-              <p style={{ color: "#64748b", fontSize: 13 }}>
-                This contribution payment has been refunded. The certificate is no longer available.
-              </p>
-            </div>
-          )}
+            {/* STATE 5: Refunded / Failed */}
+            {statusType === "refunded" && (
+              <div className="certificate-placeholder" style={{ padding: 28, background: "#f1f5f9", borderRadius: 16, border: "1px solid #cbd5e1", textAlign: "center" }}>
+                <AlertCircle size={32} color="#64748b" style={{ margin: "0 auto 10px" }} />
+                <h3 style={{ color: "#334155" }}>Contribution Refunded</h3>
+                <p style={{ color: "#64748b", fontSize: 13 }}>
+                  This contribution payment has been refunded. The certificate is no longer available.
+                </p>
+              </div>
+            )}
 
-          {/* STATE 6: Invalid Verification ID */}
-          {statusType === "invalid_id" && (
-            <div className="certificate-placeholder" style={{ padding: 28, background: "#f8fafc", borderRadius: 16, border: "1px solid #e2e8f0", textAlign: "center" }}>
-              <XCircle size={32} color="#94a3b8" style={{ margin: "0 auto 10px" }} />
-              <h3 style={{ color: "#334155" }}>No Record Found</h3>
-              <p style={{ color: "#64748b", fontSize: 13 }}>
-                No contribution record was found for Verification ID: <strong>{lookup}</strong>. Please verify the ID and try again.
-              </p>
-            </div>
-          )}
+            {/* STATE 6: Invalid Verification ID */}
+            {statusType === "invalid_id" && (
+              <div className="certificate-placeholder" style={{ padding: 28, background: "#f8fafc", borderRadius: 16, border: "1px solid #e2e8f0", textAlign: "center" }}>
+                <XCircle size={32} color="#94a3b8" style={{ margin: "0 auto 10px" }} />
+                <h3 style={{ color: "#334155" }}>No Record Found</h3>
+                <p style={{ color: "#64748b", fontSize: 13 }}>
+                  No contribution record was found for Verification ID: <strong>{lookup}</strong>. Please verify the ID and try again.
+                </p>
+              </div>
+            )}
 
-          {/* Default Idle State */}
-          {statusType === "idle" && (
-            <div className="certificate-placeholder">
-              <Award />
-              <h3>Check Contribution Status</h3>
-              <p>Enter your Verification ID above to check whether your payment has been confirmed by our team.</p>
-            </div>
-          )}
+            {/* Default Idle State */}
+            {statusType === "idle" && (
+              <div className="certificate-placeholder">
+                <Award />
+                <h3>Check Contribution Status</h3>
+                <p>Enter your Verification ID above to check whether your payment has been confirmed by our team.</p>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+
+      {/* 2-PAGE PRINT / DOWNLOAD CERTIFICATE DOCUMENT */}
+      {canShowCertificate && certificate && (
+        <article id="certificate-document" className="printable-certificate-document">
+          {/* ================= PAGE 1: CERTIFICATE OF APPRECIATION ================= */}
+          <div className="cert-page cert-page-1">
+            {/* Watermark Background */}
+            <div className="cert-watermark">
+              <img src="/vpansak-logo.png" alt="VPANSAK Watermark" />
+            </div>
+
+            {/* Certificate Header */}
+            <header className="cert-header">
+              <div className="cert-brand">
+                <img src="/vpansak-logo-dark.jpeg" alt="VPANSAK Logo" className="cert-logo-img" />
+                <div>
+                  <strong className="cert-brand-title">VPANSAK</strong>
+                  <span className="cert-brand-sub">SUPPORT FOUNDATION</span>
+                </div>
+              </div>
+              <div className="cert-badge-tag">
+                <CheckCircle2 size={13} /> OFFICIAL VERIFIED RECORD
+              </div>
+            </header>
+
+            {/* Certificate Body */}
+            <div className="cert-body">
+              <small className="cert-award-tag">CERTIFICATE OF APPRECIATION</small>
+              <h2 className="cert-salutation">This Certificate is Proudly Presented To</h2>
+              <h1 className="cert-recipient-name">{certificate.fullName}</h1>
+
+              <p className="cert-citation-text">
+                In recognition and heartfelt appreciation for your voluntary support contribution to the <strong>VPANSAK Support Foundation</strong>. Your valued support directly powers transparent digital infrastructure, merchant onboarding programs, and community welfare initiatives across India.
+              </p>
+
+              <div className="cert-amount-box">
+                <span className="amount-label">CONTRIBUTION RECORDED</span>
+                <strong className="amount-value">{money(certificate.amount)}</strong>
+                <small className="amount-date">
+                  Issued on{" "}
+                  {new Date(certificate.verifiedAt).toLocaleDateString("en-IN", {
+                    day: "2-digit",
+                    month: "long",
+                    year: "numeric",
+                  })}
+                </small>
+              </div>
+            </div>
+
+            {/* Certificate Footer with Signature */}
+            <footer className="cert-footer">
+              <div className="cert-signature-box">
+                <img
+                  src="/assets/certificate/alok-singh-signature.png"
+                  alt="Alok Singh Signature"
+                  className="cert-signature-img"
+                />
+                <div className="cert-sig-line" />
+                <strong className="cert-sig-name">Alok Singh</strong>
+                <span className="cert-sig-title">Founder &amp; Authorized Signatory</span>
+                <small className="cert-sig-org">VPANSAK Support Foundation • A&amp;A Group</small>
+              </div>
+
+              <div className="cert-meta-box">
+                <strong className="cert-no-text">{certificate.certificateNumber}</strong>
+                <span className="cert-meta-row">
+                  Verification ID: <strong>{certificate.verificationId}</strong>
+                </span>
+                <span className="cert-meta-row">
+                  Verified Date: <strong>{new Date(certificate.verifiedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "long", year: "numeric" })}</strong>
+                </span>
+                <span className="cert-meta-row">
+                  Payment Method: <strong>{certificate.paymentMethod}</strong>
+                </span>
+              </div>
+            </footer>
+          </div>
+
+          {/* ================= PAGE 2: THANKING NOTE & IMPACT LETTER ================= */}
+          <div className="cert-page cert-page-2">
+            {/* Watermark Background */}
+            <div className="cert-watermark">
+              <img src="/vpansak-logo.png" alt="VPANSAK Watermark" />
+            </div>
+
+            {/* Letter Header */}
+            <header className="letter-header">
+              <div className="cert-brand">
+                <img src="/vpansak-logo-dark.jpeg" alt="VPANSAK Logo" className="cert-logo-img" />
+                <div>
+                  <strong className="cert-brand-title">VPANSAK SUPPORT FOUNDATION</strong>
+                  <span className="cert-brand-sub">OFFICIAL LETTER OF APPRECIATION &amp; FUND TRANSPARENCY</span>
+                </div>
+              </div>
+              <div className="letter-date-box">
+                <span className="letter-ref">Ref: <strong>{certificate.verificationId}</strong></span>
+                <span className="letter-date">Date: <strong>{new Date(certificate.verifiedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "long", year: "numeric" })}</strong></span>
+              </div>
+            </header>
+
+            {/* Letter Content */}
+            <div className="letter-body">
+              <h2 className="letter-salutation">Dear {certificate.fullName},</h2>
+
+              <p className="letter-paragraph">
+                Namaste! On behalf of the entire team at <strong>VPANSAK</strong> and <strong>A&amp;A Group</strong>, I extend our deepest gratitude for your generous voluntary contribution of <strong>{money(certificate.amount)}</strong> (Verification ID: <code>{certificate.verificationId}</code>).
+              </p>
+
+              <div className="letter-impact-box">
+                <h3><HeartHandshake size={18} /> How Your Contribution Creates Real Impact:</h3>
+                <p>Your contribution directly powers three core pillars of our foundation:</p>
+                <ul>
+                  <li>
+                    <strong>1. Platform Security &amp; Infrastructure:</strong> Maintaining secure, high-speed servers, database protection, and encrypted payment workflows for thousands of daily users across India.
+                  </li>
+                  <li>
+                    <strong>2. Seller &amp; Small Merchant Empowerment:</strong> Providing free digital onboarding, cataloging support, and business desk guidance to local Indian shopkeepers and independent sellers.
+                  </li>
+                  <li>
+                    <strong>3. 24x7 Customer Help Desk &amp; Community Care:</strong> Funding human-assisted support desks, transparent order tracking, and community welfare initiatives.
+                  </li>
+                </ul>
+              </div>
+
+              <p className="letter-paragraph">
+                VPANSAK is built on the principles of total transparency, user trust, and community-first technology. We ensure that every contribution is responsibly utilized to strengthen digital accessibility and customer satisfaction.
+              </p>
+
+              <p className="letter-paragraph highlight-thanks">
+                Thank you once again for believing in our vision and supporting our journey. Your contribution is officially recorded in our permanent verification ledger.
+              </p>
+            </div>
+
+            {/* Letter Closing & Signature */}
+            <footer className="letter-footer">
+              <div className="letter-closing">
+                <p className="closing-text">Warm regards &amp; sincere gratitude,</p>
+                <img
+                  src="/assets/certificate/alok-singh-signature.png"
+                  alt="Alok Singh Signature"
+                  className="cert-signature-img"
+                />
+                <div className="cert-sig-line" />
+                <strong className="cert-sig-name">Alok Singh</strong>
+                <span className="cert-sig-title">Founder &amp; Authorized Signatory</span>
+                <small className="cert-sig-org">VPANSAK Support Foundation • A&amp;A Group</small>
+              </div>
+
+              <div className="letter-security-stamp">
+                <ShieldCheck size={28} />
+                <div>
+                  <strong>Official Digital Document</strong>
+                  <p>Verified &amp; Sealed by VPANSAK Foundation</p>
+                </div>
+              </div>
+            </footer>
+          </div>
+        </article>
+      )}
 
       <section className="foundation-values">
         <article>

@@ -1342,5 +1342,556 @@ main:not(.vp-store) td{font-size:13px}
   }
 }
 
+/* Verified Certificate Card UI (On-Screen Download Card) */
+.certificate-verified-card {
+  padding: 32px;
+  border: 1px solid #bbf7d0;
+  border-radius: 16px;
+  background: #f0fdf4;
+  text-align: left;
+  box-shadow: 0 14px 40px rgba(22, 101, 52, 0.08);
+}
+
+.verified-card-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.verified-badge-icon {
+  width: 56px;
+  height: 56px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #dcfce7;
+  color: #16a34a;
+  flex-shrink: 0;
+}
+
+.verified-status-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: #dcfce7;
+  color: #15803d;
+  font-size: 11px;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+
+.verified-card-header h2 {
+  margin: 4px 0 2px;
+  font-size: 22px;
+  color: #0f172a;
+}
+
+.verified-card-header p {
+  margin: 0;
+  color: #475569;
+  font-size: 13px;
+}
+
+.verified-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.meta-box {
+  padding: 14px;
+  border-radius: 10px;
+  background: white;
+  border: 1px solid #cbd5e1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.meta-box span {
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 700;
+}
+
+.meta-box strong {
+  font-size: 14px;
+  color: #0f172a;
+}
+
+.meta-box .amount-text {
+  font-size: 18px;
+  color: #166534;
+}
+
+.meta-box .cert-no {
+  color: #1766ef;
+}
+
+.verified-card-actions {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.btn-download-cert {
+  flex: 1;
+  min-height: 52px;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: none;
+  border-radius: 10px;
+  background: #166534;
+  color: white;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 10px 25px rgba(22, 101, 52, 0.25);
+  transition: all 0.2s ease;
+}
+
+.btn-download-cert:hover {
+  background: #15803d;
+  transform: translateY(-2px);
+  box-shadow: 0 14px 30px rgba(22, 101, 52, 0.35);
+}
+
+.btn-copy-id {
+  height: 52px;
+  padding: 0 18px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  background: white;
+  color: #334155;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-copy-id:hover {
+  background: #f8fafc;
+}
+
+.verified-card-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #15803d;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Printable 2-Page Certificate & Letter Document */
+.printable-certificate-document {
+  margin-top: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+.cert-page {
+  position: relative;
+  width: 100%;
+  min-height: 620px;
+  padding: 36px 48px;
+  box-sizing: border-box;
+  background: radial-gradient(circle at center, #fffdf8, #f8f0dc);
+  border: 4px double #b28a3e;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  text-align: center;
+  overflow: hidden;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.06);
+}
+
+.cert-watermark {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.cert-watermark img {
+  width: 320px;
+  height: 320px;
+  object-fit: contain;
+  opacity: 0.07;
+  filter: grayscale(100%);
+}
+
+.cert-header, .letter-header {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e2cb98;
+}
+
+.cert-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+}
+
+.cert-logo-img {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  border-radius: 6px;
+}
+
+.cert-brand-title {
+  display: block;
+  font-size: 18px;
+  letter-spacing: 0.08em;
+  color: #0f172a;
+}
+
+.cert-brand-sub {
+  display: block;
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  color: #a37628;
+  font-weight: 800;
+}
+
+.cert-badge-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: #dcfce7;
+  color: #15803d;
+  font-size: 10px;
+  font-weight: 800;
+  border: 1px solid #86efac;
+}
+
+.cert-body {
+  position: relative;
+  z-index: 2;
+  margin: 20px 0;
+}
+
+.cert-award-tag {
+  display: block;
+  color: #9d762f;
+  font-family: Georgia, serif;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.25em;
+  margin-bottom: 12px;
+}
+
+.cert-salutation {
+  margin: 0 0 10px;
+  color: #64748b;
+  font-family: Georgia, serif;
+  font-size: 15px;
+  font-weight: 400;
+}
+
+.cert-recipient-name {
+  width: max-content;
+  max-width: 100%;
+  margin: 0 auto 18px;
+  padding: 0 30px 8px;
+  border-bottom: 2px solid #c5a668;
+  font-family: Georgia, serif;
+  font-size: 38px;
+  font-style: italic;
+  color: #102b4e;
+}
+
+.cert-citation-text {
+  max-width: 680px;
+  margin: 0 auto 20px;
+  color: #475569;
+  font-family: Georgia, serif;
+  font-size: 13px;
+  line-height: 1.85;
+}
+
+.cert-amount-box {
+  margin: 16px auto;
+  width: max-content;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.amount-label {
+  color: #9a7735;
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  font-weight: 800;
+}
+
+.amount-value {
+  font-size: 26px;
+  color: #102b4e;
+  font-weight: 900;
+}
+
+.amount-date {
+  color: #64748b;
+  font-size: 11px;
+}
+
+.cert-footer, .letter-footer {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding-top: 16px;
+  border-top: 1px solid #e2cb98;
+}
+
+.cert-signature-box, .letter-closing {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+}
+
+.cert-signature-img {
+  height: 52px;
+  width: auto;
+  object-fit: contain;
+  margin-bottom: 4px;
+  mix-blend-mode: multiply;
+}
+
+.cert-sig-line {
+  width: 150px;
+  height: 1px;
+  background: #a88b52;
+  margin-bottom: 6px;
+}
+
+.cert-sig-name {
+  font-family: Georgia, serif;
+  font-size: 14px;
+  color: #0f172a;
+}
+
+.cert-sig-title {
+  color: #64748b;
+  font-size: 10px;
+}
+
+.cert-sig-org {
+  color: #94a3b8;
+  font-size: 9px;
+}
+
+.cert-meta-box {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cert-no-text {
+  color: #1766ef;
+  font-size: 16px;
+  font-family: monospace;
+  font-weight: 900;
+}
+
+.cert-meta-row {
+  font-size: 11px;
+  color: #475569;
+}
+
+/* Page 2: Letter of Appreciation & Transparency Note */
+.letter-date-box {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 11px;
+  color: #475569;
+}
+
+.letter-body {
+  position: relative;
+  z-index: 2;
+  text-align: left;
+  margin: 20px 0;
+}
+
+.letter-salutation {
+  font-family: Georgia, serif;
+  font-size: 18px;
+  color: #0f172a;
+  margin-bottom: 14px;
+}
+
+.letter-paragraph {
+  color: #334155;
+  font-size: 13px;
+  line-height: 1.75;
+  margin-bottom: 14px;
+}
+
+.letter-impact-box {
+  margin: 16px 0;
+  padding: 16px 20px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid #e2cb98;
+}
+
+.letter-impact-box h3 {
+  margin: 0 0 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #1e293b;
+}
+
+.letter-impact-box p {
+  margin: 0 0 10px;
+  color: #64748b;
+  font-size: 12px;
+}
+
+.letter-impact-box ul {
+  margin: 0;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: #334155;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.highlight-thanks {
+  font-weight: 700;
+  color: #0f172a;
+  background: rgba(255, 251, 235, 0.8);
+  padding: 10px 14px;
+  border-radius: 6px;
+  border-left: 3px solid #f59e0b;
+}
+
+.letter-security-stamp {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #15803d;
+  text-align: right;
+}
+
+.letter-security-stamp strong {
+  display: block;
+  font-size: 11px;
+}
+
+.letter-security-stamp p {
+  margin: 0;
+  font-size: 9px;
+  color: #64748b;
+}
+
+/* Print CSS Rule Overrides for 2-Page Document */
+@page {
+  size: A4 portrait;
+  margin: 0;
+}
+
+@media print {
+  html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white !important;
+    width: 100vw !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  body * {
+    visibility: hidden !important;
+  }
+
+  #certificate-document, #certificate-document * {
+    visibility: visible !important;
+  }
+
+  #certificate-document {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100vw !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white !important;
+    z-index: 999999 !important;
+    display: block !important;
+  }
+
+  .cert-page {
+    width: 100vw !important;
+    height: 100vh !important;
+    max-width: 100vw !important;
+    max-height: 100vh !important;
+    margin: 0 !important;
+    padding: 36px 48px !important;
+    box-sizing: border-box !important;
+    page-break-after: always !important;
+    break-after: page !important;
+    position: relative !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    background: radial-gradient(circle at center, #fffdf8, #f8f0dc) !important;
+    border: 4px double #b28a3e !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+  }
+
+  .cert-page:last-child {
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+  }
+
+  .sub-header,
+  .foundation-hero,
+  .support-payment-grid,
+  .donation-form,
+  .foundation-values,
+  .certificate-toolbar,
+  .certificate-verified-card,
+  button,
+  .toast {
+    display: none !important;
+  }
+}
+
+
 
 
