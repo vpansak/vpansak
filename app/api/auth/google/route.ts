@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 import { getDb } from "../../../../db";
 import { profiles, users } from "../../../../db/schema";
 import { hashPassword, setSessionCookieHeaders } from "../../../lib/auth-session";
+import { saveUserToSupabase } from "../../../lib/supabase";
 
 const ADMIN_EMAIL = "aloksingh84959@gmail.com";
 
@@ -184,6 +185,11 @@ export async function POST(request: Request) {
         updatedAt: now,
       },
     });
+
+    const [savedUser] = await db.select().from(users).where(eq(users.email, email)).limit(1);
+    if (savedUser) {
+      await saveUserToSupabase(savedUser);
+    }
 
     const sessionData = {
       email,

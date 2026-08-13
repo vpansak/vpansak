@@ -2,6 +2,7 @@ import { and, desc, eq } from "drizzle-orm";
 import { getDb } from "../../../../db";
 import { otpCodes, users } from "../../../../db/schema";
 import { hashPassword, validatePasswordStrength } from "../../../lib/auth-session";
+import { saveUserToSupabase } from "../../../lib/supabase";
 
 export async function POST(request: Request) {
   try {
@@ -60,6 +61,11 @@ export async function POST(request: Request) {
       passwordHash: newHash,
       updatedAt: now,
     }).where(eq(users.email, email));
+
+    const [updatedUser] = await db.select().from(users).where(eq(users.email, email)).limit(1);
+    if (updatedUser) {
+      await saveUserToSupabase(updatedUser);
+    }
 
     // Mark OTP as used
     await db.update(otpCodes).set({ used: true }).where(eq(otpCodes.id, otpRecord.id));
