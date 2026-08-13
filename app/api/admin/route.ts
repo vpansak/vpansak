@@ -2,6 +2,7 @@ import { desc, eq } from "drizzle-orm";
 import { getDb } from "../../../db";
 import { contributions, coupons, donations, notifications, officers, orders, products, reviews, sellerApplications, ticketReplies, tickets, users } from "../../../db/schema";
 import { getAuthUserFromRequest, isAdminUser } from "../../lib/auth-session";
+import { supabase } from "../../lib/supabase";
 
 const ADMIN = "aloksingh84959@gmail.com";
 
@@ -12,12 +13,11 @@ async function authorized(request: Request) {
   if (headerEmail === ADMIN) return true;
   return false;
 }
-
 export async function GET(request: Request) {
   if (!(await authorized(request))) return Response.json({ error: "Admin access denied." }, { status: 403 });
   try {
     const db = await getDb();
-    const [userRows, orderRows, sellerRows, ticketRows, productRows, reviewRows, officerRows, donationRows, couponRows] = await Promise.all([
+    const [userRows, orderRows, sellerRows, ticketRows, productRows, reviewRows, officerRows, contributionRows, donationRows, couponRows] = await Promise.all([
       db.select({ email: users.email, fullName: users.fullName, mobile: users.mobile, role: users.role, createdAt: users.createdAt }).from(users).orderBy(desc(users.createdAt)).limit(100),
       db.select().from(orders).orderBy(desc(orders.createdAt)).limit(100),
       db.select().from(sellerApplications).orderBy(desc(sellerApplications.createdAt)).limit(100),
@@ -25,9 +25,66 @@ export async function GET(request: Request) {
       db.select().from(products).orderBy(desc(products.createdAt)).limit(100),
       db.select().from(reviews).orderBy(desc(reviews.createdAt)).limit(100),
       db.select().from(officers).orderBy(desc(officers.createdAt)).limit(100),
-      db.select().from(donations).orderBy(desc(donations.createdAt)).limit(100),
+      db.select().from(contributions).orderBy(desc(contributions.createdAt)).limit(300),
+      db.select().from(donations).orderBy(desc(donations.createdAt)).limit(300),
       db.select().from(coupons).limit(100),
     ]);
+
+    // Fetch from Supabase Cloud Database to ensure 100% full history sync
+    let cloudContributions: any[] = [];
+    if (supabase) {
+      try {
+        const { data: cData } = await supabase.from("contributions").select("*").limit(300);
+        if (cData) cloudContributions = cData;
+      } catch {
+        // ignore cloud fetch error
+      }
+    }
+
+    // Merge and deduplicate all records by verificationId / certificateId / transactionId
+    const map = new Map<string, any>();
+
+    const addRecord = (r: any) => {
+      const vid = String(
+        r.verificationId ||
+        r.verification_id ||
+        r.certificateId ||
+        r.certificate_id ||
+        r.donation_id ||
+        r.donationId ||
+        ""
+      ).toUpperCase().trim();
+      if (!vid) return;
+
+      const norm = {
+        verificationId: vid,
+        certificateNumber: r.certificateNumber || r.certificate_number || null,
+        fullName: String(r.fullName || r.full_name || r.donorName || r.donor_name || "Contributor"),
+        email: String(r.email || "").toLowerCase(),
+        mobile: String(r.mobile || ""),
+        amount: Number(r.amount || 0),
+        paymentMethod: String(r.paymentMethod || r.payment_method || "Online"),
+        paymentStatus: String(r.paymentStatus || r.payment_status || "pending_verification").toLowerCase(),
+        transactionId: String(r.transactionId || r.transaction_id || r.razorpayPaymentId || r.razorpay_payment_id || ""),
+        razorpayPaymentId: String(r.razorpayPaymentId || r.razorpay_payment_id || ""),
+        submittedAt: String(r.submittedAt || r.submitted_at || r.createdAt || r.created_at || new Date().toISOString()),
+        verifiedAt: r.verifiedAt || r.verified_at || null,
+        publicRejectionReason: r.publicRejectionReason || r.public_rejection_reason || null,
+      };
+
+      if (!map.has(vid) || norm.paymentStatus === "verified") {
+        map.set(vid, norm);
+      }
+    };
+
+    contributionRows.forEach(addRecord);
+    donationRows.forEach(addRecord);
+    cloudContributions.forEach(addRecord);
+
+    const mergedDonations = Array.from(map.values()).sort(
+      (a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime()
+    );
+
     return Response.json({
       users: userRows,
       orders: orderRows,
@@ -36,7 +93,7 @@ export async function GET(request: Request) {
       products: productRows,
       reviews: reviewRows,
       officers: officerRows,
-      donations: donationRows,
+      donations: mergedDonations,
       coupons: couponRows,
     });
   } catch {

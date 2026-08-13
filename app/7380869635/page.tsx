@@ -780,26 +780,54 @@ export default function SecretAdminPage() {
         )}
 
         {tab === "donations" && (
-          <AdminSection title="Support Fund Contribution Verification & Management">
+          <AdminSection title="Support Fund Contribution Verification & Complete Payment History">
+            {/* Support Fund Summary Metrics */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 12, marginBottom: 20 }}>
+              <div style={{ background: "#0f172a", border: "1px solid #1e293b", padding: "16px 20px", borderRadius: 10 }}>
+                <span style={{ color: "#94a3b8", fontSize: 11, fontWeight: 700 }}>TOTAL FUNDS COLLECTED</span>
+                <div style={{ fontSize: 24, fontWeight: 900, color: "#eab308", marginTop: 4 }}>
+                  {money(
+                    (data.donations || []).reduce(
+                      (acc: number, item: any) =>
+                        item.paymentStatus === "verified" ? acc + Number(item.amount || 0) : acc,
+                      0
+                    )
+                  )}
+                </div>
+              </div>
+              <div style={{ background: "#0f172a", border: "1px solid #1e293b", padding: "16px 20px", borderRadius: 10 }}>
+                <span style={{ color: "#94a3b8", fontSize: 11, fontWeight: 700 }}>VERIFIED PAYMENTS</span>
+                <div style={{ fontSize: 24, fontWeight: 900, color: "#4ade80", marginTop: 4 }}>
+                  {(data.donations || []).filter((item: any) => item.paymentStatus === "verified").length} Records
+                </div>
+              </div>
+              <div style={{ background: "#0f172a", border: "1px solid #1e293b", padding: "16px 20px", borderRadius: 10 }}>
+                <span style={{ color: "#94a3b8", fontSize: 11, fontWeight: 700 }}>PENDING VERIFICATION</span>
+                <div style={{ fontSize: 24, fontWeight: 900, color: "#facc15", marginTop: 4 }}>
+                  {(data.donations || []).filter((item: any) => item.paymentStatus === "pending_verification").length} Records
+                </div>
+              </div>
+            </div>
+
             <div className="manage-rows">
               {filterList(data.donations).length ? (
                 filterList(data.donations).map((r: any) => (
-                  <article key={r.verificationId || r.donationId} style={{ flexDirection: "column", alignItems: "flex-start", gap: 10, padding: 16 }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
+                  <article key={r.verificationId || r.donationId} style={{ flexDirection: "column", alignItems: "flex-start", gap: 10, padding: 16, background: "#0f172a", border: "1px solid #1e293b", borderRadius: 10, marginBottom: 10 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
                       <div>
-                        <strong style={{ fontSize: 15, color: "#f8fafc" }}>
-                          {r.fullName || r.donorName} • {money(r.amount)}
+                        <strong style={{ fontSize: 16, color: "#f8fafc" }}>
+                          {r.fullName || r.donorName} • <span style={{ color: "#eab308" }}>{money(r.amount)}</span>
                         </strong>
-                        <div style={{ color: "#94a3b8", fontSize: 12, marginTop: 4 }}>
-                          Verification ID: <strong>{r.verificationId || r.certificateId}</strong>
-                          {r.certificateNumber && <> • Certificate No: <strong>{r.certificateNumber}</strong></>}
-                          {r.transactionId && <> • UTR / TxID: <code style={{ color: "#60a5fa" }}>{r.transactionId}</code></>}
+                        <div style={{ color: "#94a3b8", fontSize: 12, marginTop: 4, display: "flex", gap: 12, flexWrap: "wrap" }}>
+                          <span>Verification ID: <strong style={{ color: "#38bdf8" }}>{r.verificationId || r.certificateId}</strong></span>
+                          {r.certificateNumber && <span>Certificate No: <strong style={{ color: "#eab308" }}>{r.certificateNumber}</strong></span>}
+                          {r.transactionId && <span>UTR / TxID: <code style={{ color: "#60a5fa" }}>{r.transactionId}</code></span>}
                         </div>
                       </div>
                       <span
                         style={{
-                          padding: "4px 10px",
-                          borderRadius: 6,
+                          padding: "5px 12px",
+                          borderRadius: 20,
                           fontSize: 11,
                           fontWeight: 800,
                           textTransform: "uppercase",
@@ -824,45 +852,58 @@ export default function SecretAdminPage() {
                           }`,
                         }}
                       >
-                        {r.paymentStatus}
+                        {r.paymentStatus === "verified" ? "✓ VERIFIED" : r.paymentStatus === "rejected" ? "✕ REJECTED" : "⏳ PENDING REVIEW"}
                       </span>
                     </div>
 
-                    <div style={{ color: "#cbd5e1", fontSize: 12, display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 8, width: "100%", background: "rgba(15, 23, 42, 0.6)", padding: 10, borderRadius: 8 }}>
+                    <div style={{ color: "#cbd5e1", fontSize: 12, display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 10, width: "100%", background: "rgba(15, 23, 42, 0.8)", padding: 12, borderRadius: 8, border: "1px solid #1e293b" }}>
                       <div>Email: <strong>{r.email}</strong></div>
                       <div>Mobile: <strong>{r.mobile || "N/A"}</strong></div>
-                      <div>Method: <strong>{r.paymentMethod}</strong></div>
-                      <div>Submitted: <strong>{r.submittedAt ? new Date(r.submittedAt).toLocaleDateString("en-IN") : "N/A"}</strong></div>
-                      {r.razorpayPaymentId && <div>Txn ID: <code style={{ color: "#38bdf8" }}>{r.razorpayPaymentId}</code></div>}
-                      {r.verifiedAt && <div>Verified Date: <strong>{new Date(r.verifiedAt).toLocaleDateString("en-IN")}</strong></div>}
+                      <div>Method: <strong>{(r.paymentMethod || "Online").toUpperCase()}</strong></div>
+                      <div>Submitted Date: <strong>{r.submittedAt ? new Date(r.submittedAt).toLocaleString("en-IN", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "N/A"}</strong></div>
+                      {r.razorpayPaymentId && <div>Razorpay Txn: <code style={{ color: "#38bdf8" }}>{r.razorpayPaymentId}</code></div>}
+                      {r.verifiedAt && <div>Verified Date: <strong>{new Date(r.verifiedAt).toLocaleString("en-IN", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}</strong></div>}
                     </div>
 
-                    {r.paymentStatus === "pending_verification" && (
-                      <div style={{ display: "flex", gap: 10, flexWrap: "wrap", width: "100%", marginTop: 6 }}>
-                        <button
-                          type="button"
-                          onClick={() => action({ action: "verifyContribution", verificationId: r.verificationId || r.certificateId })}
-                          style={{ background: "#16a34a", color: "white", border: 0, padding: "8px 16px", borderRadius: 6, fontWeight: 800, fontSize: 12, cursor: "pointer" }}
-                        >
-                          ✓ Verify Payment & Generate Certificate
-                        </button>
+                    <div style={{ display: "flex", gap: 10, flexWrap: "wrap", width: "100%", marginTop: 6 }}>
+                      {r.paymentStatus === "pending_verification" && (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => action({ action: "verifyContribution", verificationId: r.verificationId || r.certificateId })}
+                            style={{ background: "#16a34a", color: "white", border: 0, padding: "9px 18px", borderRadius: 6, fontWeight: 800, fontSize: 12, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6 }}
+                          >
+                            ✓ Verify Payment &amp; Issue Certificate
+                          </button>
 
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const reason = prompt("Enter public rejection reason (e.g. Transaction ID not found, Amount mismatch):", "Transaction ID not found") || "Verification could not be completed";
-                            action({ action: "rejectContribution", verificationId: r.verificationId || r.certificateId, publicRejectionReason: reason, rejectionReason: reason });
-                          }}
-                          style={{ background: "#dc2626", color: "white", border: 0, padding: "8px 16px", borderRadius: 6, fontWeight: 800, fontSize: 12, cursor: "pointer" }}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const reason = prompt("Enter public rejection reason (e.g. Transaction ID not found, Amount mismatch):", "Transaction ID not found") || "Verification could not be completed";
+                              action({ action: "rejectContribution", verificationId: r.verificationId || r.certificateId, publicRejectionReason: reason, rejectionReason: reason });
+                            }}
+                            style={{ background: "#dc2626", color: "white", border: 0, padding: "9px 18px", borderRadius: 6, fontWeight: 800, fontSize: 12, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6 }}
+                          >
+                            ✕ Reject Payment
+                          </button>
+                        </>
+                      )}
+
+                      {r.email && (
+                        <a
+                          href={`mailto:${r.email}?subject=${encodeURIComponent(`VPANSAK Support Contribution ${r.verificationId}`)}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          style={{ background: "#1e293b", color: "#38bdf8", border: "1px solid #334155", padding: "8px 14px", borderRadius: 6, fontWeight: 700, fontSize: 12, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 6 }}
                         >
-                          ✕ Reject Payment
-                        </button>
-                      </div>
-                    )}
+                          ✉ Send Email
+                        </a>
+                      )}
+                    </div>
                   </article>
                 ))
               ) : (
-                <div style={{ padding: 20, color: "#94a3b8", fontSize: 12 }}>No contribution records found.</div>
+                <div style={{ padding: 24, color: "#94a3b8", fontSize: 13, textAlign: "center" }}>No support fund payment records found.</div>
               )}
             </div>
           </AdminSection>
