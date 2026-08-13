@@ -65,7 +65,7 @@ export function isAdminUser(session: AuthSessionData | null | string): boolean {
 }
 
 export async function getAuthUserFromRequest(request: Request): Promise<AuthSessionData | null> {
-  // 1. Check ChatGPT header
+  // 1. Check authenticated proxy header
   const headerEmail = request.headers.get("oai-authenticated-user-email")?.trim().toLowerCase();
   if (headerEmail) {
     const rawName = request.headers.get("oai-authenticated-user-full-name");

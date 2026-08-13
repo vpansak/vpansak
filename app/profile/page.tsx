@@ -341,7 +341,7 @@ export function ProfileContent({ paramsTab }: { paramsTab?: string }) {
             <PackageCheck size={15} /> Track Order
           </Link>
           <button
-            onClick={() => (window.location.href = "/signout-with-chatgpt?return_to=%2Flogin")}
+            onClick={() => (window.location.href = "/signout?return_to=%2Flogin")}
             className="header-logout-btn"
           >
             <LogOut size={14} /> Log Out
@@ -501,7 +501,7 @@ export function ProfileContent({ paramsTab }: { paramsTab?: string }) {
             <button
               type="button"
               className="sidebar-logout-btn"
-              onClick={() => (window.location.href = "/signout-with-chatgpt?return_to=%2Flogin")}
+              onClick={() => (window.location.href = "/signout?return_to=%2Flogin")}
             >
               <LogOut size={16} /> Sign Out Account
             </button>
