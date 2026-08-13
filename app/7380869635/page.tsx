@@ -1040,25 +1040,164 @@ function AdminSection({ title, children }: { title: string; children: React.Reac
 
 function UserRows({ rows, action }: { rows: Row[]; action: (b: Record<string, unknown>) => void }) {
   return (
-    <div className="manage-rows">
+    <div className="manage-rows" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
       {rows.length ? (
-        rows.map((r) => (
-          <article key={r.email}>
-            <span>
-              <strong>{r.fullName || r.email}</strong>
-              <small>
-                {r.email} • Mobile: {r.mobile || "N/A"} • Joined: {r.createdAt ? r.createdAt.slice(0, 10) : "N/A"}
-              </small>
-            </span>
-            <select
-              value={r.role || "customer"}
-              onChange={(e) => action({ action: "userRole", email: r.email, role: e.target.value })}
+        rows.map((r: any) => (
+          <article
+            key={r.email}
+            style={{
+              flexDirection: "column",
+              alignItems: "flex-start",
+              gap: 12,
+              padding: 16,
+              background: "#0f172a",
+              border: "1px solid #1e293b",
+              borderRadius: 12,
+              width: "100%",
+            }}
+          >
+            {/* Header: Name, Role & Status Badges */}
+            <div style={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center", flexWrap: "wrap", gap: 10 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <div
+                  style={{
+                    width: 38,
+                    height: 38,
+                    borderRadius: "50%",
+                    background: "#1e293b",
+                    color: "#38bdf8",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontWeight: 900,
+                    fontSize: 15,
+                    border: "1px solid #334155",
+                  }}
+                >
+                  {(r.fullName || r.email || "U").charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <strong style={{ fontSize: 16, color: "#f8fafc" }}>
+                    {r.fullName || r.email}
+                  </strong>
+                  <div style={{ color: "#94a3b8", fontSize: 12, marginTop: 2, display: "flex", gap: 8, alignItems: "center" }}>
+                    <span>{r.email}</span>
+                    {r.mobile && <span>• 📱 {r.mobile}</span>}
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                <span
+                  style={{
+                    padding: "3px 10px",
+                    borderRadius: 12,
+                    fontSize: 10,
+                    fontWeight: 800,
+                    textTransform: "uppercase",
+                    background: r.accountStatus === "blocked" ? "rgba(239, 68, 68, 0.2)" : "rgba(34, 197, 94, 0.2)",
+                    color: r.accountStatus === "blocked" ? "#f87171" : "#4ade80",
+                    border: `1px solid ${r.accountStatus === "blocked" ? "#ef4444" : "#22c55e"}`,
+                  }}
+                >
+                  {r.accountStatus || "active"}
+                </span>
+
+                <span
+                  style={{
+                    padding: "3px 10px",
+                    borderRadius: 12,
+                    fontSize: 10,
+                    fontWeight: 800,
+                    textTransform: "uppercase",
+                    background: "#1e293b",
+                    color: "#60a5fa",
+                    border: "1px solid #334155",
+                  }}
+                >
+                  {r.authProvider || "email"} auth
+                </span>
+              </div>
+            </div>
+
+            {/* Metrics Row: Orders, Total Spent, Donations, Tickets, Joined */}
+            <div
+              style={{
+                color: "#cbd5e1",
+                fontSize: 12,
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
+                gap: 10,
+                width: "100%",
+                background: "rgba(15, 23, 42, 0.8)",
+                padding: 12,
+                borderRadius: 8,
+                border: "1px solid #1e293b",
+              }}
             >
-              <option value="customer">Customer</option>
-              <option value="seller">Seller</option>
-              <option value="officer">Support Officer</option>
-              <option value="admin">Super Admin</option>
-            </select>
+              <div>🛒 Orders: <strong style={{ color: "#38bdf8" }}>{r.orderCount || 0} Orders</strong></div>
+              <div>💰 Total Spent: <strong style={{ color: "#4ade80" }}>{money(r.totalSpent || 0)}</strong></div>
+              <div>🎗️ Support Fund: <strong style={{ color: "#eab308" }}>{money(r.totalContributed || 0)}</strong></div>
+              <div>🎫 Tickets: <strong style={{ color: "#a855f7" }}>{r.ticketCount || 0} Tickets</strong></div>
+              <div>Joined: <strong>{r.createdAt ? new Date(r.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "N/A"}</strong></div>
+            </div>
+
+            {/* Saved Addresses Listing (if available) */}
+            {Array.isArray(r.addresses) && r.addresses.length > 0 && (
+              <div style={{ width: "100%", background: "#0a101d", padding: 10, borderRadius: 8, border: "1px solid #1e293b" }}>
+                <span style={{ fontSize: 11, fontWeight: 800, color: "#94a3b8", display: "block", marginBottom: 6 }}>
+                  📍 SAVED ADDRESSES ({r.addresses.length})
+                </span>
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  {r.addresses.map((addr: any, idx: number) => (
+                    <div key={idx} style={{ fontSize: 11, color: "#cbd5e1", background: "#0f172a", padding: "6px 10px", borderRadius: 6 }}>
+                      <strong style={{ color: "#60a5fa" }}>[{addr.label || "Home"}]</strong> {addr.fullName} • {addr.line1}, {addr.city}, {addr.state} - {addr.pinCode} (Ph: {addr.mobile || "N/A"})
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Quick Actions Row: Role Select, Status Select, Mail Link */}
+            <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", width: "100%", marginTop: 4 }}>
+              <label style={{ fontSize: 11, color: "#94a3b8", display: "flex", alignItems: "center", gap: 6 }}>
+                Role:
+                <select
+                  value={r.role || "customer"}
+                  onChange={(e) => action({ action: "userRole", email: r.email, role: e.target.value })}
+                  style={{ background: "#1e293b", color: "white", border: "1px solid #334155", borderRadius: 6, padding: "4px 8px", fontSize: 11 }}
+                >
+                  <option value="customer">Customer</option>
+                  <option value="seller">Seller</option>
+                  <option value="officer">Support Officer</option>
+                  <option value="admin">Super Admin</option>
+                </select>
+              </label>
+
+              <label style={{ fontSize: 11, color: "#94a3b8", display: "flex", alignItems: "center", gap: 6 }}>
+                Account Status:
+                <select
+                  value={r.accountStatus || "active"}
+                  onChange={(e) => action({ action: "userStatus", email: r.email, status: e.target.value })}
+                  style={{ background: "#1e293b", color: "white", border: "1px solid #334155", borderRadius: 6, padding: "4px 8px", fontSize: 11 }}
+                >
+                  <option value="active">Active</option>
+                  <option value="suspended">Suspended</option>
+                  <option value="blocked">Blocked</option>
+                </select>
+              </label>
+
+              {r.email && (
+                <a
+                  href={`mailto:${r.email}?subject=${encodeURIComponent("Message from VPANSAK Support")}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{ background: "#1e293b", color: "#38bdf8", border: "1px solid #334155", padding: "5px 12px", borderRadius: 6, fontWeight: 700, fontSize: 11, textDecoration: "none" }}
+                >
+                  ✉ Email User
+                </a>
+              )}
+            </div>
           </article>
         ))
       ) : (

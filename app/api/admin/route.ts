@@ -1,8 +1,8 @@
 import { desc, eq } from "drizzle-orm";
 import { getDb } from "../../../db";
-import { contributions, coupons, donations, notifications, officers, orders, products, reviews, sellerApplications, ticketReplies, tickets, users } from "../../../db/schema";
+import { addresses, contributions, coupons, donations, notifications, officers, orders, products, profiles, reviews, sellerApplications, ticketReplies, tickets, users } from "../../../db/schema";
 import { getAuthUserFromRequest, isAdminUser } from "../../lib/auth-session";
-import { supabase } from "../../lib/supabase";
+import { saveUserToSupabase, supabase } from "../../lib/supabase";
 
 const ADMIN = "aloksingh84959@gmail.com";
 
@@ -17,11 +17,26 @@ export async function GET(request: Request) {
   if (!(await authorized(request))) return Response.json({ error: "Admin access denied." }, { status: 403 });
   try {
     const db = await getDb();
-    const [userRows, orderRows, sellerRows, ticketRows, productRows, reviewRows, officerRows, contributionRows, donationRows, couponRows] = await Promise.all([
-      db.select({ email: users.email, fullName: users.fullName, mobile: users.mobile, role: users.role, createdAt: users.createdAt }).from(users).orderBy(desc(users.createdAt)).limit(100),
-      db.select().from(orders).orderBy(desc(orders.createdAt)).limit(100),
+    const [
+      userRows,
+      profileRows,
+      orderRows,
+      addressRows,
+      sellerRows,
+      ticketRows,
+      productRows,
+      reviewRows,
+      officerRows,
+      contributionRows,
+      donationRows,
+      couponRows
+    ] = await Promise.all([
+      db.select().from(users).orderBy(desc(users.createdAt)).limit(300),
+      db.select().from(profiles).limit(300),
+      db.select().from(orders).orderBy(desc(orders.createdAt)).limit(500),
+      db.select().from(addresses).limit(500),
       db.select().from(sellerApplications).orderBy(desc(sellerApplications.createdAt)).limit(100),
-      db.select().from(tickets).orderBy(desc(tickets.updatedAt)).limit(100),
+      db.select().from(tickets).orderBy(desc(tickets.updatedAt)).limit(300),
       db.select().from(products).orderBy(desc(products.createdAt)).limit(100),
       db.select().from(reviews).orderBy(desc(reviews.createdAt)).limit(100),
       db.select().from(officers).orderBy(desc(officers.createdAt)).limit(100),
@@ -32,16 +47,25 @@ export async function GET(request: Request) {
 
     // Fetch from Supabase Cloud Database to ensure 100% full history sync
     let cloudContributions: any[] = [];
+    let cloudUsers: any[] = [];
+    let cloudAddresses: any[] = [];
+
     if (supabase) {
       try {
-        const { data: cData } = await supabase.from("contributions").select("*").limit(300);
-        if (cData) cloudContributions = cData;
+        const [cRes, uRes, aRes] = await Promise.all([
+          supabase.from("contributions").select("*").limit(300),
+          supabase.from("users").select("*").limit(300),
+          supabase.from("addresses").select("*").limit(500),
+        ]);
+        if (cRes.data) cloudContributions = cRes.data;
+        if (uRes.data) cloudUsers = uRes.data;
+        if (aRes.data) cloudAddresses = aRes.data;
       } catch {
         // ignore cloud fetch error
       }
     }
 
-    // Merge and deduplicate all records by verificationId / certificateId / transactionId
+    // Merge and deduplicate support fund contribution records
     const map = new Map<string, any>();
 
     const addRecord = (r: any) => {
@@ -85,8 +109,75 @@ export async function GET(request: Request) {
       (a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime()
     );
 
+    // Merge and enrich User records with complete user data (Orders, Spent, Addresses, Tickets, Contributions)
+    const userMap = new Map<string, any>();
+
+    const addUser = (u: any) => {
+      const email = String(u.email || u.owner_email || "").toLowerCase().trim();
+      if (!email) return;
+
+      const existing = userMap.get(email) || {};
+      userMap.set(email, {
+        email,
+        fullName: String(u.fullName || u.full_name || existing.fullName || email.split("@")[0]),
+        mobile: String(u.mobile || existing.mobile || ""),
+        role: String(u.role || existing.role || "customer"),
+        authProvider: String(u.authProvider || u.auth_provider || existing.authProvider || "email"),
+        accountStatus: String(u.accountStatus || u.account_status || existing.accountStatus || "active"),
+        emailVerified: Boolean(u.emailVerified ?? u.email_verified ?? existing.emailVerified ?? true),
+        securityQuestionId: u.securityQuestionId || u.security_question_id || existing.securityQuestionId || null,
+        profileImage: u.profileImage || u.profile_image || existing.profileImage || null,
+        lastLoginAt: u.lastLoginAt || u.last_login_at || existing.lastLoginAt || null,
+        createdAt: String(u.createdAt || u.created_at || existing.createdAt || new Date().toISOString()),
+      });
+    };
+
+    userRows.forEach(addUser);
+    cloudUsers.forEach(addUser);
+    profileRows.forEach(addUser);
+
+    const allAddresses = [...addressRows, ...cloudAddresses];
+
+    const enrichedUsers = Array.from(userMap.values()).map((user) => {
+      const userEmail = user.email.toLowerCase();
+
+      const userOrders = orderRows.filter((o: any) => String(o.ownerEmail || "").toLowerCase() === userEmail);
+      const totalSpent = userOrders.reduce((sum: number, o: any) => sum + Number(o.total || 0), 0);
+
+      const userContribs = mergedDonations.filter((c: any) => String(c.email || "").toLowerCase() === userEmail);
+      const totalContributed = userContribs.reduce(
+        (sum: number, c: any) => (c.paymentStatus === "verified" ? sum + Number(c.amount || 0) : sum),
+        0
+      );
+
+      const userTickets = ticketRows.filter((t: any) => String(t.email || "").toLowerCase() === userEmail);
+
+      const userAddrList = allAddresses
+        .filter((a: any) => String(a.ownerEmail || a.owner_email || "").toLowerCase() === userEmail)
+        .map((a: any) => ({
+          label: String(a.label || "Home"),
+          fullName: String(a.fullName || a.full_name || user.fullName),
+          mobile: String(a.mobile || user.mobile),
+          line1: String(a.line1 || ""),
+          city: String(a.city || ""),
+          state: String(a.state || ""),
+          pinCode: String(a.pinCode || a.pin_code || ""),
+          isPrimary: Boolean(a.isPrimary || a.is_primary),
+        }));
+
+      return {
+        ...user,
+        orderCount: userOrders.length,
+        totalSpent,
+        contributionCount: userContribs.length,
+        totalContributed,
+        ticketCount: userTickets.length,
+        addresses: userAddrList,
+      };
+    });
+
     return Response.json({
-      users: userRows,
+      users: enrichedUsers,
       orders: orderRows,
       sellers: sellerRows,
       tickets: ticketRows,
@@ -108,11 +199,23 @@ export async function POST(request: Request) {
     const action = String(body.action || "");
     const db = await getDb();
 
-    if (action === "userRole") {
+    if (action === "userRole" || action === "userStatus" || action === "accountStatus") {
       const email = String(body.email || "").trim().toLowerCase();
-      const role = String(body.role || "customer").slice(0, 30);
+      const role = body.role ? String(body.role).slice(0, 30) : undefined;
+      const accountStatus = body.status || body.accountStatus ? String(body.status || body.accountStatus).slice(0, 30) : undefined;
+
       if (email) {
-        await db.update(users).set({ role }).where(eq(users.email, email));
+        const updateData: Record<string, unknown> = {};
+        if (role) updateData.role = role;
+        if (accountStatus) updateData.accountStatus = accountStatus;
+
+        await db.update(users).set(updateData).where(eq(users.email, email));
+
+        if (supabase) {
+          try {
+            await saveUserToSupabase({ email, role, account_status: accountStatus });
+          } catch {}
+        }
       }
       return Response.json({ ok: true });
     }
