@@ -65,6 +65,18 @@ declare global {
 const money = (n: number) =>
   new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(n);
 
+function formatCertDate(dateStr: string) {
+  try {
+    const d = new Date(dateStr);
+    const day = d.getDate().toString().padStart(2, "0");
+    const month = d.toLocaleDateString("en-US", { month: "short" }).toUpperCase();
+    const year = d.getFullYear();
+    return `${day} ${month} ${year}`;
+  } catch {
+    return "13 AUG 2026";
+  }
+}
+
 async function loadRazorpay() {
   if (window.Razorpay) return true;
   return new Promise<boolean>((resolve) => {
@@ -665,7 +677,7 @@ function FoundationContent() {
                 </div>
 
                 <div className="verified-card-footer">
-                  <ShieldCheck size={14} /> Includes Official 2-Page Certificate of Appreciation &amp; Transparency Letter with Watermark and Founder Signature.
+                  <ShieldCheck size={14} /> Includes Official 2-Page Certificate of Support Contribution &amp; Transparency Letter with Watermark and Founder Signature.
                 </div>
               </div>
             )}
@@ -741,119 +753,145 @@ function FoundationContent() {
       {/* 2-PAGE PRINT / DOWNLOAD CERTIFICATE DOCUMENT */}
       {canShowCertificate && certificate && (
         <article id="certificate-document" className="printable-certificate-document">
-          {/* ================= PAGE 1: CERTIFICATE OF APPRECIATION ================= */}
-          <div className="cert-page cert-page-1">
-            {/* Watermark Background */}
-            <div className="cert-watermark">
-              <img src="/vpansak-logo.png" alt="VPANSAK Watermark" />
-            </div>
-
-            {/* Certificate Header */}
-            <header className="cert-header">
-              <div className="cert-brand">
-                <img src="/vpansak-logo-dark.jpeg" alt="VPANSAK Logo" className="cert-logo-img" />
-                <div>
-                  <strong className="cert-brand-title">VPANSAK</strong>
-                  <span className="cert-brand-sub">SUPPORT FOUNDATION</span>
+          {/* ================= PAGE 1: CERTIFICATE OF SUPPORT CONTRIBUTION ================= */}
+          <div className="cert-page cert-page-1 cert-landscape">
+            {/* Top Navy Header Banner */}
+            <header className="cert-top-banner">
+              <div className="cert-banner-left">
+                <div className="cert-logo-badge">V</div>
+                <div className="cert-brand-text-wrap">
+                  <strong className="cert-brand-name">VPANSAK</strong>
+                  <span className="cert-brand-tagline">SMART SHOPPING MADE EASY</span>
                 </div>
               </div>
-              <div className="cert-badge-tag">
-                <CheckCircle2 size={13} /> OFFICIAL VERIFIED RECORD
+              <div className="cert-banner-right">
+                <strong className="cert-status-title">PAYMENT VERIFIED</strong>
+                <span className="cert-status-sub">Issued after successful contribution confirmation</span>
               </div>
             </header>
 
-            {/* Certificate Body */}
-            <div className="cert-body">
-              <small className="cert-award-tag">CERTIFICATE OF APPRECIATION</small>
-              <h2 className="cert-salutation">This Certificate is Proudly Presented To</h2>
-              <h1 className="cert-recipient-name">{certificate.fullName}</h1>
+            {/* Main Content Area */}
+            <div className="cert-main-body">
+              {/* Background Watermark V */}
+              <div className="cert-watermark-v">
+                <img src="/vpansak-logo-dark.jpeg" alt="Watermark" />
+              </div>
 
-              <p className="cert-citation-text">
-                In recognition and heartfelt appreciation for your voluntary support contribution to the <strong>VPANSAK Support Foundation</strong>. Your valued support directly powers transparent digital infrastructure, merchant onboarding programs, and community welfare initiatives across India.
+              {/* Certificate Title */}
+              <h1 className="cert-doc-title">Certificate of Support Contribution</h1>
+              <p className="cert-doc-subtitle">This certificate is proudly presented to</p>
+
+              {/* Recipient Name */}
+              <div className="cert-recipient-wrap">
+                <h2 className="cert-recipient-name-bold">{certificate.fullName.toUpperCase()}</h2>
+                <div className="cert-name-underline" />
+              </div>
+
+              {/* Recognition Text */}
+              <p className="cert-recognition-text">
+                in recognition of a verified support contribution to VPANSAK
               </p>
 
-              <div className="cert-amount-box">
-                <span className="amount-label">CONTRIBUTION RECORDED</span>
-                <strong className="amount-value">{money(certificate.amount)}</strong>
-                <small className="amount-date">
-                  Issued on{" "}
-                  {new Date(certificate.verifiedAt).toLocaleDateString("en-IN", {
-                    day: "2-digit",
-                    month: "long",
-                    year: "numeric",
-                  })}
-                </small>
+              {/* Amount Display */}
+              <div className="cert-amount-display">
+                INR {certificate.amount.toLocaleString("en-IN")}.00
+              </div>
+
+              {/* 4-Column Metadata Card */}
+              <div className="cert-meta-card">
+                <div className="meta-col">
+                  <span className="meta-col-label">CERTIFICATE ID</span>
+                  <strong className="meta-col-val">{certificate.certificateNumber}</strong>
+                </div>
+                <div className="meta-col-divider" />
+                <div className="meta-col">
+                  <span className="meta-col-label">PAYMENT DATE</span>
+                  <strong className="meta-col-val">{formatCertDate(certificate.verifiedAt)}</strong>
+                </div>
+                <div className="meta-col-divider" />
+                <div className="meta-col">
+                  <span className="meta-col-label">PAYMENT MODE</span>
+                  <strong className="meta-col-val">{(certificate.paymentMethod || "ONLINE").toUpperCase()}</strong>
+                </div>
+                <div className="meta-col-divider" />
+                <div className="meta-col">
+                  <span className="meta-col-label">REFERENCE ID</span>
+                  <strong className="meta-col-val">{certificate.verificationId}</strong>
+                </div>
               </div>
             </div>
 
-            {/* Certificate Footer with Signature */}
-            <footer className="cert-footer">
-              <div className="cert-signature-box">
+            {/* Footer Section */}
+            <footer className="cert-footer-banner">
+              <div className="cert-sig-area">
                 <img
                   src="/assets/certificate/alok-singh-signature.png"
                   alt="Alok Singh Signature"
-                  className="cert-signature-img"
+                  className="cert-sig-image"
                 />
-                <div className="cert-sig-line" />
-                <strong className="cert-sig-name">Alok Singh</strong>
-                <span className="cert-sig-title">Founder &amp; Authorized Signatory</span>
-                <small className="cert-sig-org">VPANSAK Support Foundation • A&amp;A Group</small>
+                <div className="cert-sig-line-gold" />
+                <strong className="cert-sig-name-text">Alok Singh</strong>
+                <span className="cert-sig-title-text">Founder, VPANSAK</span>
               </div>
 
-              <div className="cert-meta-box">
-                <strong className="cert-no-text">{certificate.certificateNumber}</strong>
-                <span className="cert-meta-row">
-                  Verification ID: <strong>{certificate.verificationId}</strong>
-                </span>
-                <span className="cert-meta-row">
-                  Verified Date: <strong>{new Date(certificate.verifiedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "long", year: "numeric" })}</strong>
-                </span>
-                <span className="cert-meta-row">
-                  Payment Method: <strong>{certificate.paymentMethod}</strong>
-                </span>
+              <div className="cert-disclaimer-center">
+                <p className="disc-main">Digitally issued by VPANSAK • Verify using the certificate ID on the official website</p>
+                <p className="disc-sub">This is an acknowledgement of support, not a tax receipt, investment certificate, or proof of ownership.</p>
+              </div>
+
+              <div className="cert-verified-stamp">
+                <div className="stamp-circle">
+                  <span className="stamp-check">✓</span>
+                  <span className="stamp-text">VERIFIED</span>
+                </div>
               </div>
             </footer>
+
+            {/* Bottom Edge Accent Bar */}
+            <div className="cert-bottom-accent-bar">
+              <div className="accent-gold-segment" />
+              <div className="accent-navy-segment" />
+            </div>
           </div>
 
           {/* ================= PAGE 2: THANKING NOTE & IMPACT LETTER ================= */}
-          <div className="cert-page cert-page-2">
-            {/* Watermark Background */}
-            <div className="cert-watermark">
-              <img src="/vpansak-logo.png" alt="VPANSAK Watermark" />
-            </div>
-
-            {/* Letter Header */}
-            <header className="letter-header">
-              <div className="cert-brand">
-                <img src="/vpansak-logo-dark.jpeg" alt="VPANSAK Logo" className="cert-logo-img" />
-                <div>
-                  <strong className="cert-brand-title">VPANSAK SUPPORT FOUNDATION</strong>
-                  <span className="cert-brand-sub">OFFICIAL LETTER OF APPRECIATION &amp; FUND TRANSPARENCY</span>
+          <div className="cert-page cert-page-2 cert-landscape">
+            {/* Top Navy Header Banner */}
+            <header className="cert-top-banner">
+              <div className="cert-banner-left">
+                <div className="cert-logo-badge">V</div>
+                <div className="cert-brand-text-wrap">
+                  <strong className="cert-brand-name">VPANSAK SUPPORT FOUNDATION</strong>
+                  <span className="cert-brand-tagline">LETTER OF APPRECIATION &amp; FUND TRANSPARENCY</span>
                 </div>
               </div>
-              <div className="letter-date-box">
-                <span className="letter-ref">Ref: <strong>{certificate.verificationId}</strong></span>
-                <span className="letter-date">Date: <strong>{new Date(certificate.verifiedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "long", year: "numeric" })}</strong></span>
+              <div className="cert-banner-right">
+                <strong className="cert-status-title">REF: {certificate.verificationId}</strong>
+                <span className="cert-status-sub">DATE: {formatCertDate(certificate.verifiedAt)}</span>
               </div>
             </header>
 
-            {/* Letter Content */}
-            <div className="letter-body">
-              <h2 className="letter-salutation">Dear {certificate.fullName},</h2>
+            {/* Main Content Area */}
+            <div className="cert-main-body letter-layout">
+              {/* Background Watermark V */}
+              <div className="cert-watermark-v">
+                <img src="/vpansak-logo-dark.jpeg" alt="Watermark" />
+              </div>
 
-              <p className="letter-paragraph">
-                Namaste! On behalf of the entire team at <strong>VPANSAK</strong> and <strong>A&amp;A Group</strong>, I extend our deepest gratitude for your generous voluntary contribution of <strong>{money(certificate.amount)}</strong> (Verification ID: <code>{certificate.verificationId}</code>).
+              <h2 className="letter-salutation-title">Dear {certificate.fullName},</h2>
+
+              <p className="letter-body-para">
+                Namaste! On behalf of the entire team at <strong>VPANSAK</strong> and <strong>A&amp;A Group</strong>, I extend our deepest gratitude for your generous voluntary contribution of <strong>INR {certificate.amount.toLocaleString("en-IN")}.00</strong> (Reference ID: <code>{certificate.verificationId}</code>).
               </p>
 
-              <div className="letter-impact-box">
-                <h3><HeartHandshake size={18} /> How Your Contribution Creates Real Impact:</h3>
-                <p>Your contribution directly powers three core pillars of our foundation:</p>
-                <ul>
+              <div className="letter-impact-card">
+                <h3 className="impact-card-title"><HeartHandshake size={18} /> Where Your Contribution Goes &amp; Its Direct Impact:</h3>
+                <ul className="impact-list">
                   <li>
-                    <strong>1. Platform Security &amp; Infrastructure:</strong> Maintaining secure, high-speed servers, database protection, and encrypted payment workflows for thousands of daily users across India.
+                    <strong>1. Platform Security &amp; Infrastructure:</strong> Maintaining secure, high-speed cloud servers, database protection, and encrypted payment workflows for users across India.
                   </li>
                   <li>
-                    <strong>2. Seller &amp; Small Merchant Empowerment:</strong> Providing free digital onboarding, cataloging support, and business desk guidance to local Indian shopkeepers and independent sellers.
+                    <strong>2. Seller &amp; Small Merchant Empowerment:</strong> Providing free digital onboarding, cataloging support, and growth tools to local Indian shopkeepers and independent sellers.
                   </li>
                   <li>
                     <strong>3. 24x7 Customer Help Desk &amp; Community Care:</strong> Funding human-assisted support desks, transparent order tracking, and community welfare initiatives.
@@ -861,38 +899,42 @@ function FoundationContent() {
                 </ul>
               </div>
 
-              <p className="letter-paragraph">
+              <p className="letter-body-para">
                 VPANSAK is built on the principles of total transparency, user trust, and community-first technology. We ensure that every contribution is responsibly utilized to strengthen digital accessibility and customer satisfaction.
-              </p>
-
-              <p className="letter-paragraph highlight-thanks">
-                Thank you once again for believing in our vision and supporting our journey. Your contribution is officially recorded in our permanent verification ledger.
               </p>
             </div>
 
-            {/* Letter Closing & Signature */}
-            <footer className="letter-footer">
-              <div className="letter-closing">
-                <p className="closing-text">Warm regards &amp; sincere gratitude,</p>
+            {/* Footer Section */}
+            <footer className="cert-footer-banner">
+              <div className="cert-sig-area">
                 <img
                   src="/assets/certificate/alok-singh-signature.png"
                   alt="Alok Singh Signature"
-                  className="cert-signature-img"
+                  className="cert-sig-image"
                 />
-                <div className="cert-sig-line" />
-                <strong className="cert-sig-name">Alok Singh</strong>
-                <span className="cert-sig-title">Founder &amp; Authorized Signatory</span>
-                <small className="cert-sig-org">VPANSAK Support Foundation • A&amp;A Group</small>
+                <div className="cert-sig-line-gold" />
+                <strong className="cert-sig-name-text">Alok Singh</strong>
+                <span className="cert-sig-title-text">Founder, VPANSAK</span>
               </div>
 
-              <div className="letter-security-stamp">
-                <ShieldCheck size={28} />
-                <div>
-                  <strong>Official Digital Document</strong>
-                  <p>Verified &amp; Sealed by VPANSAK Foundation</p>
+              <div className="cert-disclaimer-center">
+                <p className="disc-main">Official Digital Document • Issued by VPANSAK Support Foundation</p>
+                <p className="disc-sub">Recorded in permanent verification ledger • Verification ID: {certificate.verificationId}</p>
+              </div>
+
+              <div className="cert-verified-stamp">
+                <div className="stamp-circle">
+                  <span className="stamp-check">✓</span>
+                  <span className="stamp-text">VERIFIED</span>
                 </div>
               </div>
             </footer>
+
+            {/* Bottom Edge Accent Bar */}
+            <div className="cert-bottom-accent-bar">
+              <div className="accent-gold-segment" />
+              <div className="accent-navy-segment" />
+            </div>
           </div>
         </article>
       )}
