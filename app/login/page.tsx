@@ -121,6 +121,14 @@ function LoginForm() {
             <ShieldAlert size={18} />
             <div>
               <p>{error}</p>
+              {isNotFound && (
+                <p style={{ margin: "6px 0 0", fontSize: "12px", color: "#1e293b" }}>
+                  New to VPANSAK?{" "}
+                  <Link href={`/signup?email=${encodeURIComponent(email)}`} style={{ fontWeight: 800, color: "#1766ef", textDecoration: "underline" }}>
+                    Create Account now &rarr;
+                  </Link>
+                </p>
+              )}
             </div>
           </div>
         )}
