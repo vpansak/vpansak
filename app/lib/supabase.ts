@@ -159,14 +159,48 @@ export async function getUserFromSupabase(email: string) {
   try {
     const cleanEmail = email.toLowerCase().trim();
 
-    // 1. Try exact match
+    // 1. Try exact match in users table
     let { data, error } = await supabase.from("users").select("*").eq("email", cleanEmail).limit(1);
     let userRow = Array.isArray(data) && data.length > 0 ? data[0] : null;
 
-    // 2. Try ilike case-insensitive match if exact match returned nothing
+    // 2. Try ilike case-insensitive match in users table
     if (!userRow) {
       const { data: ilikeData } = await supabase.from("users").select("*").ilike("email", cleanEmail).limit(1);
       userRow = Array.isArray(ilikeData) && ilikeData.length > 0 ? ilikeData[0] : null;
+    }
+
+    // 3. Ultra-deep fallback: Check profiles table if users table row wasn't found
+    if (!userRow) {
+      const { data: profData } = await supabase.from("profiles").select("*").ilike("email", cleanEmail).limit(1);
+      const profRow = Array.isArray(profData) && profData.length > 0 ? profData[0] : null;
+      if (profRow) {
+        userRow = {
+          email: String(profRow.email || cleanEmail),
+          full_name: String(profRow.full_name || profRow.fullName || cleanEmail.split("@")[0]),
+          mobile: String(profRow.mobile || ""),
+          role: "customer",
+          password_hash: "NO_HASH",
+          account_status: "active",
+          created_at: String(profRow.created_at || new Date().toISOString()),
+        };
+      }
+    }
+
+    // 4. Ultra-deep fallback: Check orders table if profiles table row wasn't found
+    if (!userRow) {
+      const { data: ordData } = await supabase.from("orders").select("*").ilike("owner_email", cleanEmail).limit(1);
+      const ordRow = Array.isArray(ordData) && ordData.length > 0 ? ordData[0] : null;
+      if (ordRow) {
+        userRow = {
+          email: String(ordRow.owner_email || cleanEmail),
+          full_name: String(ordRow.customer_name || ordRow.customerName || cleanEmail.split("@")[0]),
+          mobile: String(ordRow.mobile || ""),
+          role: "customer",
+          password_hash: "NO_HASH",
+          account_status: "active",
+          created_at: String(ordRow.created_at || new Date().toISOString()),
+        };
+      }
     }
 
     if (error && !userRow) return null;

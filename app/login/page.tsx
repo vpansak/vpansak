@@ -121,11 +121,6 @@ function LoginForm() {
             <ShieldAlert size={18} />
             <div>
               <p>{error}</p>
-              {isNotFound && (
-                <Link href={`/signup?email=${encodeURIComponent(email)}`} className="vp-auth-alert-action">
-                  Create Account now &rarr;
-                </Link>
-              )}
             </div>
           </div>
         )}
