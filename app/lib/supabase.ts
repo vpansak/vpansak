@@ -110,24 +110,44 @@ export async function getOrderFromSupabase(orderId: string) {
 export async function saveUserToSupabase(userData: Record<string, unknown>) {
   if (!supabase) return null;
   try {
-    const payload: Record<string, unknown> = {};
-    if (userData.email) payload.email = String(userData.email).toLowerCase().trim();
-    if (userData.password_hash || userData.passwordHash) payload.password_hash = String(userData.password_hash || userData.passwordHash);
-    if (userData.full_name || userData.fullName) payload.full_name = String(userData.full_name || userData.fullName);
-    if (userData.mobile !== undefined) payload.mobile = String(userData.mobile);
-    if (userData.role) payload.role = String(userData.role);
-    if (userData.profile_image !== undefined || userData.profileImage !== undefined) payload.profile_image = userData.profile_image ?? userData.profileImage ?? null;
-    if (userData.auth_provider || userData.authProvider) payload.auth_provider = String(userData.auth_provider || userData.authProvider);
-    if (userData.email_verified !== undefined || userData.emailVerified !== undefined) payload.email_verified = userData.email_verified ?? userData.emailVerified ? 1 : 0;
-    if (userData.account_status || userData.accountStatus) payload.account_status = String(userData.account_status || userData.accountStatus);
-    if (userData.security_question_id || userData.securityQuestionId) payload.security_question_id = String(userData.security_question_id || userData.securityQuestionId);
-    if (userData.security_answer_hash || userData.securityAnswerHash) payload.security_answer_hash = String(userData.security_answer_hash || userData.securityAnswerHash);
-    if (userData.created_at || userData.createdAt) payload.created_at = String(userData.created_at || userData.createdAt);
-    if (userData.updated_at || userData.updatedAt) payload.updated_at = String(userData.updated_at || userData.updatedAt || new Date().toISOString());
+    const email = String(userData.email || userData.owner_email || "").toLowerCase().trim();
+    if (!email) return null;
 
-    const { data, error } = await supabase.from("users").upsert(payload, { onConflict: "email" }).select();
-    if (error) console.error("Supabase user upsert notice:", error.message);
-    return data;
+    const now = new Date().toISOString();
+    const fullPayload: Record<string, unknown> = {
+      email,
+      password_hash: String(userData.password_hash || userData.passwordHash || "NO_HASH"),
+      full_name: String(userData.full_name || userData.fullName || email.split("@")[0]),
+      mobile: String(userData.mobile || ""),
+      role: String(userData.role || "customer"),
+      profile_image: userData.profile_image ?? userData.profileImage ?? null,
+      auth_provider: String(userData.auth_provider || userData.authProvider || "email"),
+      email_verified: userData.email_verified ?? userData.emailVerified ? 1 : 0,
+      account_status: String(userData.account_status || userData.accountStatus || "active"),
+      security_question_id: userData.security_question_id || userData.securityQuestionId || null,
+      security_answer_hash: userData.security_answer_hash || userData.securityAnswerHash || null,
+      created_at: String(userData.created_at || userData.createdAt || now),
+      updated_at: String(userData.updated_at || userData.updatedAt || now),
+    };
+
+    // 1. Try full upsert with select
+    const { data, error } = await supabase.from("users").upsert(fullPayload, { onConflict: "email" }).select();
+    if (!error && data) return data;
+
+    // 2. Try full upsert without select (in case select permissions differ)
+    const { error: errorNoSelect } = await supabase.from("users").upsert(fullPayload, { onConflict: "email" });
+    if (!errorNoSelect) return [fullPayload];
+
+    // 3. Fallback: try core essential payload if Supabase table lacks optional columns
+    const corePayload = {
+      email,
+      password_hash: String(userData.password_hash || userData.passwordHash || "NO_HASH"),
+      full_name: String(userData.full_name || userData.fullName || email.split("@")[0]),
+      mobile: String(userData.mobile || ""),
+      role: String(userData.role || "customer"),
+    };
+    const { data: fallbackData } = await supabase.from("users").upsert(corePayload, { onConflict: "email" }).select();
+    return fallbackData || [corePayload];
   } catch (err) {
     console.error("Supabase user upsert catch:", err);
     return null;
@@ -135,22 +155,24 @@ export async function saveUserToSupabase(userData: Record<string, unknown>) {
 }
 
 export async function getUserFromSupabase(email: string) {
-  if (!supabase) return null;
+  if (!supabase || !email) return null;
   try {
-    const { data, error } = await supabase.from("users").select("*").eq("email", email.toLowerCase()).single();
-    if (error || !data) return null;
+    const cleanEmail = email.toLowerCase().trim();
+    const { data, error } = await supabase.from("users").select("*").eq("email", cleanEmail).limit(1);
+    const userRow = Array.isArray(data) ? data[0] : data;
+    if (error || !userRow) return null;
     return {
-      email: String(data.email || "").toLowerCase(),
-      passwordHash: String(data.password_hash || data.passwordHash || ""),
-      fullName: String(data.full_name || data.fullName || ""),
-      mobile: String(data.mobile || ""),
-      role: String(data.role || "customer"),
-      profileImage: String(data.profile_image || data.profileImage || ""),
-      authProvider: String(data.auth_provider || data.authProvider || "email"),
-      securityQuestionId: String(data.security_question_id || data.securityQuestionId || ""),
-      securityAnswerHash: String(data.security_answer_hash || data.securityAnswerHash || ""),
-      accountStatus: String(data.account_status || data.accountStatus || "active"),
-      createdAt: String(data.created_at || data.createdAt || new Date().toISOString()),
+      email: String(userRow.email || cleanEmail).toLowerCase(),
+      passwordHash: String(userRow.password_hash || userRow.passwordHash || ""),
+      fullName: String(userRow.full_name || userRow.fullName || cleanEmail.split("@")[0]),
+      mobile: String(userRow.mobile || ""),
+      role: String(userRow.role || "customer"),
+      profileImage: String(userRow.profile_image || userRow.profileImage || ""),
+      authProvider: String(userRow.auth_provider || userRow.authProvider || "email"),
+      securityQuestionId: String(userRow.security_question_id || userRow.securityQuestionId || ""),
+      securityAnswerHash: String(userRow.security_answer_hash || userRow.securityAnswerHash || ""),
+      accountStatus: String(userRow.account_status || userRow.accountStatus || "active"),
+      createdAt: String(userRow.created_at || userRow.createdAt || new Date().toISOString()),
     };
   } catch {
     return null;

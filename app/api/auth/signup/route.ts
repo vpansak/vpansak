@@ -11,6 +11,7 @@ import {
   sendVerificationEmail,
   validatePasswordStrength,
 } from "../../../lib/auth-session";
+import { saveUserToSupabase } from "../../../lib/supabase";
 
 export async function POST(request: Request) {
   try {
@@ -125,6 +126,20 @@ export async function POST(request: Request) {
         updatedAt: now.toISOString(),
       });
     }
+
+    // Backup to Supabase Cloud Database immediately
+    await saveUserToSupabase({
+      email,
+      passwordHash,
+      fullName,
+      mobile,
+      role: "customer",
+      securityQuestionId,
+      securityAnswerHash,
+      emailVerified: 0,
+      accountStatus: "active",
+      createdAt: now.toISOString(),
+    });
 
     // Construct verification URL
     let baseUrl = process.env.APP_URL;
