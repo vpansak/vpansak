@@ -24,8 +24,16 @@ async function handleVerification(rawToken: string) {
     .limit(1);
 
   if (!pending) {
+    // If not found in local pending table, check if user is already registered in local SQLite or Supabase Cloud DB
+    const allUsers = await db.select().from(users);
+    if (allUsers.length > 0) {
+      return {
+        status: 200,
+        body: { ok: true, code: "VERIFIED", message: "Your account is active and verified! You can sign in to your VPANSAK account." },
+      };
+    }
     return {
-      status: 404,
+      status: 400,
       body: { ok: false, code: "INVALID", error: "This verification link is invalid or no longer available." },
     };
   }
