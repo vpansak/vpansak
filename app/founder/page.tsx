@@ -11,6 +11,12 @@ const InstagramIcon = ({ size = 18 }: { size?: number }) => (
   </svg>
 );
 
+const XIcon = ({ size = 18 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+  </svg>
+);
+
 export default function FounderPage() {
   return (
     <main className="vp-founder-page">
@@ -42,6 +48,14 @@ export default function FounderPage() {
           </p>
 
           <div className="vp-founder-socials">
+            <a
+              href="https://x.com/rajpratapsinghh"
+              target="_blank"
+              rel="noreferrer"
+              className="vp-x-btn"
+            >
+              <XIcon size={16} /> @rajpratapsinghh
+            </a>
             <a
               href="https://www.instagram.com/aloksingh_._/"
               target="_blank"
@@ -107,14 +121,25 @@ export default function FounderPage() {
                 </li>
               </ul>
 
-              <a
-                href="https://www.instagram.com/aloksingh_._/"
-                target="_blank"
-                rel="noreferrer"
-                className="vp-card-insta-link"
-              >
-                <InstagramIcon size={16} /> Follow Alok on Instagram
-              </a>
+              <div className="vp-social-card-links" style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                <a
+                  href="https://x.com/rajpratapsinghh"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="vp-card-x-link"
+                  style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", padding: "12px", borderRadius: "10px", background: "rgba(255, 255, 255, 0.08)", color: "#f8fafc", border: "1px solid rgba(255, 255, 255, 0.2)", fontSize: "12px", fontWeight: 800, textDecoration: "none" }}
+                >
+                  <XIcon size={16} /> Follow Alok on X (@rajpratapsinghh)
+                </a>
+                <a
+                  href="https://www.instagram.com/aloksingh_._/"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="vp-card-insta-link"
+                >
+                  <InstagramIcon size={16} /> Follow Alok on Instagram
+                </a>
+              </div>
             </div>
           </aside>
 
