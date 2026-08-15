@@ -98,8 +98,14 @@ const heroSlides = [
   { eyebrow: "TOYS & CREATIVITY", title: "Big ideas.\nHappy play.", copy: "Creative toys and building sets for fun, curiosity and screen-free family time.", offer: "From ₹349", button: "Shop toys", category: "Toys", image: "https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?auto=format&fit=crop&w=1800&q=88", theme: "rose" },
 ];
 
-function ProductCard({ product, wished, onWish, onAdd }: { product: CatalogProduct; wished: boolean; onWish: () => void; onAdd: () => void }) {
+function ProductCard({ product, wished, onWish, onAdd, authUser }: { product: CatalogProduct; wished: boolean; onWish: () => void; onAdd: () => void; authUser: unknown }) {
   const discount = Math.round((1 - product.price / product.mrp) * 100);
+  const handleBuyNow = (e: React.MouseEvent) => {
+    if (!authUser) {
+      e.preventDefault();
+      window.location.href = `/login?return_to=${encodeURIComponent(`/checkout?product=${product.id}&qty=1`)}`;
+    }
+  };
   return (
     <article className="vp-product-card">
       <div className="vp-product-media">
@@ -113,7 +119,10 @@ function ProductCard({ product, wished, onWish, onAdd }: { product: CatalogProdu
         <div className="vp-rating"><strong>{(product.rating / 10).toFixed(1)} ★</strong><span>{product.reviewCount.toLocaleString("en-IN")}</span><i><BadgeCheck /> Assured</i></div>
         <div className="vp-price"><strong>{money(product.price)}</strong><s>{money(product.mrp)}</s><span>{discount}% off</span></div>
         <p><Truck /> Free delivery in 2–4 days</p>
-        <div className="vp-card-actions"><button type="button" onClick={onAdd}><ShoppingCart /> Add</button><Link href={`/checkout?product=${product.id}&qty=1`}>Buy now</Link></div>
+        <div className="vp-card-actions">
+          <button type="button" onClick={onAdd}><ShoppingCart /> Add</button>
+          <Link href={`/checkout?product=${product.id}&qty=1`} onClick={handleBuyNow}>Buy now</Link>
+        </div>
       </div>
     </article>
   );
@@ -143,31 +152,6 @@ export default function HomePage() {
       .then(async (data) => {
         if (data && data.user) {
           setAuthUser(data.user);
-          
-          // Check for guest cart/wishlist to merge
-          let guestCartObj: Record<string, number> = {};
-          let guestWishlistArr: string[] = [];
-          try {
-            guestCartObj = JSON.parse(localStorage.getItem("vpansak_guest_cart") || "{}");
-            guestWishlistArr = JSON.parse(localStorage.getItem("vpansak_guest_wishlist") || "[]");
-          } catch { /* ignore damaged local guest data */ }
-
-          const guestCartItems = Object.entries(guestCartObj).map(([productId, quantity]) => ({ productId, quantity }));
-
-          if (guestCartItems.length > 0 || guestWishlistArr.length > 0) {
-            await fetch("/api/account", {
-              method: "POST",
-              headers: { "content-type": "application/json" },
-              body: JSON.stringify({
-                action: "mergeGuestData",
-                cart: guestCartItems,
-                wishlist: guestWishlistArr,
-              }),
-            }).catch(() => {});
-            localStorage.removeItem("vpansak_guest_cart");
-            localStorage.removeItem("vpansak_guest_wishlist");
-          }
-
           // Fetch authenticated user's isolated DB cart & wishlist
           const accRes = await fetch("/api/account");
           if (accRes.ok) {
@@ -188,14 +172,15 @@ export default function HomePage() {
           }
         } else {
           setAuthUser(null);
-          try {
-            setCart(JSON.parse(localStorage.getItem("vpansak_guest_cart") || "{}"));
-            setWishlist(JSON.parse(localStorage.getItem("vpansak_guest_wishlist") || "[]"));
-          } catch { /* ignore */ }
+          setCart({});
+          setWishlist([]);
         }
         setHydrated(true);
       })
       .catch(() => {
+        setAuthUser(null);
+        setCart({});
+        setWishlist([]);
         setHydrated(true);
       });
   }, []);
@@ -228,66 +213,82 @@ export default function HomePage() {
 
   const notify = (message: string) => { setToast(message); window.setTimeout(() => setToast(""), 2200); };
   
-  const addToCart = (id: string) => {
+  const addToCart = async (id: string) => {
     if (!authUser) {
-      const nextCart = { ...cart, [id]: (cart[id] || 0) + 1 };
-      setCart(nextCart);
-      localStorage.setItem("vpansak_guest_cart", JSON.stringify(nextCart));
-      notify("Added to your cart");
+      notify("Please sign in to continue.");
+      window.location.href = `/login?return_to=${encodeURIComponent(window.location.pathname)}`;
       return;
     }
 
     const nextQty = (cart[id] || 0) + 1;
-    const nextCart = { ...cart, [id]: nextQty };
-    setCart(nextCart);
-
-    fetch("/api/account", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ action: "cart", productId: id, quantity: nextQty }),
-    }).catch(() => {});
-
-    notify("Added to your cart");
-  };
-
-  const changeQuantity = (id: string, change: number) => {
-    const currentQty = cart[id] || 0;
-    const nextQty = Math.max(0, currentQty + change);
-    const nextCart = { ...cart };
-    if (nextQty <= 0) {
-      delete nextCart[id];
-    } else {
-      nextCart[id] = nextQty;
-    }
-    setCart(nextCart);
-
-    if (authUser) {
-      fetch("/api/account", {
+    try {
+      const res = await fetch("/api/account", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ action: "cart", productId: id, quantity: nextQty }),
-      }).catch(() => {});
-    } else {
-      localStorage.setItem("vpansak_guest_cart", JSON.stringify(nextCart));
+      });
+      if (res.ok) {
+        setCart((prev) => ({ ...prev, [id]: nextQty }));
+        notify("Added to your cart");
+      } else {
+        notify("Could not add to cart. Please try again.");
+      }
+    } catch {
+      notify("Could not add to cart. Please check your connection.");
     }
   };
 
-  const toggleWishlist = (id: string) => {
-    const exists = wishlist.includes(id);
-    const nextWishlist = exists ? wishlist.filter((item) => item !== id) : [...wishlist, id];
-    setWishlist(nextWishlist);
+  const changeQuantity = async (id: string, change: number) => {
+    if (!authUser) {
+      notify("Please sign in to continue.");
+      window.location.href = `/login?return_to=${encodeURIComponent(window.location.pathname)}`;
+      return;
+    }
+    const currentQty = cart[id] || 0;
+    const nextQty = Math.max(0, currentQty + change);
+    try {
+      const res = await fetch("/api/account", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ action: "cart", productId: id, quantity: nextQty }),
+      });
+      if (res.ok) {
+        setCart((prev) => {
+          const updated = { ...prev };
+          if (nextQty <= 0) delete updated[id];
+          else updated[id] = nextQty;
+          return updated;
+        });
+      } else {
+        notify("Could not update cart");
+      }
+    } catch {
+      notify("Could not update cart");
+    }
+  };
 
-    if (authUser) {
-      fetch("/api/account", {
+  const toggleWishlist = async (id: string) => {
+    if (!authUser) {
+      notify("Please sign in to continue.");
+      window.location.href = `/login?return_to=${encodeURIComponent(window.location.pathname)}`;
+      return;
+    }
+    const exists = wishlist.includes(id);
+    try {
+      const res = await fetch("/api/account", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ action: "wishlist", productId: id }),
-      }).catch(() => {});
-    } else {
-      localStorage.setItem("vpansak_guest_wishlist", JSON.stringify(nextWishlist));
+      });
+      if (res.ok) {
+        setWishlist((prev) => (exists ? prev.filter((item) => item !== id) : [...prev, id]));
+        notify(exists ? "Removed from wishlist" : "Saved to wishlist");
+      } else {
+        notify("Could not update wishlist");
+      }
+    } catch {
+      notify("Could not update wishlist");
     }
-
-    notify(exists ? "Removed from wishlist" : "Saved to wishlist");
   };
 
   const chooseCategory = (value: string) => { setCategory(value); setSearch(""); setMenuOpen(false); document.getElementById("catalog")?.scrollIntoView({ behavior: "smooth" }); };
@@ -301,21 +302,22 @@ export default function HomePage() {
 
   const placeOrder = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (!authUser) {
+      notify("Please sign in to continue.");
+      window.location.href = `/login?return_to=${encodeURIComponent(window.location.pathname)}`;
+      return;
+    }
     const form = new FormData(event.currentTarget);
     const response = await fetch("/api/orders", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ customerName: form.get("customerName"), mobile: form.get("mobile"), address: form.get("address"), city: form.get("city"), pinCode: form.get("pinCode"), paymentMethod: form.get("paymentMethod"), total: finalTotal, items: cartItems.map((product) => ({ productId: product.id, productName: product.name, price: product.price, quantity: cart[product.id] })) }) });
     const result = await response.json() as { order?: { orderId: string }; error?: string };
     if (!response.ok || !result.order) { notify(result.error || "Could not place order"); return; }
     
-    if (authUser) {
-      for (const product of cartItems) {
-        fetch("/api/account", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ action: "cart", productId: product.id, quantity: 0 }),
-        }).catch(() => {});
-      }
-    } else {
-      localStorage.removeItem("vpansak_guest_cart");
+    for (const product of cartItems) {
+      fetch("/api/account", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ action: "cart", productId: product.id, quantity: 0 }),
+      }).catch(() => {});
     }
 
     setOrderPlaced(result.order.orderId); setCart({}); setDiscount(0); setCoupon(""); setCheckoutOpen(false);
@@ -417,7 +419,7 @@ export default function HomePage() {
 
       <section className="vp-shelf">
         <header><div><small>LIMITED-TIME PRICES</small><h2>Top offers for you</h2><p>Popular picks with serious savings.</p></div><button onClick={() => document.getElementById("catalog")?.scrollIntoView({ behavior: "smooth" })}>View all <ArrowRight /></button></header>
-        <div className="vp-product-rail">{topOffers.map((product) => <ProductCard key={product.id} product={product} wished={wishlist.includes(product.id)} onWish={() => toggleWishlist(product.id)} onAdd={() => addToCart(product.id)} />)}</div>
+        <div className="vp-product-rail">{topOffers.map((product) => <ProductCard key={product.id} product={product} wished={wishlist.includes(product.id)} onWish={() => toggleWishlist(product.id)} onAdd={() => addToCart(product.id)} authUser={authUser} />)}</div>
       </section>
 
       <section className="vp-banner-grid">
@@ -428,12 +430,12 @@ export default function HomePage() {
 
       <section className="vp-shelf">
         <header><div><small>MOST LOVED THIS WEEK</small><h2>Trending across VPANSAK</h2><p>High-interest products from trusted departments.</p></div><span className="vp-live"><i /> Updated today</span></header>
-        <div className="vp-product-rail">{trending.map((product) => <ProductCard key={product.id} product={product} wished={wishlist.includes(product.id)} onWish={() => toggleWishlist(product.id)} onAdd={() => addToCart(product.id)} />)}</div>
+        <div className="vp-product-rail">{trending.map((product) => <ProductCard key={product.id} product={product} wished={wishlist.includes(product.id)} onWish={() => toggleWishlist(product.id)} onAdd={() => addToCart(product.id)} authUser={authUser} />)}</div>
       </section>
 
       <section className="vp-shelf">
         <header><div><small>SMART VALUE PICKS</small><h2>Useful finds under ₹999</h2><p>Everyday products that stay within budget.</p></div><button onClick={() => { setSort("price-low"); setCategory("All"); document.getElementById("catalog")?.scrollIntoView({ behavior: "smooth" }); }}>See more <ArrowRight /></button></header>
-        <div className="vp-product-rail">{budget.map((product) => <ProductCard key={product.id} product={product} wished={wishlist.includes(product.id)} onWish={() => toggleWishlist(product.id)} onAdd={() => addToCart(product.id)} />)}</div>
+        <div className="vp-product-rail">{budget.map((product) => <ProductCard key={product.id} product={product} wished={wishlist.includes(product.id)} onWish={() => toggleWishlist(product.id)} onAdd={() => addToCart(product.id)} authUser={authUser} />)}</div>
       </section>
 
       <section className="vp-catalog" id="catalog">
@@ -442,7 +444,7 @@ export default function HomePage() {
           <div><SlidersHorizontal />{["All", "Mobile", "Electronics", "Fashion", "Home", "Kitchen", "Computer", "Gaming"].map((item) => <button type="button" key={item} className={category === item ? "active" : ""} onClick={() => setCategory(item)}>{item}</button>)}</div>
           <label>Sort by<select value={sort} onChange={(event) => setSort(event.target.value)}><option value="featured">Popularity</option><option value="rating">Customer rating</option><option value="price-low">Price: Low to high</option><option value="price-high">Price: High to low</option></select></label>
         </div>
-        {filteredProducts.length ? <div className="vp-catalog-grid">{filteredProducts.map((product) => <ProductCard key={product.id} product={product} wished={wishlist.includes(product.id)} onWish={() => toggleWishlist(product.id)} onAdd={() => addToCart(product.id)} />)}</div> : <div className="vp-empty"><Search /><h3>No matching products found</h3><p>Try a broader search or clear the selected department.</p><button type="button" onClick={() => { setSearch(""); setCategory("All"); }}>Clear all filters</button></div>}
+        {filteredProducts.length ? <div className="vp-catalog-grid">{filteredProducts.map((product) => <ProductCard key={product.id} product={product} wished={wishlist.includes(product.id)} onWish={() => toggleWishlist(product.id)} onAdd={() => addToCart(product.id)} authUser={authUser} />)}</div> : <div className="vp-empty"><Search /><h3>No matching products found</h3><p>Try a broader search or clear the selected department.</p><button type="button" onClick={() => { setSearch(""); setCategory("All"); }}>Clear all filters</button></div>}
       </section>
 
       <section className="vp-track-band">
@@ -457,7 +459,7 @@ export default function HomePage() {
       </section>
 
       <footer className="vp-footer">
-        <div className="vp-footer-main"><div className="vp-footer-brand"><Link className="vp-brand" href="/"><img src="/vpansak-logo.png" alt="VPANSAK" /><span><strong>VPANSAK</strong><small>SHOPPING</small></span></Link><p>A secure, useful and customer-focused digital marketplace by A&amp;A Group.</p><span><ShieldCheck /> Secure shopping experience</span></div><div><strong>SHOP</strong><Link href="/categories">All categories</Link><a href="#catalog">Top offers</a><Link href="/account">Wishlist</Link><Link href="/track">Track order</Link></div><div><strong>HELP</strong><Link href="/support">Support hub</Link><Link href="/info/faq">FAQs</Link><Link href="/policies/refund-policy">Refund policy</Link><Link href="/policies/shipping-policy">Shipping policy</Link></div><div><strong>BUSINESS</strong><Link href="/seller">Become a seller</Link><Link href="/seller/dashboard">Seller dashboard</Link><Link href="/policies/merchant-guidelines">Merchant guidelines</Link><Link href="/foundation">Support Foundation</Link></div><div><strong>COMPANY</strong><Link href="/info/about">About VPANSAK</Link><Link href="/info/careers">Careers</Link><Link href="/info/blog">Blog</Link><Link href="/info/contact">Contact us</Link></div></div>
+        <div className="vp-footer-main"><div className="vp-footer-brand"><Link className="vp-brand" href="/"><img src="/vpansak-logo.png" alt="VPANSAK" /><span><strong>VPANSAK</strong><small>SHOPPING</small></span></Link><p>A secure, useful and customer-focused digital marketplace by A&amp;A Group.</p><span><ShieldCheck /> Secure shopping experience</span></div><div><strong>SHOP</strong><Link href="/categories">All categories</Link><a href="#catalog">Top offers</a><Link href="/account">Wishlist</Link><Link href="/track">Track order</Link></div><div><strong>HELP</strong><Link href="/support">Support hub</Link><Link href="/info/faq">FAQs</Link><Link href="/policies/refund-policy">Refund policy</Link><Link href="/policies/shipping-policy">Shipping policy</Link></div><div><strong>BUSINESS</strong><Link href="/seller">Become a seller</Link><Link href="/seller/dashboard">Seller dashboard</Link><Link href="/policies/merchant-guidelines">Merchant guidelines</Link><Link href="/foundation">Support Foundation</Link></div><div><strong>COMPANY</strong><Link href="/founder">Founder Alok Singh</Link><Link href="/cofounder">Co-Founder Ayushi Tripathi</Link><Link href="/info/about">About VPANSAK</Link><Link href="/info/careers">Careers</Link><Link href="/info/contact">Contact us</Link></div></div>
         <div className="vp-footer-bottom"><span>© 2026 VPANSAK • Powered by A&amp;A Group</span><div><Link href="/policies/privacy-policy">Privacy</Link><Link href="/policies/terms-and-conditions">Terms</Link><a href="mailto:support.vpansak@gmail.com">support.vpansak@gmail.com</a><a href="https://instagram.com/VPANSAK" target="_blank" rel="noreferrer">Instagram</a></div></div>
       </footer>
 

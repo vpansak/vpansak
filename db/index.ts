@@ -188,7 +188,8 @@ const SCHEMA_SQL = `
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       owner_email TEXT NOT NULL,
       product_id TEXT NOT NULL,
-      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(owner_email, product_id)
     );
 
     CREATE TABLE IF NOT EXISTS cart_items (
@@ -196,7 +197,8 @@ const SCHEMA_SQL = `
       owner_email TEXT NOT NULL,
       product_id TEXT NOT NULL,
       quantity INTEGER NOT NULL DEFAULT 1,
-      updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+      updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(owner_email, product_id)
     );
 
     CREATE TABLE IF NOT EXISTS order_items (

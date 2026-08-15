@@ -58,7 +58,10 @@ export async function POST(request: Request) {
     const orderId = `VPO${Math.floor(100000 + Math.random() * 900000)}`;
     const db = await getDb();
     const authUser = await getAuthUserFromRequest(request);
-    const ownerEmail = authUser?.email?.toLowerCase() || request.headers.get("oai-authenticated-user-email")?.toLowerCase() || null;
+    if (!authUser || !authUser.email) {
+      return Response.json({ error: "Please sign in to complete your purchase." }, { status: 401 });
+    }
+    const ownerEmail = authUser.email.toLowerCase();
 
     const [order] = await db
       .insert(orders)

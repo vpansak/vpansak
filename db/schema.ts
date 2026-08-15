@@ -1,5 +1,24 @@
 import { sql } from "drizzle-orm";
-import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { integer, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
+
+export const wishlistItems = sqliteTable("wishlist_items", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  ownerEmail: text("owner_email").notNull(),
+  productId: text("product_id").notNull(),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+}, (table) => ({
+  userProductUnique: uniqueIndex("wishlist_user_prod_unique").on(table.ownerEmail, table.productId),
+}));
+
+export const persistentCartItems = sqliteTable("cart_items", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  ownerEmail: text("owner_email").notNull(),
+  productId: text("product_id").notNull(),
+  quantity: integer("quantity").notNull().default(1),
+  updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+}, (table) => ({
+  userCartUnique: uniqueIndex("cart_user_prod_unique").on(table.ownerEmail, table.productId),
+}));
 
 export const orders = sqliteTable("orders", {
   id: integer("id").primaryKey({ autoIncrement: true }),
@@ -73,20 +92,6 @@ export const addresses = sqliteTable("addresses", {
   createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });
 
-export const wishlistItems = sqliteTable("wishlist_items", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  ownerEmail: text("owner_email").notNull(),
-  productId: text("product_id").notNull(),
-  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
-});
-
-export const persistentCartItems = sqliteTable("cart_items", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  ownerEmail: text("owner_email").notNull(),
-  productId: text("product_id").notNull(),
-  quantity: integer("quantity").notNull().default(1),
-  updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
-});
 
 export const orderItems = sqliteTable("order_items", {
   id: integer("id").primaryKey({ autoIncrement: true }),

@@ -96,14 +96,24 @@ export default function ProductPage() {
   useEffect(() => {
     fetch("/api/auth/me")
       .then((res) => res.json())
-      .then((data) => {
-        if (data && data.user) setAuthUser(data.user);
+      .then(async (data) => {
+        if (data && data.user) {
+          setAuthUser(data.user);
+          const accRes = await fetch("/api/account");
+          if (accRes.ok) {
+            const accData = await accRes.json();
+            if (Array.isArray(accData.wishlist)) {
+              setWish(accData.wishlist.some((w: { productId: string }) => w.productId === product.id));
+            }
+          }
+        }
       })
       .catch(() => {});
-  }, []);
+  }, [product.id]);
 
   const add = async () => {
     if (!authUser) {
+      notice("Please sign in to continue.");
       window.location.href = `/login?return_to=${encodeURIComponent(window.location.pathname)}`;
       return;
     }
@@ -122,24 +132,37 @@ export default function ProductPage() {
 
   const toggleWish = async () => {
     if (!authUser) {
+      notice("Please sign in to continue.");
       window.location.href = `/login?return_to=${encodeURIComponent(window.location.pathname)}`;
       return;
     }
-    setWish(!wish);
+    const nextWishState = !wish;
+    setWish(nextWishState);
     try {
       const response = await fetch("/api/account", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ action: "wishlist", productId: product.id }),
       });
-      notice(wish ? "Removed from wishlist" : "Saved to wishlist");
+      if (response.ok) {
+        notice(nextWishState ? "Saved to wishlist" : "Removed from wishlist");
+      } else {
+        setWish(!nextWishState);
+        notice("Could not update wishlist");
+      }
     } catch {
-      notice("Wishlist updated on this page");
+      setWish(!nextWishState);
+      notice("Could not update wishlist");
     }
   };
 
   const submitReview = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (!authUser) {
+      notice("Please sign in to continue.");
+      window.location.href = `/login?return_to=${encodeURIComponent(window.location.pathname)}`;
+      return;
+    }
     const formElement = event.currentTarget;
     const form = new FormData(formElement);
     const response = await fetch("/api/reviews", {

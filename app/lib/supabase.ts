@@ -114,18 +114,45 @@ export async function saveUserToSupabase(userData: Record<string, unknown>) {
     if (!email) return null;
 
     const now = new Date().toISOString();
+    let passHash = String(userData.password_hash || userData.passwordHash || "");
+    let secQ = userData.security_question_id || userData.securityQuestionId || null;
+    let secAns = userData.security_answer_hash || userData.securityAnswerHash || null;
+    let role = String(userData.role || userData.role || "customer");
+
+    if (!passHash || passHash === "NO_HASH" || !secQ) {
+      try {
+        const { data: existing } = await supabase.from("users").select("password_hash, security_question_id, security_answer_hash, role").eq("email", email).maybeSingle();
+        if (existing) {
+          if ((!passHash || passHash === "NO_HASH") && existing.password_hash && existing.password_hash !== "NO_HASH") {
+            passHash = existing.password_hash;
+          }
+          if (!secQ && existing.security_question_id) {
+            secQ = existing.security_question_id;
+          }
+          if (!secAns && existing.security_answer_hash) {
+            secAns = existing.security_answer_hash;
+          }
+          if (existing.role && role === "customer") {
+            role = existing.role;
+          }
+        }
+      } catch {
+        // Ignore select check error
+      }
+    }
+
     const fullPayload: Record<string, unknown> = {
       email,
-      password_hash: String(userData.password_hash || userData.passwordHash || "NO_HASH"),
+      password_hash: passHash || "NO_HASH",
       full_name: String(userData.full_name || userData.fullName || email.split("@")[0]),
       mobile: String(userData.mobile || ""),
-      role: String(userData.role || "customer"),
+      role,
       profile_image: userData.profile_image ?? userData.profileImage ?? null,
       auth_provider: String(userData.auth_provider || userData.authProvider || "email"),
       email_verified: userData.email_verified ?? userData.emailVerified ? 1 : 0,
       account_status: String(userData.account_status || userData.accountStatus || "active"),
-      security_question_id: userData.security_question_id || userData.securityQuestionId || null,
-      security_answer_hash: userData.security_answer_hash || userData.securityAnswerHash || null,
+      security_question_id: secQ,
+      security_answer_hash: secAns,
       created_at: String(userData.created_at || userData.createdAt || now),
       updated_at: String(userData.updated_at || userData.updatedAt || now),
     };
@@ -141,15 +168,15 @@ export async function saveUserToSupabase(userData: Record<string, unknown>) {
     // 3. Fallback: try core essential payload if Supabase table lacks optional columns
     const corePayload = {
       email,
-      password_hash: String(userData.password_hash || userData.passwordHash || "NO_HASH"),
+      password_hash: passHash || "NO_HASH",
       full_name: String(userData.full_name || userData.fullName || email.split("@")[0]),
       mobile: String(userData.mobile || ""),
-      role: String(userData.role || "customer"),
+      role,
     };
     const { data: fallbackData } = await supabase.from("users").upsert(corePayload, { onConflict: "email" }).select();
     return fallbackData || [corePayload];
   } catch (err) {
-    console.error("Supabase user upsert catch:", err);
+    console.error("Supabase user upsert notice:", err);
     return null;
   }
 }
@@ -287,6 +314,78 @@ export async function saveAddressToSupabase(addressData: Record<string, unknown>
     return data;
   } catch (err) {
     console.error("Supabase address upsert catch:", err);
+    return null;
+  }
+}
+
+export async function getCartFromSupabase(email: string) {
+  if (!supabase || !email) return [];
+  try {
+    const { data, error } = await supabase.from("cart_items").select("*").eq("owner_email", email.toLowerCase());
+    if (error || !data) return [];
+    return data.map((r) => ({
+      ownerEmail: String(r.owner_email || email).toLowerCase(),
+      productId: String(r.product_id || ""),
+      quantity: Number(r.quantity || 1),
+    }));
+  } catch {
+    return [];
+  }
+}
+
+export async function saveCartItemToSupabase(email: string, productId: string, quantity: number) {
+  if (!supabase || !email || !productId) return null;
+  try {
+    const cleanEmail = email.toLowerCase().trim();
+    if (quantity <= 0) {
+      await supabase.from("cart_items").delete().eq("owner_email", cleanEmail).eq("product_id", productId);
+      return null;
+    }
+    const payload = {
+      owner_email: cleanEmail,
+      product_id: productId,
+      quantity,
+      updated_at: new Date().toISOString(),
+    };
+    const { data } = await supabase.from("cart_items").upsert(payload, { onConflict: "owner_email,product_id" }).select();
+    return data;
+  } catch (err) {
+    console.error("Supabase cart upsert notice:", err);
+    return null;
+  }
+}
+
+export async function getWishlistFromSupabase(email: string) {
+  if (!supabase || !email) return [];
+  try {
+    const { data, error } = await supabase.from("wishlist_items").select("*").eq("owner_email", email.toLowerCase());
+    if (error || !data) return [];
+    return data.map((r) => ({
+      ownerEmail: String(r.owner_email || email).toLowerCase(),
+      productId: String(r.product_id || ""),
+    }));
+  } catch {
+    return [];
+  }
+}
+
+export async function saveWishlistItemToSupabase(email: string, productId: string, remove = false) {
+  if (!supabase || !email || !productId) return null;
+  try {
+    const cleanEmail = email.toLowerCase().trim();
+    if (remove) {
+      await supabase.from("wishlist_items").delete().eq("owner_email", cleanEmail).eq("product_id", productId);
+      return null;
+    }
+    const payload = {
+      owner_email: cleanEmail,
+      product_id: productId,
+      created_at: new Date().toISOString(),
+    };
+    const { data } = await supabase.from("wishlist_items").upsert(payload, { onConflict: "owner_email,product_id" }).select();
+    return data;
+  } catch (err) {
+    console.error("Supabase wishlist upsert notice:", err);
     return null;
   }
 }

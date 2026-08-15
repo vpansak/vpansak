@@ -1,9 +1,8 @@
+import { CartRow } from "@/drizzle.config";
 import { catalogProducts } from "../../../lib/catalog";
 
 const keyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || process.env.RAZORPAY_KEY_ID || "rzp_live_TLMoK497QwLs7Y";
 const keySecret = process.env.RAZORPAY_KEY_SECRET || "wgxcFGPQitPjJ6FwCTUphLcn";
-
-type CartRow = { productId?: unknown; quantity?: unknown };
 
 const createBasicAuth = (id: string, secret: string) => {
   if (typeof btoa === "function") return btoa(`${id}:${secret}`);

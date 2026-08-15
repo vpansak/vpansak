@@ -1,6 +1,7 @@
 import { asc, desc, eq } from "drizzle-orm";
 import { getDb } from "../../../db";
 import { officers, ticketReplies, tickets } from "../../../db/schema";
+import { getAuthUserFromRequest } from "../../lib/auth-session";
 import { getTicketFromSupabase, saveTicketToSupabase } from "../../lib/supabase";
 
 const publicTicket = (ticket: { ticketId: string; customerName: string; category: string; subject: string; priority: string; status: string; createdAt: string; updatedAt: string }) => ({ ticketId: ticket.ticketId, customerName: `${ticket.customerName.slice(0, 1)}***`, category: ticket.category, subject: ticket.subject, priority: ticket.priority, status: ticket.status, createdAt: ticket.createdAt, updatedAt: ticket.updatedAt });
@@ -23,18 +24,23 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    const authUser = await getAuthUserFromRequest(request);
+    if (!authUser || !authUser.email) {
+      return Response.json({ error: "Please sign in to create a support ticket." }, { status: 401 });
+    }
+    const email = authUser.email.toLowerCase();
     const body = await request.json() as Record<string, string>;
-    const required = ["customerName", "email", "category", "subject", "description"];
+    const required = ["customerName", "category", "subject", "description"];
     if (required.some((key) => !String(body[key] || "").trim())) return Response.json({ error: "Complete all required ticket details." }, { status: 400 });
     const ticketId = `VPT${Math.floor(100000 + Math.random() * 900000)}`;
     const db = await getDb();
     const [officer] = await db.select().from(officers).where(eq(officers.active, true)).orderBy(asc(officers.assignedCount), asc(officers.id)).limit(1);
     const orderReference=body.orderId?.trim().toUpperCase();
     const descriptionText = `${orderReference?`Order: ${orderReference}\n`:""}${body.description.trim()}`.slice(0,2000);
-    await db.insert(tickets).values({ ticketId, customerName: body.customerName.trim().slice(0,100), email: body.email.trim().toLowerCase().slice(0,150), mobile: body.mobile?.trim().slice(0,20) || "", category: body.category.trim().slice(0,50), subject: body.subject.trim().slice(0,150), description: descriptionText, priority: body.priority?.trim().slice(0,20) || "Normal", assignedOfficer: officer?.email ?? null });
+    await db.insert(tickets).values({ ticketId, customerName: body.customerName.trim().slice(0,100), email, mobile: body.mobile?.trim().slice(0,20) || authUser.mobile || "", category: body.category.trim().slice(0,50), subject: body.subject.trim().slice(0,150), description: descriptionText, priority: body.priority?.trim().slice(0,20) || "Normal", assignedOfficer: officer?.email ?? null });
     await db.insert(ticketReplies).values({ ticketId, authorType: "system", authorName: "VPANSAK Support", message: "Your request has been received. Our support team will review it and share an update here." });
     if (officer) await db.update(officers).set({ assignedCount: officer.assignedCount + 1 }).where(eq(officers.id, officer.id));
-    await saveTicketToSupabase({ ticket_id: ticketId, customer_name: body.customerName.trim().slice(0,100), email: body.email.trim().toLowerCase().slice(0,150), mobile: body.mobile?.trim().slice(0,20) || "", category: body.category.trim().slice(0,50), subject: body.subject.trim().slice(0,150), description: descriptionText, priority: body.priority?.trim().slice(0,20) || "Normal", status: "Open" });
+    await saveTicketToSupabase({ ticket_id: ticketId, customer_name: body.customerName.trim().slice(0,100), email, mobile: body.mobile?.trim().slice(0,20) || authUser.mobile || "", category: body.category.trim().slice(0,50), subject: body.subject.trim().slice(0,150), description: descriptionText, priority: body.priority?.trim().slice(0,20) || "Normal", status: "Open" });
     return Response.json({ ticketId, status: "Open", assigned: Boolean(officer) }, { status: 201 });
   } catch (err) {
     console.error("Create ticket error:", err);

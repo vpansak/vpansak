@@ -115,6 +115,13 @@ function LoginForm() {
         <h1 className="vp-auth-title">Welcome Back</h1>
         <p className="vp-auth-subtitle">Sign in to continue to your VPANSAK account.</p>
 
+        {Boolean(returnTo) && (
+          <div className="vp-auth-alert info" style={{ marginBottom: "16px", background: "#eff6ff", border: "1px solid #bfdbfe", color: "#1e40af", padding: "10px 14px", borderRadius: "8px", display: "flex", alignItems: "center", gap: "8px", fontSize: "14px", fontWeight: 600 }}>
+            <ShieldAlert size={18} />
+            <span>Please sign in to continue.</span>
+          </div>
+        )}
+
         {/* Error Alert */}
         {error && (
           <div className="vp-auth-alert error" role="alert">

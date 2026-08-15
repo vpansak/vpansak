@@ -2,22 +2,29 @@ import { and, desc, eq, or } from "drizzle-orm";
 import { getDb } from "../../../db";
 import { addresses, notifications, orders, persistentCartItems, profiles, reviews, sellerApplications, tickets, users, wishlistItems } from "../../../db/schema";
 import { getAuthUserFromRequest, hashPassword, setSessionCookieHeaders, verifyPassword } from "../../lib/auth-session";
-import { getAddressesFromSupabase, getUserFromSupabase, getUserOrdersFromSupabase, saveUserToSupabase } from "../../lib/supabase";
-
-async function emailFrom(request: Request) {
-  const user = await getAuthUserFromRequest(request);
-  return user?.email?.toLowerCase() || null;
-}
+import {
+  getAddressesFromSupabase,
+  getCartFromSupabase,
+  getUserFromSupabase,
+  getUserOrdersFromSupabase,
+  getWishlistFromSupabase,
+  saveAddressToSupabase,
+  saveCartItemToSupabase,
+  saveUserToSupabase,
+  saveWishlistItemToSupabase,
+} from "../../lib/supabase";
 
 export async function GET(request: Request) {
   const userSession = await getAuthUserFromRequest(request);
-  if (!userSession || !userSession.email) return Response.json({ error: "Sign in to access your account." }, { status: 401 });
+  if (!userSession || !userSession.email) {
+    return Response.json({ error: "Sign in to access your account." }, { status: 401 });
+  }
   const email = userSession.email.toLowerCase();
   try {
     const db = await getDb();
     let [userRecord] = await db.select().from(users).where(eq(users.email, email)).limit(1);
 
-    // If userRecord is missing in local SQLite (e.g. Vercel deployment wiped local disk), restore from Supabase Cloud DB
+    // If userRecord is missing in local SQLite, restore from Supabase Cloud DB
     if (!userRecord) {
       const remoteUser = await getUserFromSupabase(email);
       const now = new Date().toISOString();
@@ -27,7 +34,7 @@ export async function GET(request: Request) {
           .insert(users)
           .values({
             email: remoteUser.email,
-            passwordHash: remoteUser.passwordHash || "RESTORED_USER_HASH",
+            passwordHash: remoteUser.passwordHash || "NO_HASH",
             fullName: remoteUser.fullName,
             mobile: remoteUser.mobile,
             role: remoteUser.role,
@@ -59,7 +66,7 @@ export async function GET(request: Request) {
           set: { fullName: remoteUser.fullName, mobile: remoteUser.mobile, updatedAt: now },
         });
 
-        // Also sync remote orders if local orders empty
+        // Sync remote orders
         const remoteOrders = await getUserOrdersFromSupabase(email);
         for (const o of remoteOrders) {
           await db.insert(orders).values({
@@ -92,39 +99,31 @@ export async function GET(request: Request) {
             isPrimary: a.isPrimary,
           }).onConflictDoNothing();
         }
-      } else {
-        // Create user from active session data & backup to Supabase
-        const isAdmin = email === "aloksingh84959@gmail.com" || userSession.role === "admin";
-        const [created] = await db
-          .insert(users)
-          .values({
-            email,
-            passwordHash: "SESSION_RESTORED",
-            fullName: userSession.fullName || email.split("@")[0],
-            mobile: userSession.mobile || "",
-            role: isAdmin ? "admin" : userSession.role || "customer",
-            authProvider: userSession.authProvider || "email",
-            emailVerified: true,
-            accountStatus: "active",
-            createdAt: now,
-            updatedAt: now,
-          })
-          .onConflictDoNothing()
-          .returning();
 
-        userRecord = created || (await db.select().from(users).where(eq(users.email, email)).limit(1))[0];
-
-        await db.insert(profiles).values({
-          email,
-          fullName: userSession.fullName || email.split("@")[0],
-          mobile: userSession.mobile || "",
-          createdAt: now,
-          updatedAt: now,
-        }).onConflictDoNothing();
-
-        if (userRecord) {
-          await saveUserToSupabase(userRecord);
+        // Sync remote cart
+        const remoteCart = await getCartFromSupabase(email);
+        for (const c of remoteCart) {
+          await db.insert(persistentCartItems).values({
+            ownerEmail: c.ownerEmail,
+            productId: c.productId,
+            quantity: c.quantity,
+          }).onConflictDoUpdate({
+            target: [persistentCartItems.ownerEmail, persistentCartItems.productId],
+            set: { quantity: c.quantity }
+          });
         }
+
+        // Sync remote wishlist
+        const remoteWishlist = await getWishlistFromSupabase(email);
+        for (const w of remoteWishlist) {
+          await db.insert(wishlistItems).values({
+            ownerEmail: w.ownerEmail,
+            productId: w.productId,
+          }).onConflictDoNothing();
+        }
+      } else {
+        // User not found in database -> return 401 unauthenticated
+        return Response.json({ error: "Session invalid or account not found. Please sign in again." }, { status: 401 });
       }
     }
 
@@ -195,7 +194,23 @@ export async function POST(request: Request) {
         target: profiles.email,
         set: { fullName, mobile, ...(avatarUrl ? { avatarUrl } : {}), updatedAt: new Date().toISOString() }
       });
-      await db.update(users).set({ fullName, mobile, ...(avatarUrl ? { profileImage: avatarUrl } : {}), updatedAt: new Date().toISOString() }).where(eq(users.email, email));
+      const now = new Date().toISOString();
+      await db.insert(users).values({
+        email,
+        passwordHash: "NO_HASH",
+        fullName,
+        mobile,
+        profileImage: avatarUrl || null,
+        role: userSession.role || "customer",
+        authProvider: userSession.authProvider || "email",
+        emailVerified: true,
+        accountStatus: "active",
+        createdAt: now,
+        updatedAt: now,
+      }).onConflictDoUpdate({
+        target: users.email,
+        set: { fullName, mobile, ...(avatarUrl ? { profileImage: avatarUrl } : {}), updatedAt: now }
+      });
 
       const [updatedUser] = await db.select().from(users).where(eq(users.email, email)).limit(1);
       if (updatedUser) await saveUserToSupabase(updatedUser);
@@ -245,7 +260,19 @@ export async function POST(request: Request) {
       if (required.some((key) => !String(body[key] || "").trim())) return Response.json({ error: "Complete the full address." }, { status: 400 });
       const primary = Boolean(body.isPrimary);
       if (primary) await db.update(addresses).set({ isPrimary: false }).where(eq(addresses.ownerEmail, email));
-      await db.insert(addresses).values({ ownerEmail: email, label: String(body.label || "Home").slice(0, 30), fullName: String(body.fullName).slice(0,100), mobile: String(body.mobile).slice(0,20), line1: String(body.line1).slice(0,300), city: String(body.city).slice(0,100), state: String(body.state).slice(0,100), pinCode: String(body.pinCode).slice(0,12), isPrimary: primary });
+      const addressPayload = {
+        ownerEmail: email,
+        label: String(body.label || "Home").slice(0, 30),
+        fullName: String(body.fullName).slice(0, 100),
+        mobile: String(body.mobile).slice(0, 20),
+        line1: String(body.line1).slice(0, 300),
+        city: String(body.city).slice(0, 100),
+        state: String(body.state).slice(0, 100),
+        pinCode: String(body.pinCode).slice(0, 12),
+        isPrimary: primary,
+      };
+      await db.insert(addresses).values(addressPayload);
+      await saveAddressToSupabase(addressPayload);
       return Response.json({ ok: true, message: "Address saved." });
     }
 
@@ -256,68 +283,43 @@ export async function POST(request: Request) {
 
     if (action === "wishlist") {
       const productId = String(body.productId || "").slice(0,80);
+      if (!productId) return Response.json({ error: "Product ID required." }, { status: 400 });
       const existing = await db.select().from(wishlistItems).where(and(eq(wishlistItems.ownerEmail, email), eq(wishlistItems.productId, productId))).limit(1);
-      if (existing.length) await db.delete(wishlistItems).where(eq(wishlistItems.id, existing[0].id));
-      else await db.insert(wishlistItems).values({ ownerEmail: email, productId });
-      return Response.json({ saved: !existing.length });
+      const isRemoving = existing.length > 0;
+      if (isRemoving) {
+        await db.delete(wishlistItems).where(eq(wishlistItems.id, existing[0].id));
+      } else {
+        await db.insert(wishlistItems).values({ ownerEmail: email, productId }).onConflictDoNothing();
+      }
+      await saveWishlistItemToSupabase(email, productId, isRemoving);
+      return Response.json({ saved: !isRemoving, ok: true });
     }
 
     if (action === "cart") {
       const productId = String(body.productId || "").slice(0,80);
+      if (!productId) return Response.json({ error: "Product ID required." }, { status: 400 });
       const quantity = Math.max(0, Math.min(20, Number(body.quantity) || 0));
       const existing = await db.select().from(persistentCartItems).where(and(eq(persistentCartItems.ownerEmail, email), eq(persistentCartItems.productId, productId))).limit(1);
-      if (!quantity && existing.length) await db.delete(persistentCartItems).where(eq(persistentCartItems.id, existing[0].id));
-      else if (existing.length) await db.update(persistentCartItems).set({ quantity, updatedAt: new Date().toISOString() }).where(eq(persistentCartItems.id, existing[0].id));
-      else if (quantity) await db.insert(persistentCartItems).values({ ownerEmail: email, productId, quantity });
+      
+      if (!quantity) {
+        if (existing.length) {
+          await db.delete(persistentCartItems).where(eq(persistentCartItems.id, existing[0].id));
+        }
+      } else if (existing.length) {
+        await db.update(persistentCartItems).set({ quantity, updatedAt: new Date().toISOString() }).where(eq(persistentCartItems.id, existing[0].id));
+      } else {
+        await db.insert(persistentCartItems).values({ ownerEmail: email, productId, quantity }).onConflictDoUpdate({
+          target: [persistentCartItems.ownerEmail, persistentCartItems.productId],
+          set: { quantity, updatedAt: new Date().toISOString() }
+        });
+      }
+      await saveCartItemToSupabase(email, productId, quantity);
       return Response.json({ ok: true });
     }
 
     if (action === "readNotification") {
       await db.update(notifications).set({ read: true }).where(and(eq(notifications.id, Number(body.id)), eq(notifications.ownerEmail, email)));
       return Response.json({ ok: true });
-    }
-
-    if (action === "mergeGuestData") {
-      const guestCart = Array.isArray(body.cart) ? (body.cart as Array<{ productId: string; quantity: number }>) : [];
-      const guestWishlist = Array.isArray(body.wishlist) ? (body.wishlist as Array<string | { productId: string }>) : [];
-
-      for (const item of guestCart) {
-        const productId = String(item.productId || "").slice(0, 80);
-        const qty = Math.max(1, Math.min(20, Number(item.quantity) || 1));
-        if (!productId) continue;
-
-        const [existing] = await db
-          .select()
-          .from(persistentCartItems)
-          .where(and(eq(persistentCartItems.ownerEmail, email), eq(persistentCartItems.productId, productId)))
-          .limit(1);
-
-        if (existing) {
-          await db
-            .update(persistentCartItems)
-            .set({ quantity: Math.min(20, existing.quantity + qty), updatedAt: new Date().toISOString() })
-            .where(eq(persistentCartItems.id, existing.id));
-        } else {
-          await db.insert(persistentCartItems).values({ ownerEmail: email, productId, quantity: qty });
-        }
-      }
-
-      for (const item of guestWishlist) {
-        const productId = typeof item === "string" ? item : String((item as any)?.productId || "").slice(0, 80);
-        if (!productId) continue;
-
-        const [existing] = await db
-          .select()
-          .from(wishlistItems)
-          .where(and(eq(wishlistItems.ownerEmail, email), eq(wishlistItems.productId, productId)))
-          .limit(1);
-
-        if (!existing) {
-          await db.insert(wishlistItems).values({ ownerEmail: email, productId });
-        }
-      }
-
-      return Response.json({ ok: true, mergedCartCount: guestCart.length, mergedWishlistCount: guestWishlist.length });
     }
 
     return Response.json({ error: "Unsupported account action." }, { status: 400 });
