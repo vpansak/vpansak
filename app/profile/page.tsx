@@ -1103,26 +1103,56 @@ export function ProfileContent({ paramsTab }: { paramsTab?: string }) {
                   <div className="coupon-redeem-card">
                     <Tag size={20} />
                     <div>
-                      <h3>Apply Promo Code</h3>
-                      <p>Enter an active promo code to unlock instant discounts during checkout.</p>
+                      <h3>Verify Promo Code</h3>
+                      <p>Enter any promo code below to check instant eligibility and discount value.</p>
                     </div>
-                    <div className="coupon-input-group">
-                      <input placeholder="ENTER PROMO CODE" style={{ textTransform: "uppercase" }} />
-                      <button onClick={() => setMessage("Coupon code is valid for checkout!")}>Apply</button>
-                    </div>
+                    <form
+                      className="coupon-input-group"
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        const input = (e.currentTarget.elements.namedItem("testCode") as HTMLInputElement)?.value.trim().toUpperCase();
+                        if (!input) return;
+                        fetch(`/api/coupons?code=${input}&total=1000`)
+                          .then((r) => r.json())
+                          .then((data) => {
+                            if (data.coupon) {
+                              setMessage(`Coupon '${data.coupon.code}' is active! (${data.coupon.title})`);
+                            } else {
+                              setMessage(data.error || "Coupon is invalid or inactive.");
+                            }
+                          });
+                      }}
+                    >
+                      <input name="testCode" placeholder="ENTER PROMO CODE" style={{ textTransform: "uppercase" }} required />
+                      <button type="submit">Verify Code</button>
+                    </form>
                   </div>
 
                   <div className="available-coupons-grid">
-                    <article className="coupon-item">
-                      <span>WELCOME50</span>
-                      <strong>₹50 OFF</strong>
-                      <small>Min Order: ₹499 • Valid for first order</small>
-                    </article>
-                    <article className="coupon-item">
-                      <span>VPANSAK100</span>
-                      <strong>₹100 OFF</strong>
-                      <small>Min Order: ₹999 • Applicable storewide</small>
-                    </article>
+                    {[
+                      { code: "WELCOME50", title: "₹50 OFF", min: "Min Order: ₹499 • First order" },
+                      { code: "VPANSAK100", title: "₹100 OFF", min: "Min Order: ₹999 • Storewide" },
+                      { code: "VPANSAK10", title: "10% OFF", min: "Min Order: ₹499 • Max ₹300 OFF" },
+                      { code: "VP50", title: "₹50 OFF", min: "Min Order: ₹399 • Daily deal" },
+                      { code: "SAVE15", title: "15% OFF", min: "Min Order: ₹1,499 • Mega savings" },
+                      { code: "FESTIVE200", title: "₹200 OFF", min: "Min Order: ₹1,999 • Festive special" },
+                    ].map((c) => (
+                      <article className="coupon-item" key={c.code}>
+                        <span>{c.code}</span>
+                        <strong>{c.title}</strong>
+                        <small>{c.min}</small>
+                        <button
+                          type="button"
+                          className="btn-use-coupon"
+                          onClick={() => {
+                            navigator.clipboard?.writeText(c.code);
+                            setMessage(`Coupon code '${c.code}' copied! Use it on Checkout.`);
+                          }}
+                        >
+                          Copy Code
+                        </button>
+                      </article>
+                    ))}
                   </div>
                 </div>
               </div>

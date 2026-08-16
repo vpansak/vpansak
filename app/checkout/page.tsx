@@ -485,9 +485,45 @@ function CheckoutContent() {
                 <p>Use an active VPANSAK offer.</p>
               </div>
             </header>
+
+            <div className="checkout-available-coupons">
+              <small>Click any active offer below to apply instantly:</small>
+              <div className="coupon-pills-wrap">
+                {[
+                  { code: "WELCOME50", label: "₹50 OFF", min: 499 },
+                  { code: "VPANSAK100", label: "₹100 OFF", min: 999 },
+                  { code: "VPANSAK10", label: "10% OFF", min: 499 },
+                  { code: "VP50", label: "₹50 OFF", min: 399 },
+                  { code: "SAVE15", label: "15% OFF", min: 1499 },
+                ].map((c) => (
+                  <button
+                    key={c.code}
+                    type="button"
+                    className={`checkout-coupon-pill ${coupon === c.code ? "active" : ""}`}
+                    onClick={() => {
+                      setCoupon(c.code);
+                      fetch(`/api/coupons?code=${c.code}&total=${subtotal}`)
+                        .then((r) => r.json())
+                        .then((res) => {
+                          if (res.coupon) {
+                            setDiscount(res.coupon.discount);
+                            setMessage(`Coupon '${c.code}' applied! Saved ${money(res.coupon.discount)}.`);
+                          } else {
+                            setDiscount(0);
+                            setMessage(res.error || "Coupon not applicable");
+                          }
+                        });
+                    }}
+                  >
+                    <Tag size={12} /> <strong>{c.code}</strong> ({c.label})
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <div className="standalone-coupon">
               <Tag />
-              <input value={coupon} onChange={(e) => setCoupon(e.target.value.toUpperCase())} placeholder="Enter promo code" />
+              <input value={coupon} onChange={(e) => setCoupon(e.target.value.toUpperCase())} placeholder="Or enter custom promo code" />
               <button type="button" onClick={applyCoupon}>Apply</button>
             </div>
             {message && <p className="checkout-message">{message}</p>}
