@@ -145,7 +145,6 @@ export default function HomePage() {
   const [discount, setDiscount] = useState(0);
   const [hero, setHero] = useState(0);
   const [hydrated, setHydrated] = useState(false);
-  const [announcementOpen, setAnnouncementOpen] = useState(true);
   const [authUser, setAuthUser] = useState<{ email: string; fullName: string } | null>(null);
 
   useEffect(() => {
@@ -366,20 +365,7 @@ export default function HomePage() {
 
       <header className={`vp-header-shell ${isCollapsed ? "is-collapsed" : ""}`} id="top">
         <div className="mobile-header-collapsible">
-          {announcementOpen && (
-            <div className="vp-topbar vp-offer-announcement festive-banner-bar independence-banner-bar">
-              <span><Sparkles /> 🇮🇳 HAPPY INDEPENDENCE DAY FREEDOM SALE</span>
-              <p>
-                <strong>Freedom Celebration • Up to 75% OFF Storewide + Extra Freedom Coupons</strong>
-                <small>Use Promo Codes: <b>FREEDOM79</b> | <b>INDIA15</b> | <b>WELCOME50</b> at Checkout</small>
-              </p>
-              <div>
-                <Link href="/track">Track order</Link>
-                <a href="https://vpansaksupporthub.lovable.app/" target="_blank" rel="noreferrer">Help centre</a>
-                <button type="button" onClick={() => setAnnouncementOpen(false)} aria-label="Close announcement"><X /></button>
-              </div>
-            </div>
-          )}
+
 
           <div className="vp-brand-row">
             <Link className="vp-brand" href="/" aria-label="VPANSAK Shopping home"><img src="/vpansak-logo.png" alt="VPANSAK" /><span><strong>VPANSAK</strong><small>SHOPPING</small></span></Link>
