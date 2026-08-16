@@ -1,3 +1,6 @@
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { desc } from "drizzle-orm";
 import { getDb } from "../../../db";
 import { sellerApplications } from "../../../db/schema";
@@ -7,9 +10,33 @@ const videoTypes = new Set(["video/mp4", "video/webm", "video/quicktime"]);
 const imageExtensions = new Set(["jpg", "jpeg", "png", "webp", "heic", "heif"]);
 const videoExtensions = new Set(["mp4", "webm", "mov"]);
 
-export async function POST(request: Request) {
+async function getCloudflareBucket(): Promise<any> {
   try {
     const { env } = await import("cloudflare:workers");
+    return (env as any)?.BUCKET || null;
+  } catch {
+    return null;
+  }
+}
+
+async function saveFileLocally(prefix: string, fileName: string, buffer: ArrayBuffer) {
+  let baseDir = path.join(process.cwd(), ".data", "uploads", prefix);
+  try {
+    if (!fs.existsSync(baseDir)) {
+      fs.mkdirSync(baseDir, { recursive: true });
+    }
+  } catch {
+    baseDir = path.join(os.tmpdir(), "vpansak-uploads", prefix);
+    if (!fs.existsSync(baseDir)) {
+      fs.mkdirSync(baseDir, { recursive: true });
+    }
+  }
+  const filePath = path.join(baseDir, fileName);
+  await fs.promises.writeFile(filePath, Buffer.from(buffer));
+}
+
+export async function POST(request: Request) {
+  try {
     const form = await request.formData();
     const field = (name: string) => String(form.get(name) ?? "").trim();
     const fullName = field("fullName");
@@ -40,14 +67,24 @@ export async function POST(request: Request) {
     }
     const applicationId = `VPSLR${Math.floor(100000 + Math.random() * 900000)}`;
     const documentPrefix = `seller-kyc/${applicationId}/${crypto.randomUUID()}`;
+    const bucket = await getCloudflareBucket();
+
     await Promise.all(files.map(async ([key, value]) => {
       const file = value as File;
       const extension = file.name.split(".").pop()?.replace(/[^a-z0-9]/gi, "").toLowerCase() || "bin";
-      await env.BUCKET.put(`${documentPrefix}/${key}.${extension}`, await file.arrayBuffer(), {
-        httpMetadata: { contentType: file.type },
-        customMetadata: { applicationId, documentType: key },
-      });
+      const fileName = `${key}.${extension}`;
+      const buffer = await file.arrayBuffer();
+
+      if (bucket && typeof bucket.put === "function") {
+        await bucket.put(`${documentPrefix}/${fileName}`, buffer, {
+          httpMetadata: { contentType: file.type },
+          customMetadata: { applicationId, documentType: key },
+        });
+      } else {
+        await saveFileLocally(documentPrefix, fileName, buffer);
+      }
     }));
+
     const db = await getDb();
     await db.insert(sellerApplications).values({
       applicationId,
@@ -60,7 +97,8 @@ export async function POST(request: Request) {
       documentPrefix,
     });
     return Response.json({ applicationId, status: "Pending Review" }, { status: 201 });
-  } catch {
+  } catch (err) {
+    console.error("Seller application submit error:", err);
     return Response.json({ error: "Your application could not be submitted. Please try again." }, { status: 500 });
   }
 }
