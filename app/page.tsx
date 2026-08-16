@@ -476,6 +476,23 @@ export default function HomePage() {
         <div className="vp-footer-bottom"><span>© 2026 VPANSAK • Powered by A&amp;A Group</span><div><Link href="/policies/privacy-policy">Privacy</Link><Link href="/policies/terms-and-conditions">Terms</Link><a href="mailto:support.vpansak@gmail.com">support.vpansak@gmail.com</a><a href="https://instagram.com/VPANSAK" target="_blank" rel="noreferrer">Instagram</a></div></div>
       </footer>
 
+      {/* Floating Independence Day Theme Toggle Widget */}
+      <div className="vp-festive-toggle-widget">
+        <button
+          type="button"
+          onClick={() => setIsFestiveTheme((prev) => !prev)}
+          className={`vp-festive-btn ${isFestiveTheme ? "active" : ""}`}
+          title="Toggle Independence Day Freedom Sale Theme"
+        >
+          <span className="flag-icon">🇮🇳</span>
+          <span className="widget-label">
+            <strong>Independence Day Theme</strong>
+            <small>{isFestiveTheme ? "ACTIVE • Freedom Sale" : "Click to Enable"}</small>
+          </span>
+          <span className="toggle-pill">{isFestiveTheme ? "ON" : "OFF"}</span>
+        </button>
+      </div>
+
       <nav className="vp-bottom-nav" aria-label="Mobile navigation"><a href="#top"><Home /><span>Home</span></a><Link href="/categories"><Grid3X3 /><span>Categories</span></Link><Link href="/foundation" className="vp-donate-item"><HeartHandshake /><span>Donate</span></Link><Link href="/track"><Box /><span>Orders</span></Link><Link href={authUser ? "/account" : "/login"}><UserRound /><span>{authUser ? "Account" : "Sign In"}</span></Link></nav>
 
       {cartOpen && <div className="vp-overlay" onMouseDown={() => setCartOpen(false)}><aside className="vp-cart" role="dialog" aria-modal="true" aria-label="Shopping cart" onMouseDown={(event) => event.stopPropagation()}><header><div><small>MY CART</small><h2>{cartCount} {cartCount === 1 ? "item" : "items"}</h2></div><button type="button" onClick={() => setCartOpen(false)}><X /></button></header><div className="vp-cart-benefit"><Truck /><span><strong>{subtotal >= 499 ? "You unlocked free delivery" : `${money(499 - subtotal)} away from free delivery`}</strong><i><b style={{ width: `${Math.min(100, subtotal / 4.99)}%` }} /></i></span></div><div className="vp-cart-items">{cartItems.length ? cartItems.map((product) => <article key={product.id}><img src={product.imageUrl} alt="" /><div><small>{product.brand}</small><h3>{product.name}</h3><strong>{money(product.price)}</strong><span><button type="button" onClick={() => changeQuantity(product.id, -1)}><Minus /></button><b>{cart[product.id]}</b><button type="button" onClick={() => changeQuantity(product.id, 1)}><Plus /></button></span></div><button type="button" onClick={() => changeQuantity(product.id, -cart[product.id])}><Trash2 /></button></article>) : <div className="vp-cart-empty"><ShoppingCart /><h3>Your cart is waiting</h3><p>Add a useful product from today&apos;s deals.</p><button type="button" onClick={() => setCartOpen(false)}>Continue shopping</button></div>}</div>{cartItems.length > 0 && <div className="vp-cart-summary"><p><span>Price ({cartCount} items)</span><b>{money(subtotal)}</b></p>{discount > 0 && <p><span>Coupon discount</span><b className="green">−{money(discount)}</b></p>}<p><span>Delivery charges</span><b className="green">FREE</b></p><div><span>Total amount</span><strong>{money(finalTotal)}</strong></div><button type="button" onClick={() => { setCartOpen(false); setCheckoutOpen(true); }}>Proceed to checkout <ArrowRight /></button><small><ShieldCheck /> Safe and secure checkout</small></div>}</aside></div>}

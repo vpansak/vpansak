@@ -3569,64 +3569,217 @@
 }
 
 /* ==========================================================================
-   INDEPENDENCE DAY FREEDOM SALE THEME (TOGGLEABLE)
+   INDEPENDENCE DAY (15 AUGUST) FREEDOM SALE THEME (TRICOLOR / SWATANTRATA)
    ========================================================================== */
+.festive-theme-active {
+  --tri-saffron: #ff9933;
+  --tri-saffron-dark: #d97706;
+  --tri-green: #138808;
+  --tri-green-dark: #047857;
+  --tri-navy: #071629;
+  --tri-gold: #fef08a;
+}
+
+/* Top Announcement Banner */
 .festive-theme-active .independence-banner-bar {
-  background: linear-gradient(135deg, #d97706 0%, #ff9933 30%, #047857 70%, #138808 100%) !important;
+  background: linear-gradient(110deg, #d97706 0%, #ff9933 25%, #ffffff 50%, #138808 75%, #047857 100%) !important;
+  background-size: 200% 100% !important;
+  animation: tricolorShimmer 8s ease infinite !important;
   color: #ffffff !important;
   border-bottom: 2px solid #fef08a !important;
-  box-shadow: 0 4px 15px rgba(217, 119, 6, 0.4) !important;
+  box-shadow: 0 4px 20px rgba(217, 119, 6, 0.45) !important;
 }
+
+@keyframes tricolorShimmer {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.festive-theme-active .independence-banner-bar span {
+  color: #0f172a !important;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-weight: 900 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
 .festive-theme-active .independence-banner-bar strong {
   color: #ffffff !important;
   font-weight: 800 !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
 }
+
 .festive-theme-active .independence-banner-bar b {
   background: #ffffff;
   color: #0f172a;
-  padding: 2px 8px;
-  border-radius: 4px;
+  padding: 3px 9px;
+  border-radius: 6px;
   font-weight: 900;
-  border: 1px solid #eab308;
+  border: 1.5px solid #eab308;
+  letter-spacing: 0.05em;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
 }
+
+/* Header & Navigation Bar */
 .festive-theme-active .vp-brand-row {
-  background: linear-gradient(135deg, #071629 0%, #0f172a 40%, #064e3b 100%) !important;
-  border-bottom: 3px solid #ff9933 !important;
+  background: linear-gradient(135deg, #071629 0%, #0f172a 45%, #064e3b 100%) !important;
+  border-bottom: 3px solid transparent !important;
+  border-image: linear-gradient(to right, #ff9933 0%, #ffffff 50%, #138808 100%) 1 !important;
 }
+
+.festive-theme-active .vp-brand span strong {
+  background: linear-gradient(135deg, #ff9933, #ffffff, #34d399);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
 .festive-theme-active .vp-search button {
   background: linear-gradient(135deg, #ff9933, #d97706) !important;
   color: #ffffff !important;
   font-weight: 900 !important;
-  box-shadow: 0 2px 10px rgba(255, 153, 51, 0.4) !important;
+  box-shadow: 0 3px 12px rgba(255, 153, 51, 0.5) !important;
+  border: 1px solid #fef08a !important;
 }
+
+.festive-theme-active .vp-search button:hover {
+  background: linear-gradient(135deg, #ea580c, #b45309) !important;
+}
+
+/* Product Cards & Badges */
 .festive-theme-active .vp-product-badge {
-  background: linear-gradient(135deg, #ff9933 0%, #138808 100%) !important;
-  color: #ffffff !important;
+  background: linear-gradient(135deg, #ff9933 0%, #ffffff 50%, #138808 100%) !important;
+  color: #0f172a !important;
   border: 1px solid #ffffff !important;
   font-weight: 900 !important;
-  box-shadow: 0 2px 8px rgba(19, 136, 8, 0.4) !important;
+  box-shadow: 0 3px 10px rgba(19, 136, 8, 0.4) !important;
+  letter-spacing: 0.03em;
 }
+
+.festive-theme-active .vp-product-card:hover {
+  border-color: #ff9933 !important;
+  box-shadow: 0 10px 30px rgba(255, 153, 51, 0.2), 0 0 15px rgba(19, 136, 8, 0.15) !important;
+}
+
+/* Hero Banner Styling */
 .festive-theme-active .vp-hero-shade {
-  background: linear-gradient(90deg, rgba(7, 22, 41, 0.94) 0%, rgba(6, 78, 59, 0.75) 60%, rgba(0, 0, 0, 0.25) 100%) !important;
+  background: linear-gradient(90deg, rgba(7, 22, 41, 0.96) 0%, rgba(6, 78, 59, 0.8) 60%, rgba(0, 0, 0, 0.3) 100%) !important;
 }
+
 .festive-theme-active .vp-hero-copy > span {
-  background: linear-gradient(135deg, #ff9933, #fef08a, #34d399) !important;
+  background: linear-gradient(135deg, #ff9933 0%, #fef08a 50%, #34d399 100%) !important;
+  background-clip: text !important;
   -webkit-background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
   font-weight: 900 !important;
   letter-spacing: 0.1em !important;
 }
+
 .festive-theme-active .vp-hero-copy > button {
-  background: linear-gradient(135deg, #ff9933, #d97706) !important;
+  background: linear-gradient(135deg, #ff9933 0%, #d97706 100%) !important;
   color: #ffffff !important;
   font-weight: 900 !important;
-  box-shadow: 0 4px 15px rgba(255, 153, 51, 0.4) !important;
+  box-shadow: 0 4px 20px rgba(255, 153, 51, 0.5) !important;
+  border: 1px solid #fef08a !important;
 }
+
+.festive-theme-active .vp-hero-copy > button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 25px rgba(255, 153, 51, 0.6) !important;
+}
+
 .festive-theme-active .vp-price > span {
-  background: #ecfdf5 !important;
-  color: #065f46 !important;
-  border: 1px solid #a7f3d0 !important;
+  background: linear-gradient(135deg, #ecfdf5, #f0fdf4) !important;
+  color: #047857 !important;
+  border: 1px solid #6ee7b7 !important;
   font-weight: 800 !important;
+}
+
+/* Floating Independence Theme Toggle Widget */
+.vp-festive-toggle-widget {
+  position: fixed;
+  bottom: 80px;
+  left: 20px;
+  z-index: 99;
+}
+
+.vp-festive-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #0f172a;
+  color: #ffffff;
+  border: 2px solid #ff9933;
+  padding: 8px 14px;
+  border-radius: 30px;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), 0 0 12px rgba(255, 153, 51, 0.4);
+  transition: all 0.3s ease;
+}
+
+.vp-festive-btn:hover {
+  transform: translateY(-3px) scale(1.02);
+  border-color: #138808;
+  box-shadow: 0 6px 25px rgba(19, 136, 8, 0.4);
+}
+
+.vp-festive-btn.active {
+  background: linear-gradient(135deg, #071629 0%, #064e3b 100%);
+  border: 2px solid #fef08a;
+}
+
+.vp-festive-btn .flag-icon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.vp-festive-btn .widget-label {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.vp-festive-btn .widget-label strong {
+  font-size: 12px;
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1.2;
+}
+
+.vp-festive-btn .widget-label small {
+  font-size: 10px;
+  color: #ff9933;
+  font-weight: 700;
+}
+
+.vp-festive-btn .toggle-pill {
+  background: #ff9933;
+  color: #0f172a;
+  font-size: 10px;
+  font-weight: 900;
+  padding: 2px 7px;
+  border-radius: 10px;
+}
+
+.vp-festive-btn.active .toggle-pill {
+  background: #138808;
+  color: #ffffff;
+}
+
+@media (max-width: 768px) {
+  .vp-festive-toggle-widget {
+    bottom: 75px;
+    left: 12px;
+  }
+  .vp-festive-btn {
+    padding: 6px 10px;
+    gap: 6px;
+  }
+  .vp-festive-btn .widget-label {
+    display: none;
+  }
 }
 
 

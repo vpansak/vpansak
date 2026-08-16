@@ -269,6 +269,7 @@ input,select,textarea,button{max-width:100%;box-sizing:border-box}
   margin: 8px 0;
   letter-spacing: -0.03em;
   background: linear-gradient(135deg, #ffffff 30%, #93c5fd 100%);
+  background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
