@@ -461,7 +461,7 @@ export default function HomePage() {
       </section>
 
       <footer className="vp-footer">
-        <div className="vp-footer-main"><div className="vp-footer-brand"><Link className="vp-brand" href="/"><img src="/vpansak-logo.png" alt="VPANSAK" /><span><strong>VPANSAK</strong><small>SHOPPING</small></span></Link><p>A secure, useful and customer-focused digital marketplace by A&amp;A Group.</p><span><ShieldCheck /> Secure shopping experience</span></div><div><strong>SHOP</strong><Link href="/categories">All categories</Link><a href="#catalog">Top offers</a><Link href="/account">Wishlist</Link><Link href="/track">Track order</Link></div><div><strong>HELP</strong><Link href="/support">Support hub</Link><Link href="/info/faq">FAQs</Link><Link href="/policies/refund-policy">Refund policy</Link><Link href="/policies/shipping-policy">Shipping policy</Link><Link href="/info/useful-links" onClick={(e) => { e.preventDefault(); setUsefulLinksOpen(true); }} className="vp-useful-link-highlight">Useful links ✨</Link></div><div><strong>BUSINESS</strong><Link href="/seller">Become a seller</Link><Link href="/seller/dashboard">Seller dashboard</Link><Link href="/policies/merchant-guidelines">Merchant guidelines</Link><Link href="/foundation">Support Foundation</Link></div><div><strong>COMPANY</strong><Link href="/info/about">About VPANSAK</Link><Link href="/info/careers">Careers</Link><Link href="/info/contact">Contact us</Link></div></div>
+        <div className="vp-footer-main"><div className="vp-footer-brand"><Link className="vp-brand" href="/"><img src="/vpansak-logo.png" alt="VPANSAK" /><span><strong>VPANSAK</strong><small>SHOPPING</small></span></Link><p>A secure, useful and customer-focused digital marketplace by A&amp;A Group.</p><span><ShieldCheck /> Secure shopping experience</span></div><div><strong>SHOP</strong><Link href="/categories">All categories</Link><a href="#catalog">Top offers</a><Link href="/account">Wishlist</Link><Link href="/track">Track order</Link></div><div><strong>HELP</strong><Link href="/support">Support hub</Link><Link href="/info/faq">FAQs</Link><Link href="/policies/refund-policy">Refund policy</Link><Link href="/policies/shipping-policy">Shipping policy</Link><Link href="/info/useful-links" onClick={(e) => { e.preventDefault(); setUsefulLinksOpen(true); }}>Useful links</Link></div><div><strong>BUSINESS</strong><Link href="/seller">Become a seller</Link><Link href="/seller/dashboard">Seller dashboard</Link><Link href="/policies/merchant-guidelines">Merchant guidelines</Link><Link href="/foundation">Support Foundation</Link></div><div><strong>COMPANY</strong><Link href="/info/about">About VPANSAK</Link><Link href="/info/careers">Careers</Link><Link href="/info/contact">Contact us</Link></div></div>
         <div className="vp-footer-bottom"><span>© 2026 VPANSAK • Powered by A&amp;A Group</span><div><Link href="/policies/privacy-policy">Privacy</Link><Link href="/policies/terms-and-conditions">Terms</Link><a href="mailto:support.vpansak@gmail.com">support.vpansak@gmail.com</a><a href="https://instagram.com/VPANSAK" target="_blank" rel="noreferrer">Instagram</a></div></div>
       </footer>
 
@@ -516,17 +516,35 @@ export default function HomePage() {
                   <p>Co-Founder & Director managing key strategy.</p>
                   <span className="card-action-link">View Profile <ArrowRight size={14} /></span>
                 </Link>
-                <Link href="/track" onClick={() => setUsefulLinksOpen(false)} className="useful-btn-card">
-                  <div className="btn-card-top"><span className="card-badge live-badge">LIVE TRACKING</span><PackageCheck size={20} className="card-icon" /></div>
-                  <h4>Track Live Order</h4>
-                  <p>Track package progress with your VPO ID.</p>
-                  <span className="card-action-link">Track Now <ArrowRight size={14} /></span>
-                </Link>
-                <Link href="/support" onClick={() => setUsefulLinksOpen(false)} className="useful-btn-card">
+                <a href="https://vpansaksupporthub.lovable.app/support" target="_blank" rel="noreferrer" onClick={() => setUsefulLinksOpen(false)} className="useful-btn-card">
                   <div className="btn-card-top"><span className="card-badge help-badge">24×7 HELP</span><Headphones size={20} className="card-icon" /></div>
-                  <h4>Support Ticket Hub</h4>
-                  <p>Create & track customer help tickets.</p>
-                  <span className="card-action-link">Get Support <ArrowRight size={14} /></span>
+                  <h4>Support Hub</h4>
+                  <p>Main Support Portal at Lovable.</p>
+                  <span className="card-action-link">Open Hub <ArrowRight size={14} /></span>
+                </a>
+                <a href="https://vpansaksupporthub.lovable.app/submit" target="_blank" rel="noreferrer" onClick={() => setUsefulLinksOpen(false)} className="useful-btn-card">
+                  <div className="btn-card-top"><span className="card-badge help-badge">NEW TICKET</span><Headphones size={20} className="card-icon" /></div>
+                  <h4>Create Support Ticket</h4>
+                  <p>Submit ticket to support team.</p>
+                  <span className="card-action-link">Create Ticket <ArrowRight size={14} /></span>
+                </a>
+                <a href="https://vpansaksupporthub.lovable.app/track" target="_blank" rel="noreferrer" onClick={() => setUsefulLinksOpen(false)} className="useful-btn-card">
+                  <div className="btn-card-top"><span className="card-badge live-badge">TRACK TICKET</span><PackageCheck size={20} className="card-icon" /></div>
+                  <h4>Track Ticket Status</h4>
+                  <p>Track VPT ticket updates.</p>
+                  <span className="card-action-link">Track Ticket <ArrowRight size={14} /></span>
+                </a>
+                <a href="https://vpansaksupporthub.lovable.app/chat" target="_blank" rel="noreferrer" onClick={() => setUsefulLinksOpen(false)} className="useful-btn-card">
+                  <div className="btn-card-top"><span className="card-badge faq-badge">AI CHAT</span><Sparkles size={20} className="card-icon" /></div>
+                  <h4>Smart AI Chat</h4>
+                  <p>Interactive AI support chat.</p>
+                  <span className="card-action-link">Start Chat <ArrowRight size={14} /></span>
+                </a>
+                <Link href="/track" onClick={() => setUsefulLinksOpen(false)} className="useful-btn-card">
+                  <div className="btn-card-top"><span className="card-badge live-badge">LIVE ORDER</span><PackageCheck size={20} className="card-icon" /></div>
+                  <h4>Track Live Order</h4>
+                  <p>Track order progress with VPO ID.</p>
+                  <span className="card-action-link">Track Order <ArrowRight size={14} /></span>
                 </Link>
                 <Link href="/seller" onClick={() => setUsefulLinksOpen(false)} className="useful-btn-card">
                   <div className="btn-card-top"><span className="card-badge merchant-badge">3% COMMISSION</span><Store size={20} className="card-icon" /></div>
@@ -540,24 +558,6 @@ export default function HomePage() {
                   <p>Manage product listings & payouts.</p>
                   <span className="card-action-link">Open Portal <ArrowRight size={14} /></span>
                 </Link>
-                <Link href="/foundation" onClick={() => setUsefulLinksOpen(false)} className="useful-btn-card">
-                  <div className="btn-card-top"><span className="card-badge foundation-badge">SOCIAL IMPACT</span><HeartHandshake size={20} className="card-icon" /></div>
-                  <h4>Support Foundation</h4>
-                  <p>Support platform infrastructure & community.</p>
-                  <span className="card-action-link">Support Us <ArrowRight size={14} /></span>
-                </Link>
-                <Link href="/categories" onClick={() => setUsefulLinksOpen(false)} className="useful-btn-card">
-                  <div className="btn-card-top"><span className="card-badge catalog-badge">CATALOG</span><Grid3X3 size={20} className="card-icon" /></div>
-                  <h4>Browse Categories</h4>
-                  <p>Mobiles, electronics, fashion & top offers.</p>
-                  <span className="card-action-link">Explore Store <ArrowRight size={14} /></span>
-                </Link>
-                <Link href="/info/faq" onClick={() => setUsefulLinksOpen(false)} className="useful-btn-card">
-                  <div className="btn-card-top"><span className="card-badge faq-badge">KNOWLEDGE BASE</span><CircleHelp size={20} className="card-icon" /></div>
-                  <h4>Customer FAQs</h4>
-                  <p>Instant answers on shipping, returns & 5-min refunds.</p>
-                  <span className="card-action-link">Read FAQs <ArrowRight size={14} /></span>
-                </Link>
               </div>
 
               <div className="useful-links-grid" style={{ marginTop: 24 }}>
@@ -569,6 +569,15 @@ export default function HomePage() {
                     <li><Link href="/info/about" onClick={() => setUsefulLinksOpen(false)}>About VPANSAK HQ</Link></li>
                     <li><Link href="/info/careers" onClick={() => setUsefulLinksOpen(false)}>Careers & Hiring</Link></li>
                     <li><Link href="/info/contact" onClick={() => setUsefulLinksOpen(false)}>Contact Us</Link></li>
+                  </ul>
+                </div>
+                <div className="useful-link-col">
+                  <div className="col-title"><Headphones size={16} /><span>Lovable Support Portals</span></div>
+                  <ul>
+                    <li><a href="https://vpansaksupporthub.lovable.app/support" target="_blank" rel="noreferrer"><strong>VPANSAK Support Hub</strong><small>Main support portal</small></a></li>
+                    <li><a href="https://vpansaksupporthub.lovable.app/submit" target="_blank" rel="noreferrer"><strong>Create Support Ticket (/submit)</strong><small>Submit a new ticket</small></a></li>
+                    <li><a href="https://vpansaksupporthub.lovable.app/track" target="_blank" rel="noreferrer"><strong>Track Support Ticket (/track)</strong><small>View reply history</small></a></li>
+                    <li><a href="https://vpansaksupporthub.lovable.app/chat" target="_blank" rel="noreferrer"><strong>Smart AI Support Chat (/chat)</strong><small>Interactive AI help</small></a></li>
                   </ul>
                 </div>
                 <div className="useful-link-col">
@@ -588,15 +597,6 @@ export default function HomePage() {
                     <li><Link href="/seller/dashboard" onClick={() => setUsefulLinksOpen(false)}>Seller Dashboard</Link></li>
                     <li><Link href="/policies/merchant-guidelines" onClick={() => setUsefulLinksOpen(false)}>Merchant Guidelines</Link></li>
                     <li><Link href="/foundation" onClick={() => setUsefulLinksOpen(false)}>VPANSAK Support Foundation</Link></li>
-                  </ul>
-                </div>
-                <div className="useful-link-col">
-                  <div className="col-title"><PackageCheck size={16} /><span>Quick Utilities</span></div>
-                  <ul>
-                    <li><Link href="/track" onClick={() => setUsefulLinksOpen(false)}>Track Live Order (/track)</Link></li>
-                    <li><Link href="/support" onClick={() => setUsefulLinksOpen(false)}>24/7 Support Hub (/support)</Link></li>
-                    <li><Link href="/info/faq" onClick={() => setUsefulLinksOpen(false)}>Customer FAQs</Link></li>
-                    <li><Link href="/categories" onClick={() => setUsefulLinksOpen(false)}>All Categories</Link></li>
                   </ul>
                 </div>
               </div>

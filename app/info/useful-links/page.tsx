@@ -14,16 +14,16 @@ export default function UsefulLinksPage() {
   const quickButtons = [
     { title: "Founder Alok Singh", badge: "FOUNDER", badgeClass: "founder-badge", icon: User, desc: "Founder & Visionary leading VPANSAK Shopping.", link: "/founder" },
     { title: "Co-Founder Ayushi Tripathi", badge: "CO-FOUNDER", badgeClass: "cofounder-badge", icon: Users, desc: "Co-Founder & Director managing key strategy.", link: "/cofounder" },
-    { title: "Track Live Order", badge: "LIVE TRACKING", badgeClass: "live-badge", icon: PackageCheck, desc: "Step-by-step order progress with VPO ID.", link: "/track" },
-    { title: "24×7 Support Ticket Hub", badge: "HELP HUB", badgeClass: "help-badge", icon: Headphones, desc: "Create & track customer help tickets.", link: "/support" },
+    { title: "24×7 Support Hub", badge: "HELP HUB", badgeClass: "help-badge", icon: Headphones, desc: "Official VPANSAK Support Hub.", link: "https://vpansaksupporthub.lovable.app/support" },
+    { title: "Create Support Ticket", badge: "NEW TICKET", badgeClass: "help-badge", icon: Mail, desc: "Submit a new support ticket.", link: "https://vpansaksupporthub.lovable.app/submit" },
+    { title: "Track Support Ticket", badge: "TICKET TRACKING", badgeClass: "live-badge", icon: PackageCheck, desc: "Track VPT ticket reply status.", link: "https://vpansaksupporthub.lovable.app/track" },
+    { title: "Smart AI Support Chat", badge: "AI ASSISTANT", badgeClass: "faq-badge", icon: Sparkles, desc: "Guided AI resolution and answers.", link: "https://vpansaksupporthub.lovable.app/chat" },
+    { title: "Track Live Order", badge: "LIVE ORDER", badgeClass: "live-badge", icon: PackageCheck, desc: "Step-by-step order progress with VPO ID.", link: "/track" },
     { title: "Become a Seller", badge: "3% COMMISSION", badgeClass: "merchant-badge", icon: Store, desc: "Register store & sell to nationwide buyers.", link: "/seller" },
     { title: "Seller Dashboard", badge: "PORTAL", badgeClass: "portal-badge", icon: LayoutDashboard, desc: "Manage store products, stock & payouts.", link: "/seller/dashboard" },
     { title: "Support Foundation", badge: "SOCIAL IMPACT", badgeClass: "foundation-badge", icon: HeartHandshake, desc: "Support platform infrastructure & community.", link: "/foundation" },
     { title: "Browse All Categories", badge: "CATALOG", badgeClass: "catalog-badge", icon: Grid3X3, desc: "Mobiles, electronics, fashion & daily offers.", link: "/categories" },
     { title: "Customer FAQs", badge: "KNOWLEDGE BASE", badgeClass: "faq-badge", icon: HelpCircle, desc: "Instant answers on shipping, returns & 5-min refunds.", link: "/info/faq" },
-    { title: "Careers at VPANSAK", badge: "HIRING", badgeClass: "hiring-badge", icon: Briefcase, desc: "Explore tech, merchant ops & support roles.", link: "/info/careers" },
-    { title: "About VPANSAK HQ", badge: "HEADQUARTERS", badgeClass: "hq-badge", icon: Info, desc: "Digital marketplace vision by A&A Group.", link: "/info/about" },
-    { title: "Contact Support & Email", badge: "CONTACT", badgeClass: "contact-badge", icon: Mail, desc: "Direct email and platform support channels.", link: "/info/contact" },
   ];
 
   const linkCategories = [
@@ -36,6 +36,16 @@ export default function UsefulLinksPage() {
         { name: "About VPANSAK Headquarters", desc: "Company overview and ecosystem", href: "/info/about" },
         { name: "Careers & Opportunities", desc: "Join our technology and business teams", href: "/info/careers" },
         { name: "Direct Contact Information", desc: "Support email and Instagram channels", href: "/info/contact" },
+      ],
+    },
+    {
+      title: "Support Hub & Lovable Portals",
+      icon: Headphones,
+      links: [
+        { name: "VPANSAK Support Hub", desc: "Main support center", href: "https://vpansaksupporthub.lovable.app/support" },
+        { name: "Create Support Ticket", desc: "Submit ticket details and order ID", href: "https://vpansaksupporthub.lovable.app/submit" },
+        { name: "Track Ticket Status", desc: "Track VPT ticket history", href: "https://vpansaksupporthub.lovable.app/track" },
+        { name: "Smart AI Support Chat", desc: "Interactive AI support assistant", href: "https://vpansaksupporthub.lovable.app/chat" },
       ],
     },
     {
@@ -59,7 +69,6 @@ export default function UsefulLinksPage() {
         { name: "Seller Operational Guidelines", desc: "Merchant rules and SLA compliance", href: "/policies/seller-policy" },
         { name: "Merchant Listing Guidelines", desc: "Listing standards and approval rules", href: "/policies/merchant-guidelines" },
         { name: "VPANSAK Support Foundation", desc: "Platform contribution & certificates", href: "/foundation" },
-        { name: "Support Contribution Terms", desc: "Voluntary contribution terms", href: "/policies/contribution-terms" },
       ],
     },
     {
@@ -67,7 +76,6 @@ export default function UsefulLinksPage() {
       icon: PackageCheck,
       links: [
         { name: "Live Order Tracking (/track)", desc: "Track VPO order ID timeline", href: "/track" },
-        { name: "24/7 Support Ticket Hub (/support)", desc: "Create ticket and view replies", href: "/support" },
         { name: "Customer Frequently Asked Questions", desc: "Help articles and instant answers", href: "/info/faq" },
         { name: "All Marketplace Categories", desc: "Browse 20+ store categories", href: "/categories" },
         { name: "Wishlist & Account Dashboard", desc: "Manage profile, addresses & saved items", href: "/account" },
