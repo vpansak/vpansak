@@ -147,6 +147,8 @@ const maskMobile = (mobile: string) => {
   return `******${clean.slice(-4)}`;
 };
 
+let globalAccountCache: AccountData | null = null;
+
 export function ProfileContent({ paramsTab }: { paramsTab?: string }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -160,8 +162,8 @@ export function ProfileContent({ paramsTab }: { paramsTab?: string }) {
     else if (searchParams.get("tab")) setTab(searchParams.get("tab")!);
   }, [paramsTab, searchParams]);
 
-  const [data, setData] = useState<AccountData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<AccountData | null>(globalAccountCache);
+  const [loading, setLoading] = useState<boolean>(!globalAccountCache);
   const [unauthorized, setUnauthorized] = useState(false);
   const [message, setMessage] = useState("");
 
@@ -197,8 +199,8 @@ export function ProfileContent({ paramsTab }: { paramsTab?: string }) {
     }
   };
 
-  const loadAccount = useCallback(async (isInitial = false) => {
-    if (isInitial || !data) setLoading(true);
+  const loadAccount = useCallback(async () => {
+    if (!globalAccountCache) setLoading(true);
     try {
       const res = await fetch("/api/account");
       if (res.status === 401) {
@@ -207,17 +209,21 @@ export function ProfileContent({ paramsTab }: { paramsTab?: string }) {
         return;
       }
       const val = await res.json();
-      if (res.ok) setData(val);
-      else setMessage(val.error || "Could not load account details");
+      if (res.ok) {
+        globalAccountCache = val;
+        setData(val);
+      } else {
+        setMessage(val.error || "Could not load account details");
+      }
     } catch {
       setMessage("Could not load account details");
     }
     setLoading(false);
-  }, [data]);
+  }, []);
 
   useEffect(() => {
-    void loadAccount(true);
-  }, []);
+    void loadAccount();
+  }, [loadAccount]);
 
   const runAction = async (body: Record<string, unknown>) => {
     try {
@@ -269,7 +275,10 @@ export function ProfileContent({ paramsTab }: { paramsTab?: string }) {
   const changeTab = (nextTab: string) => {
     setTab(nextTab);
     const basePath = pathname && pathname.startsWith("/account") ? "/account" : "/profile";
-    router.push(`${basePath}${nextTab === "overview" ? "" : `/${nextTab}`}`);
+    const targetUrl = `${basePath}${nextTab === "overview" ? "" : `/${nextTab}`}`;
+    if (typeof window !== "undefined" && window.location.pathname !== targetUrl) {
+      window.history.pushState(null, "", targetUrl);
+    }
   };
 
   const subPageTitleMap: Record<string, { title: string; subtitle: string; category: string }> = {
