@@ -542,8 +542,8 @@ function FoundationContent() {
                 <input
                   value={lookup}
                   onChange={(e) => setLookup(e.target.value.toUpperCase())}
-                  placeholder="Enter Verification ID (VPC692515)"
-                  maxLength={9}
+                  placeholder="Enter Verification ID or Certificate No (e.g. VPA-CERT-2026-1000)"
+                  maxLength={50}
                 />
                 <button disabled={busy}>{busy ? "Checking…" : "Check Status"}</button>
               </form>
