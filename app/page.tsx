@@ -357,10 +357,10 @@ export default function HomePage() {
 
   const currentHero = heroSlides[hero];
 
-  const [isFestiveTheme, setIsFestiveTheme] = useState(true);
+  const isFestiveTheme = true;
 
   return (
-    <main className={`vp-store ${isFestiveTheme ? "festive-theme-active" : ""}`}>
+    <main className="vp-store festive-theme-active">
       {toast && <div className="vp-toast"><Sparkles /><span>{toast}</span></div>}
 
       <header className={`vp-header-shell ${isCollapsed ? "is-collapsed" : ""}`} id="top">
@@ -462,22 +462,6 @@ export default function HomePage() {
         <div className="vp-footer-bottom"><span>© 2026 VPANSAK • Powered by A&amp;A Group</span><div><Link href="/policies/privacy-policy">Privacy</Link><Link href="/policies/terms-and-conditions">Terms</Link><a href="mailto:support.vpansak@gmail.com">support.vpansak@gmail.com</a><a href="https://instagram.com/VPANSAK" target="_blank" rel="noreferrer">Instagram</a></div></div>
       </footer>
 
-      {/* Floating Independence Day Theme Toggle Widget */}
-      <div className="vp-festive-toggle-widget">
-        <button
-          type="button"
-          onClick={() => setIsFestiveTheme((prev) => !prev)}
-          className={`vp-festive-btn ${isFestiveTheme ? "active" : ""}`}
-          title="Toggle Independence Day Freedom Sale Theme"
-        >
-          <span className="flag-icon">🇮🇳</span>
-          <span className="widget-label">
-            <strong>Independence Day Theme</strong>
-            <small>{isFestiveTheme ? "ACTIVE • Freedom Sale" : "Click to Enable"}</small>
-          </span>
-          <span className="toggle-pill">{isFestiveTheme ? "ON" : "OFF"}</span>
-        </button>
-      </div>
 
       <nav className="vp-bottom-nav" aria-label="Mobile navigation"><a href="#top"><Home /><span>Home</span></a><Link href="/categories"><Grid3X3 /><span>Categories</span></Link><Link href="/foundation" className="vp-donate-item"><HeartHandshake /><span>Donate</span></Link><Link href="/track"><Box /><span>Orders</span></Link><Link href={authUser ? "/account" : "/login"}><UserRound /><span>{authUser ? "Account" : "Sign In"}</span></Link></nav>
 
