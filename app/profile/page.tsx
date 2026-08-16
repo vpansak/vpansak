@@ -252,7 +252,25 @@ export function ProfileContent({ paramsTab }: { paramsTab?: string }) {
 
   const changeTab = (nextTab: string) => {
     setTab(nextTab);
-    window.history.pushState(null, "", `/profile/${nextTab === "overview" ? "" : nextTab}`);
+    const basePath = pathname && pathname.startsWith("/account") ? "/account" : "/profile";
+    router.push(`${basePath}${nextTab === "overview" ? "" : `/${nextTab}`}`);
+  };
+
+  const subPageTitleMap: Record<string, { title: string; subtitle: string; category: string }> = {
+    orders: { title: "My Orders", subtitle: "Track, return and manage your purchase history", category: "PURCHASE HISTORY" },
+    wishlist: { title: "My Wishlist", subtitle: "Your saved products and price drop updates", category: "SAVED ITEMS" },
+    cart: { title: "Saved Cart", subtitle: "Items added to your persistent shopping cart", category: "SHOPPING CART" },
+    "recently-viewed": { title: "Recently Viewed", subtitle: "Products you recently inspected", category: "BROWSING HISTORY" },
+    reviews: { title: "Product Reviews", subtitle: "Ratings and reviews submitted by you", category: "MY FEEDBACK" },
+    addresses: { title: "Address Book", subtitle: "Manage your delivery and billing addresses", category: "DELIVERY ADDRESSES" },
+    edit: { title: "Edit Profile", subtitle: "Update your full name, mobile number and photo", category: "PERSONAL INFORMATION" },
+    security: { title: "Account Security", subtitle: "Password settings and active authentication sessions", category: "ACCOUNT PROTECTION" },
+    payments: { title: "Payments & Refunds", subtitle: "Online payment logs and refund status", category: "TRANSACTION HISTORY" },
+    coupons: { title: "Coupons & Offers", subtitle: "Redeem promotional codes and view gift vouchers", category: "OFFERS & PROMOS" },
+    notifications: { title: "Notifications", subtitle: "Account alerts and order status notifications", category: "INBOX" },
+    support: { title: "Support Tickets", subtitle: "Customer support tickets and resolution center", category: "HELP CENTRE" },
+    seller: { title: "Seller Dashboard", subtitle: "Merchant application and seller portal", category: "MERCHANT ECOSYSTEM" },
+    privacy: { title: "Privacy & Data", subtitle: "Export your account data or manage privacy preferences", category: "DATA CONTROL" },
   };
 
   if (loading) {
@@ -350,165 +368,303 @@ export function ProfileContent({ paramsTab }: { paramsTab?: string }) {
       </header>
 
       <div className="profile-shell">
-        {/* TOP PROFILE CARD */}
-        <section className="top-profile-card">
-          <div className="profile-avatar-wrap">
-            {user.profileImage ? (
-              <img src={user.profileImage} alt={user.fullName} className="profile-avatar-img" />
-            ) : (
-              <span className="profile-avatar-initials">{initials}</span>
-            )}
-            <button
-              type="button"
-              className="avatar-edit-badge"
-              onClick={() => setEditModalOpen(true)}
-              title="Edit Profile"
-            >
-              <UserCheck size={14} />
-            </button>
-          </div>
+        {/* OVERVIEW DASHBOARD VIEW */}
+        {tab === "overview" ? (
+          <>
+            {/* TOP PROFILE CARD */}
+            <section className="top-profile-card">
+              <div className="profile-avatar-wrap">
+                {user.profileImage ? (
+                  <img src={user.profileImage} alt={user.fullName} className="profile-avatar-img" />
+                ) : (
+                  <span className="profile-avatar-initials">{initials}</span>
+                )}
+                <button
+                  type="button"
+                  className="avatar-edit-badge"
+                  onClick={() => changeTab("edit")}
+                  title="Edit Profile"
+                >
+                  <UserCheck size={14} />
+                </button>
+              </div>
 
-          <div className="profile-details-column">
-            <div className="profile-name-row">
-              <h2>{user.fullName || user.email.split("@")[0]}</h2>
-              <span className="badge-active">
-                <CheckCircle2 size={12} /> Active
-              </span>
-              {user.emailVerified && (
-                <span className="badge-verified">
-                  <ShieldCheck size={12} /> Verified Account
-                </span>
-              )}
+              <div className="profile-details-column">
+                <div className="profile-name-row">
+                  <h2>{user.fullName || user.email.split("@")[0]}</h2>
+                  <span className="badge-active">
+                    <CheckCircle2 size={12} /> Active
+                  </span>
+                  {user.emailVerified && (
+                    <span className="badge-verified">
+                      <ShieldCheck size={12} /> Verified Account
+                    </span>
+                  )}
+                </div>
+
+                <div className="profile-meta-grid">
+                  <span>
+                    <UserRound size={13} /> <b>Email:</b> {maskEmail(user.email)}
+                  </span>
+                  <span>
+                    <UserCheck size={13} /> <b>Mobile:</b> {maskMobile(user.mobile)}
+                  </span>
+                  <span>
+                    <Clock size={13} /> <b>Member since:</b> {new Date(user.createdAt).toLocaleDateString("en-IN")}
+                  </span>
+                </div>
+              </div>
+
+              <button type="button" className="edit-profile-btn" onClick={() => changeTab("edit")}>
+                <UserRound size={15} /> Edit Profile
+              </button>
+            </section>
+
+            {/* QUICK ACTIONS GRID */}
+            <section className="quick-actions-grid">
+              <button type="button" className="quick-action-card" onClick={() => changeTab("orders")}>
+                <Box className="qa-icon blue" />
+                <div>
+                  <strong>My Orders</strong>
+                  <small>{data?.orders.length || 0} Total Orders</small>
+                </div>
+                <ChevronRight size={16} />
+              </button>
+
+              <button type="button" className="quick-action-card" onClick={() => changeTab("wishlist")}>
+                <Heart className="qa-icon red" />
+                <div>
+                  <strong>Wishlist</strong>
+                  <small>{data?.wishlist.length || 0} Saved Items</small>
+                </div>
+                <ChevronRight size={16} />
+              </button>
+
+              <button type="button" className="quick-action-card" onClick={() => changeTab("addresses")}>
+                <MapPin className="qa-icon green" />
+                <div>
+                  <strong>Saved Addresses</strong>
+                  <small>{data?.addresses.length || 0} Saved</small>
+                </div>
+                <ChevronRight size={16} />
+              </button>
+
+              <button type="button" className="quick-action-card" onClick={() => changeTab("support")}>
+                <Headphones className="qa-icon orange" />
+                <div>
+                  <strong>Support Tickets</strong>
+                  <small>{data?.tickets?.length || 0} Tickets</small>
+                </div>
+                <ChevronRight size={16} />
+              </button>
+            </section>
+
+            {/* RECENT ACTIVITY & PRIMARY ADDRESS */}
+            <div className="overview-cards-row">
+              <article className="overview-card">
+                <header>
+                  <h3>Recent Orders</h3>
+                  <button onClick={() => changeTab("orders")}>View all orders &rarr;</button>
+                </header>
+                {data?.orders.length ? (
+                  data.orders.slice(0, 3).map((order) => (
+                    <div className="overview-order-item" key={order.orderId}>
+                      <div>
+                        <strong>{order.orderId}</strong>
+                        <small>{new Date(order.createdAt).toLocaleDateString("en-IN")}</small>
+                      </div>
+                      <span className="status-pill">{order.status}</span>
+                      <b>{money(order.total)}</b>
+                      <button onClick={() => setSelectedOrder(order)}>Details</button>
+                    </div>
+                  ))
+                ) : (
+                  <div className="pane-empty">
+                    <Box size={32} />
+                    <h4>No orders placed yet</h4>
+                    <Link href="/">Start shopping</Link>
+                  </div>
+                )}
+              </article>
+
+              <article className="overview-card">
+                <header>
+                  <h3>Primary Address</h3>
+                  <button onClick={() => changeTab("addresses")}>Manage &rarr;</button>
+                </header>
+                {data?.addresses.find((a) => a.isPrimary) ? (
+                  (() => {
+                    const pa = data.addresses.find((a) => a.isPrimary)!;
+                    return (
+                      <div className="primary-address-view">
+                        <strong>{pa.label}</strong> • {pa.fullName}
+                        <p>{pa.line1}</p>
+                        <p>
+                          {pa.city}, {pa.state} — {pa.pinCode}
+                        </p>
+                        <small>Mobile: {pa.mobile}</small>
+                      </div>
+                    );
+                  })()
+                ) : (
+                  <div className="pane-empty">
+                    <MapPin size={32} />
+                    <h4>No primary address set</h4>
+                    <button onClick={() => changeTab("addresses")}>Add Address</button>
+                  </div>
+                )}
+              </article>
             </div>
 
-            <div className="profile-meta-grid">
-              <span>
-                <UserRound size={13} /> <b>Email:</b> {maskEmail(user.email)}
-              </span>
-              <span>
-                <UserCheck size={13} /> <b>Mobile:</b> {maskMobile(user.mobile)}
-              </span>
-              <span>
-                <Clock size={13} /> <b>Member since:</b> {new Date(user.createdAt).toLocaleDateString("en-IN")}
-              </span>
-            </div>
-          </div>
+            {/* ACCOUNT NAVIGATION HUB GRID */}
+            <section className="hub-section">
+              <div className="hub-section-title">
+                <h3>Account Quick Hub</h3>
+                <p>Click any section below to open its dedicated page</p>
+              </div>
+              <div className="hub-grid">
+                <button type="button" className="hub-card" onClick={() => changeTab("edit")}>
+                  <div className="hub-card-icon"><UserRound size={20} /></div>
+                  <div className="hub-card-info">
+                    <strong>Edit Profile</strong>
+                    <small>Personal &amp; contact info</small>
+                  </div>
+                  <ChevronRight size={16} />
+                </button>
 
-          <button type="button" className="edit-profile-btn" onClick={() => setEditModalOpen(true)}>
-            <UserRound size={15} /> Edit Profile
-          </button>
-        </section>
+                <button type="button" className="hub-card" onClick={() => changeTab("addresses")}>
+                  <div className="hub-card-icon"><MapPin size={20} /></div>
+                  <div className="hub-card-info">
+                    <strong>Address Book</strong>
+                    <small>{data?.addresses.length || 0} Saved addresses</small>
+                  </div>
+                  <ChevronRight size={16} />
+                </button>
 
-        {/* QUICK ACTIONS GRID */}
-        <section className="quick-actions-grid">
-          <button type="button" className="quick-action-card" onClick={() => changeTab("orders")}>
-            <Box className="qa-icon blue" />
-            <div>
-              <strong>My Orders</strong>
-              <small>{data?.orders.length || 0} Total Orders</small>
-            </div>
-            <ChevronRight size={16} />
-          </button>
+                <button type="button" className="hub-card" onClick={() => changeTab("security")}>
+                  <div className="hub-card-icon"><Lock size={20} /></div>
+                  <div className="hub-card-info">
+                    <strong>Account Security</strong>
+                    <small>Password &amp; authentication</small>
+                  </div>
+                  <ChevronRight size={16} />
+                </button>
 
-          <button type="button" className="quick-action-card" onClick={() => changeTab("wishlist")}>
-            <Heart className="qa-icon red" />
-            <div>
-              <strong>Wishlist</strong>
-              <small>{data?.wishlist.length || 0} Saved Items</small>
-            </div>
-            <ChevronRight size={16} />
-          </button>
+                <button type="button" className="hub-card" onClick={() => changeTab("payments")}>
+                  <div className="hub-card-icon"><CreditCard size={20} /></div>
+                  <div className="hub-card-info">
+                    <strong>Payments &amp; Refunds</strong>
+                    <small>Transactions &amp; refunds</small>
+                  </div>
+                  <ChevronRight size={16} />
+                </button>
 
-          <button type="button" className="quick-action-card" onClick={() => changeTab("addresses")}>
-            <MapPin className="qa-icon green" />
-            <div>
-              <strong>Saved Addresses</strong>
-              <small>{data?.addresses.length || 0} Saved</small>
-            </div>
-            <ChevronRight size={16} />
-          </button>
+                <button type="button" className="hub-card" onClick={() => changeTab("coupons")}>
+                  <div className="hub-card-icon"><Tag size={20} /></div>
+                  <div className="hub-card-info">
+                    <strong>Coupons &amp; Offers</strong>
+                    <small>Discount promos &amp; cards</small>
+                  </div>
+                  <ChevronRight size={16} />
+                </button>
 
-          <button type="button" className="quick-action-card" onClick={() => changeTab("support")}>
-            <Headphones className="qa-icon orange" />
-            <div>
-              <strong>Support Tickets</strong>
-              <small>{data?.tickets?.length || 0} Tickets</small>
-            </div>
-            <ChevronRight size={16} />
-          </button>
-        </section>
+                <button type="button" className="hub-card" onClick={() => changeTab("notifications")}>
+                  <div className="hub-card-icon"><Bell size={20} /></div>
+                  <div className="hub-card-info">
+                    <strong>Notifications</strong>
+                    <small>System &amp; order alerts</small>
+                  </div>
+                  <ChevronRight size={16} />
+                </button>
 
-        {/* MAIN BODY: SIDEBAR + MAIN VIEW */}
-        <div className="profile-body-layout">
-          <aside className="profile-sidebar-nav">
-            <div className="nav-group">
-              <small>SHOPPING</small>
-              <button className={tab === "orders" ? "active" : ""} onClick={() => changeTab("orders")}>
-                <Box size={16} /> My Orders <span>{data?.orders.length || 0}</span>
-              </button>
-              <button className={tab === "wishlist" ? "active" : ""} onClick={() => changeTab("wishlist")}>
-                <Heart size={16} /> Wishlist <span>{data?.wishlist.length || 0}</span>
-              </button>
-              <button className={tab === "cart" ? "active" : ""} onClick={() => changeTab("cart")}>
-                <ShoppingCart size={16} /> Saved Cart <span>{data?.cart.length || 0}</span>
-              </button>
-              <button className={tab === "recently-viewed" ? "active" : ""} onClick={() => changeTab("recently-viewed")}>
-                <Eye size={16} /> Recently Viewed <span>{recentlyViewed.length}</span>
-              </button>
-              <button className={tab === "reviews" ? "active" : ""} onClick={() => changeTab("reviews")}>
-                <Star size={16} /> Product Reviews <span>{data?.reviews?.length || 0}</span>
-              </button>
-            </div>
+                <button type="button" className="hub-card" onClick={() => changeTab("reviews")}>
+                  <div className="hub-card-icon"><Star size={20} /></div>
+                  <div className="hub-card-info">
+                    <strong>Product Reviews</strong>
+                    <small>Your ratings &amp; feedback</small>
+                  </div>
+                  <ChevronRight size={16} />
+                </button>
 
-            <div className="nav-group">
-              <small>MY ACCOUNT</small>
-              <button className={tab === "overview" ? "active" : ""} onClick={() => changeTab("overview")}>
-                <Home size={16} /> Account Dashboard
-              </button>
-              <button className={tab === "edit" ? "active" : ""} onClick={() => changeTab("edit")}>
-                <UserRound size={16} /> Edit Profile
-              </button>
-              <button className={tab === "addresses" ? "active" : ""} onClick={() => changeTab("addresses")}>
-                <MapPin size={16} /> Address Book <span>{data?.addresses.length || 0}</span>
-              </button>
-              <button className={tab === "payments" ? "active" : ""} onClick={() => changeTab("payments")}>
-                <CreditCard size={16} /> Payments &amp; Refunds
-              </button>
-              <button className={tab === "coupons" ? "active" : ""} onClick={() => changeTab("coupons")}>
-                <Tag size={16} /> Coupons &amp; Offers
-              </button>
-              <button className={tab === "security" ? "active" : ""} onClick={() => changeTab("security")}>
-                <Lock size={16} /> Account Security
-              </button>
-              <button className={tab === "notifications" ? "active" : ""} onClick={() => changeTab("notifications")}>
-                <Bell size={16} /> Notifications <span>{data?.notifications.filter((n) => !n.read).length || 0}</span>
-              </button>
-              <button className={tab === "privacy" ? "active" : ""} onClick={() => changeTab("privacy")}>
-                <ShieldCheck size={16} /> Privacy &amp; Data
-              </button>
-            </div>
+                <button type="button" className="hub-card" onClick={() => changeTab("seller")}>
+                  <div className="hub-card-icon"><Store size={20} /></div>
+                  <div className="hub-card-info">
+                    <strong>Seller Portal</strong>
+                    <small>Become a merchant</small>
+                  </div>
+                  <ChevronRight size={16} />
+                </button>
 
-            <div className="nav-group">
-              <small>BUSINESS &amp; SUPPORT</small>
-              <button className={tab === "seller" ? "active" : ""} onClick={() => changeTab("seller")}>
-                <Store size={16} /> {data?.sellerApp?.status === "Approved" ? "Seller Dashboard" : "Become a Seller"}
-              </button>
-              <button className={tab === "support" ? "active" : ""} onClick={() => changeTab("support")}>
-                <Headphones size={16} /> Support Centre
-              </button>
-            </div>
+                <button type="button" className="hub-card" onClick={() => changeTab("privacy")}>
+                  <div className="hub-card-icon"><ShieldCheck size={20} /></div>
+                  <div className="hub-card-info">
+                    <strong>Privacy &amp; Data</strong>
+                    <small>Data export &amp; privacy</small>
+                  </div>
+                  <ChevronRight size={16} />
+                </button>
+              </div>
+            </section>
+          </>
+        ) : (
+          /* DEDICATED SUBPAGE VIEW */
+          <>
+            <header className="subpage-header-bar">
+              <div className="subpage-header-top">
+                <button type="button" onClick={() => changeTab("overview")} className="btn-back-dashboard">
+                  <ArrowLeft size={16} /> Back to Dashboard
+                </button>
 
-            <button
-              type="button"
-              className="sidebar-logout-btn"
-              onClick={() => (window.location.href = "/signout?return_to=%2Flogin")}
-            >
-              <LogOut size={16} /> Sign Out Account
-            </button>
-          </aside>
+                <div className="subpage-header-title">
+                  <small>{subPageTitleMap[tab]?.category || "ACCOUNT SECTION"}</small>
+                  <h1>{subPageTitleMap[tab]?.title || "Account Details"}</h1>
+                  <p>{subPageTitleMap[tab]?.subtitle || "Manage your account settings in one place."}</p>
+                </div>
+              </div>
 
-          {/* MAIN CONTENT REGION */}
-          <section className="profile-main-content">
+              {/* HORIZONTAL QUICK TABS NAV */}
+              <nav className="subpage-tabs-nav">
+                <button className={tab === "overview" ? "active" : ""} onClick={() => changeTab("overview")}>
+                  <Home size={15} /> Dashboard
+                </button>
+                <button className={tab === "orders" ? "active" : ""} onClick={() => changeTab("orders")}>
+                  <Box size={15} /> My Orders
+                </button>
+                <button className={tab === "wishlist" ? "active" : ""} onClick={() => changeTab("wishlist")}>
+                  <Heart size={15} /> Wishlist
+                </button>
+                <button className={tab === "addresses" ? "active" : ""} onClick={() => changeTab("addresses")}>
+                  <MapPin size={15} /> Addresses
+                </button>
+                <button className={tab === "edit" ? "active" : ""} onClick={() => changeTab("edit")}>
+                  <UserRound size={15} /> Edit Profile
+                </button>
+                <button className={tab === "security" ? "active" : ""} onClick={() => changeTab("security")}>
+                  <Lock size={15} /> Security
+                </button>
+                <button className={tab === "payments" ? "active" : ""} onClick={() => changeTab("payments")}>
+                  <CreditCard size={15} /> Payments
+                </button>
+                <button className={tab === "coupons" ? "active" : ""} onClick={() => changeTab("coupons")}>
+                  <Tag size={15} /> Coupons
+                </button>
+                <button className={tab === "notifications" ? "active" : ""} onClick={() => changeTab("notifications")}>
+                  <Bell size={15} /> Notifications
+                </button>
+                <button className={tab === "support" ? "active" : ""} onClick={() => changeTab("support")}>
+                  <Headphones size={15} /> Support
+                </button>
+                <button className={tab === "seller" ? "active" : ""} onClick={() => changeTab("seller")}>
+                  <Store size={15} /> Seller
+                </button>
+                <button className={tab === "privacy" ? "active" : ""} onClick={() => changeTab("privacy")}>
+                  <ShieldCheck size={15} /> Privacy
+                </button>
+              </nav>
+            </header>
+
+            {/* DEDICATED FULL WIDTH CONTENT REGION */}
+            <section className="profile-dedicated-content">
             {/* OVERVIEW TAB */}
             {tab === "overview" && (
               <div className="tab-pane">
@@ -1218,8 +1374,9 @@ export function ProfileContent({ paramsTab }: { paramsTab?: string }) {
               </div>
             )}
           </section>
-        </div>
-      </div>
+        </>
+      )}
+    </div>
 
       {/* ORDER DETAILS MODAL */}
       {selectedOrder && (
