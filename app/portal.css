@@ -1998,6 +1998,255 @@ main:not(.vp-store) td{font-size:13px}
   }
 }
 
+/* Useful Action Buttons & Useful Links Directory Styles */
+.sidebar-group-title {
+  display: block;
+  margin-top: 14px;
+  padding: 10px 10px 4px !important;
+  color: #7d8b9e;
+  font-size: 8px !important;
+  letter-spacing: 0.14em;
+  border-top: 1px dashed #e1e8f0;
+}
+
+.legal-useful-buttons-wrapper,
+.legal-useful-links-wrapper {
+  margin-top: 35px;
+  padding-top: 25px;
+  border-top: 1px solid #e8ecf1;
+}
+
+.legal-section-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.legal-section-header .header-icon {
+  width: 36px;
+  height: 36px;
+  padding: 8px;
+  border-radius: 8px;
+  background: #eef5ff;
+  color: #1766ef;
+  flex-shrink: 0;
+}
+
+.legal-section-header h2 {
+  margin: 0 0 4px !important;
+  font-size: 18px !important;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.legal-section-header p {
+  margin: 0 !important;
+  color: #64748b !important;
+  font-size: 12px !important;
+  line-height: 1.5 !important;
+}
+
+.useful-buttons-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 14px;
+}
+
+.useful-btn-card {
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #ffffff;
+  transition: all 0.2s ease-in-out;
+  text-decoration: none !important;
+  color: inherit;
+}
+
+.useful-btn-card:hover {
+  border-color: #3b82f6;
+  box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.12);
+  transform: translateY(-2px);
+}
+
+.useful-btn-card.highlight-card {
+  background: linear-gradient(135deg, #f0f7ff 0%, #ffffff 100%);
+  border-color: #bfdbfe;
+}
+
+.btn-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.card-icon {
+  color: #2563eb;
+}
+
+.card-badge {
+  padding: 3px 8px;
+  border-radius: 12px;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+}
+
+.card-badge.founder-badge {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.card-badge.cofounder-badge {
+  background: #fae8ff;
+  color: #86198f;
+}
+
+.card-badge.live-badge {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.card-badge.help-badge {
+  background: #ffedd5;
+  color: #c2410c;
+}
+
+.card-badge.merchant-badge {
+  background: #fef9c3;
+  color: #854d0e;
+}
+
+.card-badge.portal-badge {
+  background: #e0e7ff;
+  color: #3730a3;
+}
+
+.card-badge.foundation-badge {
+  background: #ffe4e6;
+  color: #be123c;
+}
+
+.card-badge.catalog-badge {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.card-badge.faq-badge {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.card-badge.hiring-badge {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.card-badge.hq-badge {
+  background: #f3e8ff;
+  color: #6b21a8;
+}
+
+.card-badge.contact-badge {
+  background: #ffedd5;
+  color: #9a3412;
+}
+
+.useful-btn-card h4 {
+  margin: 0 0 6px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.useful-btn-card p {
+  margin: 0 0 12px !important;
+  font-size: 11px !important;
+  color: #64748b !important;
+  line-height: 1.5 !important;
+  flex: 1;
+}
+
+.card-action-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #2563eb;
+}
+
+.useful-links-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 16px;
+}
+
+.useful-link-col {
+  padding: 16px;
+  border-radius: 10px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.col-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #cbd5e1;
+  color: #0f172a;
+  font-weight: 800;
+  font-size: 13px;
+}
+
+.col-title svg {
+  color: #2563eb;
+}
+
+.useful-link-col ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.useful-link-col li a {
+  display: block;
+  color: #334155;
+  font-size: 12px;
+  text-decoration: none;
+  transition: color 0.15s ease;
+  line-height: 1.4;
+}
+
+.useful-link-col li a:hover {
+  color: #2563eb;
+  text-decoration: underline;
+}
+
+.useful-link-col li a strong {
+  display: block;
+  color: #0f172a;
+  font-size: 12px;
+}
+
+.useful-link-col li a small {
+  display: block;
+  color: #64748b;
+  font-size: 10px;
+  margin-top: 1px;
+}
+
+
 
 
 

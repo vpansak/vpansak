@@ -367,8 +367,7 @@
   .vp-product-rail .vp-product-card:nth-child(5) { display: none; }
   .vp-catalog-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .vp-track-band { grid-template-columns: 1fr; gap: 24px; }
-  .vp-footer-main { grid-template-columns: 1.4fr repeat(2, 1fr); }
-  .vp-footer-main > div:nth-child(4), .vp-footer-main > div:nth-child(5) { display: none; }
+  .vp-footer-main { grid-template-columns: repeat(2, 1fr); gap: 28px; }
 }
 
 @media (max-width: 680px) {
@@ -504,7 +503,8 @@
   .vp-track-band form button { width: 100%; height: 40px; justify-content: center; }
   .vp-service-grid { width: calc(100% - 16px); margin: 8px auto 16px; grid-template-columns: 1fr; gap: 8px; }
   .vp-service-grid > a { min-height: 120px; padding: 18px; }
-  .vp-footer { display: none; }
+  .vp-footer { display: block; padding-bottom: 66px; }
+  .vp-footer-main { grid-template-columns: 1fr 1fr; gap: 24px; padding: 32px 0 24px; }
   .vp-bottom-nav { height: 62px; padding: 6px 5px 5px; position: fixed; z-index: 120; left: 0; right: 0; bottom: 0; display: grid; grid-template-columns: repeat(5, 1fr); border-top: 1px solid #d9e0e9; background: #fff; box-shadow: 0 -7px 25px #07162914; }
   .vp-bottom-nav a, .vp-bottom-nav button { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; border: 0; background: transparent; color: #758296; font-size: 7px; }
   .vp-bottom-nav svg { width: 19px; }
@@ -2336,4 +2336,74 @@
     flex-direction: column;
   }
 }
+
+/* Useful Links Footer Link & Modal Overlay Styles */
+.vp-useful-link-highlight {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 5px;
+  margin-top: 4px;
+  color: #3b82f6 !important;
+  font-weight: 800 !important;
+  transition: all 0.2s ease;
+}
+
+.vp-useful-link-highlight:hover {
+  color: #60a5fa !important;
+  transform: translateX(2px);
+}
+
+.vp-useful-modal {
+  max-width: 900px !important;
+  width: min(900px, calc(100vw - 32px)) !important;
+  max-height: 85vh !important;
+  overflow-y: auto !important;
+  border-radius: 14px !important;
+}
+
+.vp-useful-modal-body {
+  padding: 20px 24px 28px;
+}
+
+.vp-useful-modal-intro {
+  margin: 0 0 16px;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.useful-search-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  background: #f8fafc;
+  margin-bottom: 20px;
+}
+
+.useful-search-box svg {
+  color: #3b82f6;
+}
+
+.useful-search-box input {
+  flex: 1;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font-size: 14px;
+  color: #0f172a;
+}
+
+.useful-search-box button {
+  border: 0;
+  background: #e2e8f0;
+  color: #475569;
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
 

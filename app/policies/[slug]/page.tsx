@@ -1,6 +1,10 @@
 "use client";
 
-import { ArrowLeft, CheckCircle2, FileText, Mail, ShieldCheck } from "lucide-react";
+import { 
+  ArrowLeft, CheckCircle2, FileText, Mail, ShieldCheck, User, Users, PackageCheck, 
+  Headphones, Store, LayoutDashboard, HeartHandshake, HelpCircle, Briefcase, 
+  ArrowRight, Grid3X3, Info, Sparkles, Compass
+} from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 
@@ -277,6 +281,12 @@ export default function PolicyPage() {
               {item.title}
             </Link>
           ))}
+
+          <strong className="sidebar-group-title">QUICK UTILITIES</strong>
+          <Link href="/track"><PackageCheck size={13} style={{ marginRight: 6 }} /> Track Order Status</Link>
+          <Link href="/support"><Headphones size={13} style={{ marginRight: 6 }} /> Support Ticket Hub</Link>
+          <Link href="/seller"><Store size={13} style={{ marginRight: 6 }} /> Become a Seller</Link>
+          <Link href="/foundation"><HeartHandshake size={13} style={{ marginRight: 6 }} /> Support Foundation</Link>
         </aside>
 
         <article>
@@ -292,16 +302,219 @@ export default function PolicyPage() {
             </section>
           ))}
 
+          {/* Useful Quick Action Buttons Section */}
+          <section className="legal-useful-buttons-wrapper">
+            <div className="legal-section-header">
+              <Sparkles className="header-icon" size={20} />
+              <div>
+                <h2>Useful Quick Action Buttons (उपयोगी बटन्स)</h2>
+                <p>Instant navigation to founder profiles, order tracking, support, seller portal, and key platform features.</p>
+              </div>
+            </div>
+
+            <div className="useful-buttons-grid">
+              <Link href="/founder" className="useful-btn-card highlight-card">
+                <div className="btn-card-top">
+                  <span className="card-badge founder-badge">FOUNDER</span>
+                  <User size={22} className="card-icon" />
+                </div>
+                <h4>Founder Alok Singh</h4>
+                <p>Founder & Visionary leading VPANSAK Shopping & A&A Group initiatives.</p>
+                <span className="card-action-link">View Profile <ArrowRight size={14} /></span>
+              </Link>
+
+              <Link href="/cofounder" className="useful-btn-card highlight-card">
+                <div className="btn-card-top">
+                  <span className="card-badge cofounder-badge">CO-FOUNDER</span>
+                  <Users size={22} className="card-icon" />
+                </div>
+                <h4>Co-Founder Ayushi Tripathi</h4>
+                <p>Co-Founder & Director managing key operational strategies.</p>
+                <span className="card-action-link">View Profile <ArrowRight size={14} /></span>
+              </Link>
+
+              <Link href="/track" className="useful-btn-card">
+                <div className="btn-card-top">
+                  <span className="card-badge live-badge">LIVE TRACKING</span>
+                  <PackageCheck size={22} className="card-icon" />
+                </div>
+                <h4>Track Live Order</h4>
+                <p>Track your package status step-by-step using your VPO Order ID.</p>
+                <span className="card-action-link">Track Now <ArrowRight size={14} /></span>
+              </Link>
+
+              <Link href="/support" className="useful-btn-card">
+                <div className="btn-card-top">
+                  <span className="card-badge help-badge">24×7 HELP</span>
+                  <Headphones size={22} className="card-icon" />
+                </div>
+                <h4>Support Ticket Hub</h4>
+                <p>Create & track support tickets for orders, refunds, and inquiries.</p>
+                <span className="card-action-link">Get Support <ArrowRight size={14} /></span>
+              </Link>
+
+              <Link href="/seller" className="useful-btn-card">
+                <div className="btn-card-top">
+                  <span className="card-badge merchant-badge">3% COMMISSION</span>
+                  <Store size={22} className="card-icon" />
+                </div>
+                <h4>Become a Seller</h4>
+                <p>Register as a merchant, complete KYC, and start selling products.</p>
+                <span className="card-action-link">Register Store <ArrowRight size={14} /></span>
+              </Link>
+
+              <Link href="/seller/dashboard" className="useful-btn-card">
+                <div className="btn-card-top">
+                  <span className="card-badge portal-badge">PORTAL</span>
+                  <LayoutDashboard size={22} className="card-icon" />
+                </div>
+                <h4>Seller Dashboard</h4>
+                <p>Manage product listings, stock levels, orders, and payout status.</p>
+                <span className="card-action-link">Open Dashboard <ArrowRight size={14} /></span>
+              </Link>
+
+              <Link href="/foundation" className="useful-btn-card">
+                <div className="btn-card-top">
+                  <span className="card-badge foundation-badge">SOCIAL IMPACT</span>
+                  <HeartHandshake size={22} className="card-icon" />
+                </div>
+                <h4>Support Foundation</h4>
+                <p>Contribute to platform expansion, infrastructure & community projects.</p>
+                <span className="card-action-link">Support Us <ArrowRight size={14} /></span>
+              </Link>
+
+              <Link href="/categories" className="useful-btn-card">
+                <div className="btn-card-top">
+                  <span className="card-badge catalog-badge">CATALOG</span>
+                  <Grid3X3 size={22} className="card-icon" />
+                </div>
+                <h4>Browse Categories</h4>
+                <p>Explore electronics, fashion, home essentials & daily top offers.</p>
+                <span className="card-action-link">Shop Store <ArrowRight size={14} /></span>
+              </Link>
+
+              <Link href="/info/faq" className="useful-btn-card">
+                <div className="btn-card-top">
+                  <span className="card-badge faq-badge">KNOWLEDGE BASE</span>
+                  <HelpCircle size={22} className="card-icon" />
+                </div>
+                <h4>Customer FAQs</h4>
+                <p>Instant answers to shipping, 5-min refunds, 7-day returns & payments.</p>
+                <span className="card-action-link">Read FAQs <ArrowRight size={14} /></span>
+              </Link>
+
+              <Link href="/info/careers" className="useful-btn-card">
+                <div className="btn-card-top">
+                  <span className="card-badge hiring-badge">HIRING</span>
+                  <Briefcase size={22} className="card-icon" />
+                </div>
+                <h4>Careers at VPANSAK</h4>
+                <p>Join our technology, support, and merchant operations teams.</p>
+                <span className="card-action-link">View Openings <ArrowRight size={14} /></span>
+              </Link>
+
+              <Link href="/info/about" className="useful-btn-card">
+                <div className="btn-card-top">
+                  <span className="card-badge hq-badge">HEADQUARTERS</span>
+                  <Info size={22} className="card-icon" />
+                </div>
+                <h4>About VPANSAK HQ</h4>
+                <p>Learn about our digital marketplace, vision, and company ethos.</p>
+                <span className="card-action-link">Learn More <ArrowRight size={14} /></span>
+              </Link>
+
+              <Link href="/info/contact" className="useful-btn-card">
+                <div className="btn-card-top">
+                  <span className="card-badge contact-badge">CONTACT</span>
+                  <Mail size={22} className="card-icon" />
+                </div>
+                <h4>Contact Support</h4>
+                <p>Direct communication channels for customer and business inquiries.</p>
+                <span className="card-action-link">Contact Us <ArrowRight size={14} /></span>
+              </Link>
+            </div>
+          </section>
+
+          {/* Useful Links Directory Section */}
+          <section className="legal-useful-links-wrapper">
+            <div className="legal-section-header">
+              <Compass className="header-icon" size={20} />
+              <div>
+                <h2>Useful Links Directory (उपयोगी लिंक्स की विस्तृत डायरेक्टरी)</h2>
+                <p>Complete directory of leadership profiles, customer policies, seller portals, and customer utilities.</p>
+              </div>
+            </div>
+
+            <div className="useful-links-grid">
+              <div className="useful-link-col">
+                <div className="col-title">
+                  <User size={16} />
+                  <span>Founders & Leadership</span>
+                </div>
+                <ul>
+                  <li><Link href="/founder"><strong>Founder Alok Singh Profile</strong><small>Founder & Visionary of VPANSAK</small></Link></li>
+                  <li><Link href="/cofounder"><strong>Co-Founder Ayushi Tripathi Profile</strong><small>Co-Founder & Director of VPANSAK</small></Link></li>
+                  <li><Link href="/info/about">About VPANSAK Headquarters</Link></li>
+                  <li><Link href="/info/careers">Careers & Hiring Opportunities</Link></li>
+                  <li><Link href="/info/contact">Direct Contact & Support Email</Link></li>
+                </ul>
+              </div>
+
+              <div className="useful-link-col">
+                <div className="col-title">
+                  <ShieldCheck size={16} />
+                  <span>Shopping & Delivery Policies</span>
+                </div>
+                <ul>
+                  <li><Link href="/policies/shipping-policy">Shipping & Delivery Policy</Link></li>
+                  <li><Link href="/policies/refund-policy">5-Minute Refund Initiation Policy</Link></li>
+                  <li><Link href="/policies/return-policy">7-Day Product Return Policy</Link></li>
+                  <li><Link href="/policies/privacy-policy">Privacy Policy & Data Security</Link></li>
+                  <li><Link href="/policies/terms-and-conditions">Terms & Conditions of Service</Link></li>
+                  <li><Link href="/policies/gift-card-policy">Gift Card Terms & Conditions</Link></li>
+                </ul>
+              </div>
+
+              <div className="useful-link-col">
+                <div className="col-title">
+                  <Store size={16} />
+                  <span>Business & Merchant Portals</span>
+                </div>
+                <ul>
+                  <li><Link href="/seller">Become a VPANSAK Seller (3% Fee)</Link></li>
+                  <li><Link href="/seller/dashboard">Seller Dashboard & Merchant Tools</Link></li>
+                  <li><Link href="/policies/seller-policy">Seller Policy & Operational Rules</Link></li>
+                  <li><Link href="/policies/merchant-guidelines">Merchant Guidelines & Listing SLA</Link></li>
+                  <li><Link href="/foundation">VPANSAK Support Foundation</Link></li>
+                  <li><Link href="/policies/contribution-terms">Support Contribution Terms</Link></li>
+                </ul>
+              </div>
+
+              <div className="useful-link-col">
+                <div className="col-title">
+                  <PackageCheck size={16} />
+                  <span>Quick Utilities & Support</span>
+                </div>
+                <ul>
+                  <li><Link href="/track">Live Order Tracking (/track)</Link></li>
+                  <li><Link href="/support">24/7 Support Ticket Hub (/support)</Link></li>
+                  <li><Link href="/info/faq">Customer Frequently Asked Questions</Link></li>
+                  <li><Link href="/categories">All Marketplace Categories</Link></li>
+                  <li><Link href="/account">Wishlist & Customer Account</Link></li>
+                </ul>
+              </div>
+            </div>
+          </section>
+
           <footer>
             <Mail size={18} />
             <div>
-              <strong>Questions about this policy?</strong>
+              <strong>Questions about platform policies?</strong>
               <p>
                 Contact <a href="mailto:support.vpansak@gmail.com">support.vpansak@gmail.com</a> or visit the{" "}
-                <a href="https://vpansaksupporthub.lovable.app" target="_blank" rel="noopener noreferrer">
-                  Support Hub
-                </a>
-                .
+                <Link href="/support">
+                  Support Ticket Hub
+                </Link>.
               </p>
             </div>
           </footer>
@@ -310,3 +523,4 @@ export default function PolicyPage() {
     </main>
   );
 }
+

@@ -132,6 +132,8 @@ export default function HomePage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [usefulLinksOpen, setUsefulLinksOpen] = useState(false);
+  const [usefulSearch, setUsefulSearch] = useState("");
   const [orderPlaced, setOrderPlaced] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
@@ -459,7 +461,7 @@ export default function HomePage() {
       </section>
 
       <footer className="vp-footer">
-        <div className="vp-footer-main"><div className="vp-footer-brand"><Link className="vp-brand" href="/"><img src="/vpansak-logo.png" alt="VPANSAK" /><span><strong>VPANSAK</strong><small>SHOPPING</small></span></Link><p>A secure, useful and customer-focused digital marketplace by A&amp;A Group.</p><span><ShieldCheck /> Secure shopping experience</span></div><div><strong>SHOP</strong><Link href="/categories">All categories</Link><a href="#catalog">Top offers</a><Link href="/account">Wishlist</Link><Link href="/track">Track order</Link></div><div><strong>HELP</strong><Link href="/support">Support hub</Link><Link href="/info/faq">FAQs</Link><Link href="/policies/refund-policy">Refund policy</Link><Link href="/policies/shipping-policy">Shipping policy</Link></div><div><strong>BUSINESS</strong><Link href="/seller">Become a seller</Link><Link href="/seller/dashboard">Seller dashboard</Link><Link href="/policies/merchant-guidelines">Merchant guidelines</Link><Link href="/foundation">Support Foundation</Link></div><div><strong>COMPANY</strong><Link href="/founder">Founder Alok Singh</Link><Link href="/cofounder">Co-Founder Ayushi Tripathi</Link><Link href="/info/about">About VPANSAK</Link><Link href="/info/careers">Careers</Link><Link href="/info/contact">Contact us</Link></div></div>
+        <div className="vp-footer-main"><div className="vp-footer-brand"><Link className="vp-brand" href="/"><img src="/vpansak-logo.png" alt="VPANSAK" /><span><strong>VPANSAK</strong><small>SHOPPING</small></span></Link><p>A secure, useful and customer-focused digital marketplace by A&amp;A Group.</p><span><ShieldCheck /> Secure shopping experience</span></div><div><strong>SHOP</strong><Link href="/categories">All categories</Link><a href="#catalog">Top offers</a><Link href="/account">Wishlist</Link><Link href="/track">Track order</Link></div><div><strong>HELP</strong><Link href="/support">Support hub</Link><Link href="/info/faq">FAQs</Link><Link href="/policies/refund-policy">Refund policy</Link><Link href="/policies/shipping-policy">Shipping policy</Link><Link href="/info/useful-links" onClick={(e) => { e.preventDefault(); setUsefulLinksOpen(true); }} className="vp-useful-link-highlight">Useful links ✨</Link></div><div><strong>BUSINESS</strong><Link href="/seller">Become a seller</Link><Link href="/seller/dashboard">Seller dashboard</Link><Link href="/policies/merchant-guidelines">Merchant guidelines</Link><Link href="/foundation">Support Foundation</Link></div><div><strong>COMPANY</strong><Link href="/info/about">About VPANSAK</Link><Link href="/info/careers">Careers</Link><Link href="/info/contact">Contact us</Link></div></div>
         <div className="vp-footer-bottom"><span>© 2026 VPANSAK • Powered by A&amp;A Group</span><div><Link href="/policies/privacy-policy">Privacy</Link><Link href="/policies/terms-and-conditions">Terms</Link><a href="mailto:support.vpansak@gmail.com">support.vpansak@gmail.com</a><a href="https://instagram.com/VPANSAK" target="_blank" rel="noreferrer">Instagram</a></div></div>
       </footer>
 
@@ -470,6 +472,138 @@ export default function HomePage() {
       {checkoutOpen && <div className="vp-overlay centered" onMouseDown={() => setCheckoutOpen(false)}><div className="vp-checkout" role="dialog" aria-modal="true" aria-label="Secure checkout" onMouseDown={(event) => event.stopPropagation()}><header><div><small>SECURE CHECKOUT</small><h2>Complete your order</h2></div><button type="button" onClick={() => setCheckoutOpen(false)}><X /></button></header><form onSubmit={placeOrder}><section><h3><span>1</span> Delivery address</h3><div className="vp-form-grid"><label>Full name<input name="customerName" required maxLength={100} autoComplete="name" /></label><label>Mobile number<input name="mobile" required inputMode="numeric" pattern="[6-9][0-9]{9}" maxLength={10} autoComplete="tel" /></label><label className="wide">House number, area and street<input name="address" required maxLength={250} autoComplete="street-address" /></label><label>City<input name="city" required maxLength={80} autoComplete="address-level2" /></label><label>PIN code<input name="pinCode" required inputMode="numeric" pattern="[0-9]{6}" maxLength={6} autoComplete="postal-code" /></label></div></section><section><h3><span>2</span> Payment method</h3><div className="vp-payment-options"><label className="disabled"><input type="radio" disabled /><CreditCard /><span><strong>UPI / Cards</strong><small>UPI, Cards &amp; Netbanking</small></span></label><label><input type="radio" name="paymentMethod" value="Cash on Delivery" defaultChecked /><Banknote /><span><strong>Cash on Delivery</strong><small>Pay when the order arrives</small></span></label><label className="disabled"><input type="radio" disabled /><WalletCards /><span><strong>Gift Card</strong><small>Available after wallet activation</small></span></label></div></section><section><h3><span>3</span> Apply coupon</h3><div className="vp-checkout-coupon"><Tag /><input value={coupon} onChange={(event) => setCoupon(event.target.value.toUpperCase())} placeholder="Enter promo code" /><button type="button" onClick={applyCoupon}>Apply</button></div></section><div className="vp-checkout-total"><span>Payable amount</span><strong>{money(finalTotal)}</strong></div><button className="vp-place-order" type="submit">Place COD order <ShieldCheck /></button><p className="vp-checkout-note"><Clock3 /> Order confirmation is generated immediately with a trackable VPANSAK order ID.</p></form></div></div>}
 
       {orderPlaced && <div className="vp-overlay centered"><div className="vp-order-success"><span><Check /></span><small>ORDER CONFIRMED</small><h2>Your VPANSAK order is placed.</h2><p>Save this order ID. It opens the complete confirmation-to-delivery timeline.</p><strong>{orderPlaced}</strong><button type="button" onClick={() => { window.location.href = `/track?id=${orderPlaced}`; }}>Track my order <ArrowRight /></button></div></div>}
+
+      {usefulLinksOpen && (
+        <div className="vp-overlay centered" onMouseDown={() => setUsefulLinksOpen(false)}>
+          <div className="vp-checkout vp-useful-modal" role="dialog" aria-modal="true" aria-label="Useful Links Directory" onMouseDown={(e) => e.stopPropagation()}>
+            <header>
+              <div>
+                <small>ALL-IN-ONE DIRECTORY</small>
+                <h2>Useful Links & Quick Action Hub (उपयोगी लिंक्स)</h2>
+              </div>
+              <button type="button" onClick={() => setUsefulLinksOpen(false)}>
+                <X />
+              </button>
+            </header>
+            <div className="vp-useful-modal-body">
+              <p className="vp-useful-modal-intro">
+                Every link, policy, seller tool, founder profile, and customer service across VPANSAK in one place.
+              </p>
+
+              <div className="useful-search-box">
+                <Search size={18} />
+                <input
+                  type="text"
+                  value={usefulSearch}
+                  onChange={(e) => setUsefulSearch(e.target.value)}
+                  placeholder="Search any link, policy, seller tool, or founder..."
+                />
+                {usefulSearch && (
+                  <button type="button" onClick={() => setUsefulSearch("")}>Clear</button>
+                )}
+              </div>
+
+              <div className="useful-buttons-grid">
+                <Link href="/founder" onClick={() => setUsefulLinksOpen(false)} className="useful-btn-card highlight-card">
+                  <div className="btn-card-top"><span className="card-badge founder-badge">FOUNDER</span><UserRound size={20} className="card-icon" /></div>
+                  <h4>Founder Alok Singh</h4>
+                  <p>Founder & Visionary leading VPANSAK Shopping.</p>
+                  <span className="card-action-link">View Profile <ArrowRight size={14} /></span>
+                </Link>
+                <Link href="/cofounder" onClick={() => setUsefulLinksOpen(false)} className="useful-btn-card highlight-card">
+                  <div className="btn-card-top"><span className="card-badge cofounder-badge">CO-FOUNDER</span><UserRound size={20} className="card-icon" /></div>
+                  <h4>Co-Founder Ayushi Tripathi</h4>
+                  <p>Co-Founder & Director managing key strategy.</p>
+                  <span className="card-action-link">View Profile <ArrowRight size={14} /></span>
+                </Link>
+                <Link href="/track" onClick={() => setUsefulLinksOpen(false)} className="useful-btn-card">
+                  <div className="btn-card-top"><span className="card-badge live-badge">LIVE TRACKING</span><PackageCheck size={20} className="card-icon" /></div>
+                  <h4>Track Live Order</h4>
+                  <p>Track package progress with your VPO ID.</p>
+                  <span className="card-action-link">Track Now <ArrowRight size={14} /></span>
+                </Link>
+                <Link href="/support" onClick={() => setUsefulLinksOpen(false)} className="useful-btn-card">
+                  <div className="btn-card-top"><span className="card-badge help-badge">24×7 HELP</span><Headphones size={20} className="card-icon" /></div>
+                  <h4>Support Ticket Hub</h4>
+                  <p>Create & track customer help tickets.</p>
+                  <span className="card-action-link">Get Support <ArrowRight size={14} /></span>
+                </Link>
+                <Link href="/seller" onClick={() => setUsefulLinksOpen(false)} className="useful-btn-card">
+                  <div className="btn-card-top"><span className="card-badge merchant-badge">3% COMMISSION</span><Store size={20} className="card-icon" /></div>
+                  <h4>Become a Seller</h4>
+                  <p>Register store & start selling nationwide.</p>
+                  <span className="card-action-link">Register Store <ArrowRight size={14} /></span>
+                </Link>
+                <Link href="/seller/dashboard" onClick={() => setUsefulLinksOpen(false)} className="useful-btn-card">
+                  <div className="btn-card-top"><span className="card-badge portal-badge">PORTAL</span><Store size={20} className="card-icon" /></div>
+                  <h4>Seller Dashboard</h4>
+                  <p>Manage product listings & payouts.</p>
+                  <span className="card-action-link">Open Portal <ArrowRight size={14} /></span>
+                </Link>
+                <Link href="/foundation" onClick={() => setUsefulLinksOpen(false)} className="useful-btn-card">
+                  <div className="btn-card-top"><span className="card-badge foundation-badge">SOCIAL IMPACT</span><HeartHandshake size={20} className="card-icon" /></div>
+                  <h4>Support Foundation</h4>
+                  <p>Support platform infrastructure & community.</p>
+                  <span className="card-action-link">Support Us <ArrowRight size={14} /></span>
+                </Link>
+                <Link href="/categories" onClick={() => setUsefulLinksOpen(false)} className="useful-btn-card">
+                  <div className="btn-card-top"><span className="card-badge catalog-badge">CATALOG</span><Grid3X3 size={20} className="card-icon" /></div>
+                  <h4>Browse Categories</h4>
+                  <p>Mobiles, electronics, fashion & top offers.</p>
+                  <span className="card-action-link">Explore Store <ArrowRight size={14} /></span>
+                </Link>
+                <Link href="/info/faq" onClick={() => setUsefulLinksOpen(false)} className="useful-btn-card">
+                  <div className="btn-card-top"><span className="card-badge faq-badge">KNOWLEDGE BASE</span><CircleHelp size={20} className="card-icon" /></div>
+                  <h4>Customer FAQs</h4>
+                  <p>Instant answers on shipping, returns & 5-min refunds.</p>
+                  <span className="card-action-link">Read FAQs <ArrowRight size={14} /></span>
+                </Link>
+              </div>
+
+              <div className="useful-links-grid" style={{ marginTop: 24 }}>
+                <div className="useful-link-col">
+                  <div className="col-title"><UserRound size={16} /><span>Founders & Leadership</span></div>
+                  <ul>
+                    <li><Link href="/founder" onClick={() => setUsefulLinksOpen(false)}><strong>Founder Alok Singh Profile</strong><small>Founder & Visionary of VPANSAK</small></Link></li>
+                    <li><Link href="/cofounder" onClick={() => setUsefulLinksOpen(false)}><strong>Co-Founder Ayushi Tripathi Profile</strong><small>Co-Founder & Director of VPANSAK</small></Link></li>
+                    <li><Link href="/info/about" onClick={() => setUsefulLinksOpen(false)}>About VPANSAK HQ</Link></li>
+                    <li><Link href="/info/careers" onClick={() => setUsefulLinksOpen(false)}>Careers & Hiring</Link></li>
+                    <li><Link href="/info/contact" onClick={() => setUsefulLinksOpen(false)}>Contact Us</Link></li>
+                  </ul>
+                </div>
+                <div className="useful-link-col">
+                  <div className="col-title"><ShieldCheck size={16} /><span>Policies & Guidelines</span></div>
+                  <ul>
+                    <li><Link href="/policies/shipping-policy" onClick={() => setUsefulLinksOpen(false)}>Shipping & Delivery Policy</Link></li>
+                    <li><Link href="/policies/refund-policy" onClick={() => setUsefulLinksOpen(false)}>5-Minute Refund Initiation Policy</Link></li>
+                    <li><Link href="/policies/return-policy" onClick={() => setUsefulLinksOpen(false)}>7-Day Product Return Policy</Link></li>
+                    <li><Link href="/policies/privacy-policy" onClick={() => setUsefulLinksOpen(false)}>Privacy Policy & Data Security</Link></li>
+                    <li><Link href="/policies/terms-and-conditions" onClick={() => setUsefulLinksOpen(false)}>Terms & Conditions</Link></li>
+                  </ul>
+                </div>
+                <div className="useful-link-col">
+                  <div className="col-title"><Store size={16} /><span>Business & Seller</span></div>
+                  <ul>
+                    <li><Link href="/seller" onClick={() => setUsefulLinksOpen(false)}>Become a Seller (3% Fee)</Link></li>
+                    <li><Link href="/seller/dashboard" onClick={() => setUsefulLinksOpen(false)}>Seller Dashboard</Link></li>
+                    <li><Link href="/policies/merchant-guidelines" onClick={() => setUsefulLinksOpen(false)}>Merchant Guidelines</Link></li>
+                    <li><Link href="/foundation" onClick={() => setUsefulLinksOpen(false)}>VPANSAK Support Foundation</Link></li>
+                  </ul>
+                </div>
+                <div className="useful-link-col">
+                  <div className="col-title"><PackageCheck size={16} /><span>Quick Utilities</span></div>
+                  <ul>
+                    <li><Link href="/track" onClick={() => setUsefulLinksOpen(false)}>Track Live Order (/track)</Link></li>
+                    <li><Link href="/support" onClick={() => setUsefulLinksOpen(false)}>24/7 Support Hub (/support)</Link></li>
+                    <li><Link href="/info/faq" onClick={() => setUsefulLinksOpen(false)}>Customer FAQs</Link></li>
+                    <li><Link href="/categories" onClick={() => setUsefulLinksOpen(false)}>All Categories</Link></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
