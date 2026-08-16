@@ -3782,4 +3782,56 @@
   }
 }
 
+/* ==========================================================================
+   MOBILE FAST TOUCH & INSTANT RESPONSE OPTIMIZATIONS (PHONE SPEED FIX)
+   ========================================================================== */
+button,
+a,
+input,
+select,
+[role="button"],
+.vp-product-card,
+.vp-wish,
+.vp-festive-btn,
+.vp-bottom-nav a {
+  touch-action: manipulation !important;
+  -webkit-tap-highlight-color: transparent !important;
+  -webkit-touch-callout: none !important;
+}
+
+@media (max-width: 768px) {
+  /* Instant press / touch visual feedback on phone screens */
+  button:active,
+  a:active,
+  .vp-product-card:active,
+  .vp-wish:active,
+  .vp-festive-btn:active,
+  .vp-bottom-nav a:active {
+    transform: scale(0.96) !important;
+    transition: transform 0.04s cubic-bezier(0.2, 0, 0, 1) !important;
+    opacity: 0.9 !important;
+  }
+
+  /* Touch target height enforcement so mobile taps are accurate & instant */
+  .vp-search button,
+  .vp-hero-copy > button,
+  .vp-header-actions button,
+  .vp-header-actions a,
+  .vp-mobile-menu,
+  .vp-wish {
+    min-height: 44px;
+    min-width: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Bottom nav tab touch response */
+  .vp-bottom-nav a {
+    min-height: 52px;
+    padding: 6px 0;
+  }
+}
+
+
 
