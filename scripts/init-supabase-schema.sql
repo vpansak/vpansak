@@ -122,3 +122,19 @@ ALTER TABLE public.tickets DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.cart_items DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.wishlist_items DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.donations DISABLE ROW LEVEL SECURITY;
+
+-- Additional explicit RLS policies (in case RLS is enabled in Supabase Dashboard):
+ALTER TABLE public.tickets ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Allow anon ticket insert" ON public.tickets;
+CREATE POLICY "Allow anon ticket insert" ON public.tickets FOR INSERT TO anon, authenticated WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow anon ticket select" ON public.tickets;
+CREATE POLICY "Allow anon ticket select" ON public.tickets FOR SELECT TO anon, authenticated USING (true);
+
+DROP POLICY IF EXISTS "Allow anon ticket update" ON public.tickets;
+CREATE POLICY "Allow anon ticket update" ON public.tickets FOR UPDATE TO anon, authenticated USING (true);
+
+ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Allow anon order select" ON public.orders;
+CREATE POLICY "Allow anon order select" ON public.orders FOR SELECT TO anon, authenticated USING (true);
+
