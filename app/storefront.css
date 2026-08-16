@@ -3148,4 +3148,142 @@
   cursor: pointer;
 }
 
+/* AVATAR FILE UPLOAD STYLING */
+.avatar-upload-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 8px 0;
+}
+.avatar-upload-box {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #f8fafc;
+}
+.avatar-preview-circle {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: linear-gradient(135deg, #1766ef, #0c46a0);
+  color: white;
+  display: grid;
+  place-items: center;
+  font-size: 22px;
+  font-weight: 800;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(23, 102, 239, 0.2);
+}
+.avatar-preview-circle img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.avatar-upload-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.avatar-upload-actions small {
+  color: #64748b;
+  font-size: 11px;
+}
+.btn-choose-file {
+  padding: 8px 16px;
+  border-radius: 8px;
+  background: #1766ef;
+  color: white;
+  font-weight: 800;
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  width: fit-content;
+  transition: background 0.2s;
+}
+.btn-choose-file:hover {
+  background: #1d4ed8;
+}
+.btn-remove-photo {
+  padding: 4px 10px;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  background: #fef2f2;
+  color: #dc2626;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  width: fit-content;
+}
+
+/* SELLER PRODUCT PHOTO UPLOAD STYLING */
+.seller-file-upload {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  grid-column: 1 / -1;
+}
+.seller-file-upload label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #334155;
+}
+.seller-image-dropzone {
+  padding: 24px;
+  border: 2px dashed #cbd5e1;
+  border-radius: 12px;
+  background: #fafcff;
+  text-align: center;
+  transition: border-color 0.2s;
+}
+.seller-image-dropzone:hover {
+  border-color: #1766ef;
+}
+.seller-upload-trigger {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  color: #475569;
+}
+.seller-upload-trigger svg {
+  color: #1766ef;
+}
+.seller-upload-trigger strong {
+  font-size: 14px;
+  color: #0f172a;
+}
+.seller-upload-trigger small {
+  font-size: 11px;
+  color: #64748b;
+}
+.product-photo-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.product-photo-preview img {
+  max-height: 180px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  object-fit: contain;
+}
+.product-photo-preview button {
+  padding: 6px 14px;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  background: #fef2f2;
+  color: #dc2626;
+  font-weight: 800;
+  font-size: 11px;
+  cursor: pointer;
+}
+
 

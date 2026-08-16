@@ -35,13 +35,14 @@ import {
   Store,
   Tag,
   Trash2,
+  Upload,
   UserCheck,
   UserRound,
   X,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState, Suspense } from "react";
+import { useCallback, useEffect, useMemo, useState, Suspense, ChangeEvent } from "react";
 import { catalogProducts } from "../lib/catalog";
 
 type UserRecord = {
@@ -173,6 +174,7 @@ export function ProfileContent({ paramsTab }: { paramsTab?: string }) {
   const [deleteAddressId, setDeleteAddressId] = useState<number | null>(null);
   const [deleteAccountModalOpen, setDeleteAccountModalOpen] = useState(false);
   const [recentlyViewed, setRecentlyViewed] = useState<string[]>([]);
+  const [avatarPreview, setAvatarPreview] = useState<string>("");
 
   useEffect(() => {
     try {
@@ -181,8 +183,22 @@ export function ProfileContent({ paramsTab }: { paramsTab?: string }) {
     } catch {}
   }, []);
 
-  const loadAccount = useCallback(async () => {
-    setLoading(true);
+  const handleAvatarFileSelect = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          const resultUrl = String(event.target.result);
+          setAvatarPreview(resultUrl);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const loadAccount = useCallback(async (isInitial = false) => {
+    if (isInitial || !data) setLoading(true);
     try {
       const res = await fetch("/api/account");
       if (res.status === 401) {
@@ -197,11 +213,11 @@ export function ProfileContent({ paramsTab }: { paramsTab?: string }) {
       setMessage("Could not load account details");
     }
     setLoading(false);
-  }, []);
+  }, [data]);
 
   useEffect(() => {
-    void Promise.resolve().then(() => loadAccount());
-  }, [loadAccount]);
+    void loadAccount(true);
+  }, []);
 
   const runAction = async (body: Record<string, unknown>) => {
     try {
@@ -1180,7 +1196,7 @@ export function ProfileContent({ paramsTab }: { paramsTab?: string }) {
                       action: "profile",
                       fullName: f.get("fullName"),
                       mobile: f.get("mobile"),
-                      avatarUrl: f.get("avatarUrl"),
+                      avatarUrl: avatarPreview !== "" ? avatarPreview : user.profileImage || "",
                     });
                   }}
                 >
@@ -1205,10 +1221,39 @@ export function ProfileContent({ paramsTab }: { paramsTab?: string }) {
                     />
                   </label>
 
-                  <label>
-                    Profile Avatar URL (Optional Image Link)
-                    <input name="avatarUrl" defaultValue={user.profileImage || ""} placeholder="https://..." />
-                  </label>
+                  <div className="avatar-upload-field">
+                    <label>Profile Photo</label>
+                    <div className="avatar-upload-box">
+                      <div className="avatar-preview-circle">
+                        {avatarPreview || user.profileImage ? (
+                          <img src={avatarPreview || user.profileImage!} alt={user.fullName} />
+                        ) : (
+                          <span>{initials}</span>
+                        )}
+                      </div>
+                      <div className="avatar-upload-actions">
+                        <label className="btn-choose-file">
+                          <Upload size={15} /> Select Photo File
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleAvatarFileSelect}
+                            style={{ display: "none" }}
+                          />
+                        </label>
+                        {(avatarPreview || user.profileImage) && (
+                          <button
+                            type="button"
+                            className="btn-remove-photo"
+                            onClick={() => setAvatarPreview("")}
+                          >
+                            Remove Photo
+                          </button>
+                        )}
+                        <small>Choose any JPG, PNG or WEBP image file directly from your device.</small>
+                      </div>
+                    </div>
+                  </div>
 
                   <button type="submit" className="btn-save-profile">
                     <Save size={16} /> Save Profile Changes
@@ -1453,7 +1498,7 @@ export function ProfileContent({ paramsTab }: { paramsTab?: string }) {
                   action: "profile",
                   fullName: f.get("fullName"),
                   mobile: f.get("mobile"),
-                  avatarUrl: f.get("avatarUrl"),
+                  avatarUrl: avatarPreview !== "" ? avatarPreview : user.profileImage || "",
                 });
               }}
             >
@@ -1471,10 +1516,40 @@ export function ProfileContent({ paramsTab }: { paramsTab?: string }) {
                   maxLength={10}
                 />
               </label>
-              <label>
-                Profile Photo URL
-                <input name="avatarUrl" defaultValue={user.profileImage || ""} placeholder="https://..." />
-              </label>
+
+              <div className="avatar-upload-field">
+                <label>Profile Photo</label>
+                <div className="avatar-upload-box">
+                  <div className="avatar-preview-circle">
+                    {avatarPreview || user.profileImage ? (
+                      <img src={avatarPreview || user.profileImage!} alt={user.fullName} />
+                    ) : (
+                      <span>{initials}</span>
+                    )}
+                  </div>
+                  <div className="avatar-upload-actions">
+                    <label className="btn-choose-file">
+                      <Upload size={15} /> Select Photo File
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleAvatarFileSelect}
+                        style={{ display: "none" }}
+                      />
+                    </label>
+                    {(avatarPreview || user.profileImage) && (
+                      <button
+                        type="button"
+                        className="btn-remove-photo"
+                        onClick={() => setAvatarPreview("")}
+                      >
+                        Remove Photo
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+
               <div className="modal-actions">
                 <button type="button" onClick={() => setEditModalOpen(false)}>
                   Cancel
