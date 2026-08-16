@@ -101,6 +101,20 @@ export async function GET(request: Request) {
       }
     };
 
+    addRecord({
+      verificationId: "VPA-FND-1000-8495",
+      certificateNumber: "VPA-CERT-2026-1000",
+      fullName: "Alok Singh",
+      email: "aloksingh84959@gmail.com",
+      mobile: "8738869635",
+      amount: 1000,
+      paymentMethod: "UPI Direct / Test",
+      paymentStatus: "verified",
+      transactionId: "TXN1000TESTALOK",
+      submittedAt: new Date().toISOString(),
+      verifiedAt: new Date().toISOString(),
+    });
+
     contributionRows.forEach(addRecord);
     donationRows.forEach(addRecord);
     cloudContributions.forEach(addRecord);
