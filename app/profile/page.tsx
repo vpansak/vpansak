@@ -348,6 +348,10 @@ export function ProfileContent({ paramsTab }: { paramsTab?: string }) {
     createdAt: new Date().toISOString(),
   };
 
+  const isAdminUser =
+    user.email.toLowerCase() === "aloksingh84959@gmail.com" ||
+    ["admin", "founder", "officer", "cofounder"].includes(user.role?.toLowerCase() || "");
+
   const initials = (user.fullName || user.email || "VP")
     .split(" ")
     .map((w) => w[0])
@@ -377,6 +381,11 @@ export function ProfileContent({ paramsTab }: { paramsTab?: string }) {
           </span>
         </Link>
         <nav>
+          {isAdminUser && (
+            <Link href="/vpa-admin" className="header-admin-btn">
+              <ShieldAlert size={14} /> Admin Hub Portal
+            </Link>
+          )}
           <Link href="/">
             <Home size={15} /> Store
           </Link>
@@ -417,9 +426,15 @@ export function ProfileContent({ paramsTab }: { paramsTab?: string }) {
               <div className="profile-details-column">
                 <div className="profile-name-row">
                   <h2>{user.fullName || user.email.split("@")[0]}</h2>
-                  <span className="badge-active">
-                    <CheckCircle2 size={12} /> Active
-                  </span>
+                  {isAdminUser ? (
+                    <span className="badge-admin-superuser">
+                      <ShieldAlert size={12} /> Admin Superuser (Alok Singh)
+                    </span>
+                  ) : (
+                    <span className="badge-active">
+                      <CheckCircle2 size={12} /> Active
+                    </span>
+                  )}
                   {user.emailVerified && (
                     <span className="badge-verified">
                       <ShieldCheck size={12} /> Verified Account
@@ -548,6 +563,17 @@ export function ProfileContent({ paramsTab }: { paramsTab?: string }) {
                 <p>Click any section below to open its dedicated page</p>
               </div>
               <div className="hub-grid">
+                {isAdminUser && (
+                  <Link href="/vpa-admin" className="hub-card admin-hub-special-card">
+                    <div className="hub-card-icon admin-gold"><ShieldAlert size={20} /></div>
+                    <div className="hub-card-info">
+                      <strong>VPANSAK Admin Hub</strong>
+                      <small>Superuser System Portal &amp; Management</small>
+                    </div>
+                    <ChevronRight size={16} />
+                  </Link>
+                )}
+
                 <button type="button" className="hub-card" onClick={() => changeTab("edit")}>
                   <div className="hub-card-icon"><UserRound size={20} /></div>
                   <div className="hub-card-info">
@@ -649,6 +675,11 @@ export function ProfileContent({ paramsTab }: { paramsTab?: string }) {
 
               {/* HORIZONTAL QUICK TABS NAV */}
               <nav className="subpage-tabs-nav">
+                {isAdminUser && (
+                  <Link href="/vpa-admin" className="admin-tab-nav-btn">
+                    <ShieldAlert size={15} /> Admin Hub
+                  </Link>
+                )}
                 <button className={tab === "overview" ? "active" : ""} onClick={() => changeTab("overview")}>
                   <Home size={15} /> Dashboard
                 </button>
