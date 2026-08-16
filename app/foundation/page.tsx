@@ -343,7 +343,8 @@ function FoundationContent() {
           <Link href="/">
             <ArrowLeft /> Store
           </Link>
-          <Link href="/support">Support Hub</Link>
+          <a href="https://vpansaksupporthub.lovable.app/" target="_blank" rel="noreferrer">Support Hub</a>
+
         </nav>
       </header>
 

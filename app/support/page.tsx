@@ -18,16 +18,16 @@ function smartAnswer(text:string){
   if(q.includes("payment")||q.includes("upi"))
     return "If money was deducted for a failed payment, please submit a ticket under Payment category at https://vpansaksupporthub.lovable.app/submit with your payment reference. Never share OTP or UPI PIN.";
   if(q.includes("seller")||q.includes("merchant"))
-    return "To become a seller, register at https://vpansak.vercel.app/seller. Manage your products from https://vpansak.vercel.app/seller/dashboard or get seller support at https://vpansaksupporthub.lovable.app/support.";
+    return "To become a seller, register at https://vpansak.vercel.app/seller. Manage your products from https://vpansak.vercel.app/seller/dashboard or get seller support at https://vpansaksupporthub.lovable.app/.";
   
-  return "I am the VPANSAK Smart Support Assistant. If I am unable to resolve your question, please access our official Support Portals:\n\n• Support Hub: https://vpansaksupporthub.lovable.app/support\n• Create Ticket: https://vpansaksupporthub.lovable.app/submit\n• Track Ticket Status: https://vpansaksupporthub.lovable.app/track\n• Smart AI Chat: https://vpansaksupporthub.lovable.app/chat";
+  return "I am the VPANSAK Smart Support Assistant. If I am unable to resolve your question, please access our official Support Portals:\n\n• Support Hub: https://vpansaksupporthub.lovable.app/\n• Create Ticket: https://vpansaksupporthub.lovable.app/submit\n• Track Ticket Status: https://vpansaksupporthub.lovable.app/track\n• Smart AI Chat: https://vpansaksupporthub.lovable.app/chat";
 }
 
 export default function SupportPage(){
   const [tab,setTab]=useState("assistant");
   const [question,setQuestion]=useState("");
   const [chat,setChat]=useState<Array<{role:string;text:string}>>([
-    {role:"bot",text:"Namaste! I’m the VPANSAK Smart Support Assistant. How can I help with your order, payment, return or seller account? If I cannot solve your issue, I will provide instant access to our Support Hub (https://vpansaksupporthub.lovable.app/support)."}
+    {role:"bot",text:"Namaste! I’m the VPANSAK Smart Support Assistant. How can I help with your order, payment, return or seller account? If I cannot solve your issue, I will provide instant access to our Support Hub (https://vpansaksupporthub.lovable.app/)."}
   ]);
   const [created,setCreated]=useState("");
   const [trackId,setTrackId]=useState("");
@@ -119,7 +119,7 @@ export default function SupportPage(){
           </span>
         </Link>
         <nav>
-          <a href="https://vpansaksupporthub.lovable.app/support" target="_blank" rel="noreferrer">
+          <a href="https://vpansaksupporthub.lovable.app/" target="_blank" rel="noreferrer">
             Support Hub <ExternalLink size={12} />
           </a>
           <a href="https://vpansaksupporthub.lovable.app/track" target="_blank" rel="noreferrer">
@@ -313,7 +313,7 @@ export default function SupportPage(){
               <Link href="/seller">Become a Seller <ChevronRight/></Link>
               <Link className="merchant-dashboard-link" href="/seller/dashboard">Open Seller Dashboard</Link>
               <p className="merchant-contact">
-                <CircleHelp/>Need help? Email <a href="mailto:support.vpansak@gmail.com">support.vpansak@gmail.com</a> or visit <a href="https://vpansaksupporthub.lovable.app/support" target="_blank" rel="noreferrer">Support Hub</a>.
+                <CircleHelp/>Need help? Email <a href="mailto:support.vpansak@gmail.com">support.vpansak@gmail.com</a> or visit <a href="https://vpansaksupporthub.lovable.app/" target="_blank" rel="noreferrer">Support Hub</a>.
               </p>
             </div>
           )}

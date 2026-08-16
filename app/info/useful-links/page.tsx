@@ -14,7 +14,7 @@ export default function UsefulLinksPage() {
   const quickButtons = [
     { title: "Founder Alok Singh", badge: "FOUNDER", badgeClass: "founder-badge", icon: User, desc: "Founder & Visionary leading VPANSAK Shopping.", link: "/founder" },
     { title: "Co-Founder Ayushi Tripathi", badge: "CO-FOUNDER", badgeClass: "cofounder-badge", icon: Users, desc: "Co-Founder & Director managing key strategy.", link: "/cofounder" },
-    { title: "24×7 Support Hub", badge: "HELP HUB", badgeClass: "help-badge", icon: Headphones, desc: "Official VPANSAK Support Hub.", link: "https://vpansaksupporthub.lovable.app/support" },
+    { title: "24×7 Support Hub", badge: "HELP HUB", badgeClass: "help-badge", icon: Headphones, desc: "Official VPANSAK Support Hub.", link: "https://vpansaksupporthub.lovable.app/" },
     { title: "Create Support Ticket", badge: "NEW TICKET", badgeClass: "help-badge", icon: Mail, desc: "Submit a new support ticket.", link: "https://vpansaksupporthub.lovable.app/submit" },
     { title: "Track Support Ticket", badge: "TICKET TRACKING", badgeClass: "live-badge", icon: PackageCheck, desc: "Track VPT ticket reply status.", link: "https://vpansaksupporthub.lovable.app/track" },
     { title: "Smart AI Support Chat", badge: "AI ASSISTANT", badgeClass: "faq-badge", icon: Sparkles, desc: "Guided AI resolution and answers.", link: "https://vpansaksupporthub.lovable.app/chat" },
@@ -42,7 +42,7 @@ export default function UsefulLinksPage() {
       title: "Support Hub & Lovable Portals",
       icon: Headphones,
       links: [
-        { name: "VPANSAK Support Hub", desc: "Main support center", href: "https://vpansaksupporthub.lovable.app/support" },
+        { name: "VPANSAK Support Hub", desc: "Main support center", href: "https://vpansaksupporthub.lovable.app/" },
         { name: "Create Support Ticket", desc: "Submit ticket details and order ID", href: "https://vpansaksupporthub.lovable.app/submit" },
         { name: "Track Ticket Status", desc: "Track VPT ticket history", href: "https://vpansaksupporthub.lovable.app/track" },
         { name: "Smart AI Support Chat", desc: "Interactive AI support assistant", href: "https://vpansaksupporthub.lovable.app/chat" },

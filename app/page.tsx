@@ -367,7 +367,7 @@ export default function HomePage() {
           {announcementOpen && <div className="vp-topbar vp-offer-announcement">
             <span><Gift /> FAST &amp; FREE DELIVERY</span>
             <p><strong>Free shipping on prepaid &amp; COD orders across India</strong><small>Easy returns • 24/7 customer support</small></p>
-            <div><Link href="/track">Track order</Link><Link href="/support">Help centre</Link><button type="button" onClick={() => setAnnouncementOpen(false)} aria-label="Close announcement"><X /></button></div>
+            <div><Link href="/track">Track order</Link><a href="https://vpansaksupporthub.lovable.app/" target="_blank" rel="noreferrer">Help centre</a><button type="button" onClick={() => setAnnouncementOpen(false)} aria-label="Close announcement"><X /></button></div>
           </div>}
 
           <div className="vp-brand-row">
@@ -455,13 +455,13 @@ export default function HomePage() {
       </section>
 
       <section className="vp-service-grid">
-        <Link href="/support"><Headphones /><span><small>24×7 SUPPORT HUB</small><strong>Create &amp; track a ticket</strong><p>Get structured help for orders, payments, delivery and technical issues.</p></span><ArrowRight /></Link>
+        <a href="https://vpansaksupporthub.lovable.app/" target="_blank" rel="noreferrer"><Headphones /><span><small>24×7 SUPPORT HUB</small><strong>Create &amp; track a ticket</strong><p>Get structured help for orders, payments, delivery and technical issues.</p></span><ArrowRight /></a>
         <Link href="/seller"><Store /><span><small>MERCHANT PLATFORM</small><strong>Grow with VPANSAK</strong><p>Register, complete verification and manage your product business.</p></span><ArrowRight /></Link>
         <Link href="/info/about"><CircleHelp /><span><small>VPANSAK ECOSYSTEM</small><strong>Explore our headquarters</strong><p>Shopping, support, foundation and business tools in one place.</p></span><ArrowRight /></Link>
       </section>
 
       <footer className="vp-footer">
-        <div className="vp-footer-main"><div className="vp-footer-brand"><Link className="vp-brand" href="/"><img src="/vpansak-logo.png" alt="VPANSAK" /><span><strong>VPANSAK</strong><small>SHOPPING</small></span></Link><p>A secure, useful and customer-focused digital marketplace by A&amp;A Group.</p><span><ShieldCheck /> Secure shopping experience</span></div><div><strong>SHOP</strong><Link href="/categories">All categories</Link><a href="#catalog">Top offers</a><Link href="/account">Wishlist</Link><Link href="/track">Track order</Link></div><div><strong>HELP</strong><Link href="/support">Support hub</Link><Link href="/info/faq">FAQs</Link><Link href="/policies/refund-policy">Refund policy</Link><Link href="/policies/shipping-policy">Shipping policy</Link><Link href="/info/useful-links" onClick={(e) => { e.preventDefault(); setUsefulLinksOpen(true); }}>Useful links</Link></div><div><strong>BUSINESS</strong><Link href="/seller">Become a seller</Link><Link href="/seller/dashboard">Seller dashboard</Link><Link href="/policies/merchant-guidelines">Merchant guidelines</Link><Link href="/foundation">Support Foundation</Link></div><div><strong>COMPANY</strong><Link href="/info/about">About VPANSAK</Link><Link href="/info/careers">Careers</Link><Link href="/info/contact">Contact us</Link></div></div>
+        <div className="vp-footer-main"><div className="vp-footer-brand"><Link className="vp-brand" href="/"><img src="/vpansak-logo.png" alt="VPANSAK" /><span><strong>VPANSAK</strong><small>SHOPPING</small></span></Link><p>A secure, useful and customer-focused digital marketplace by A&amp;A Group.</p><span><ShieldCheck /> Secure shopping experience</span></div><div><strong>SHOP</strong><Link href="/categories">All categories</Link><a href="#catalog">Top offers</a><Link href="/account">Wishlist</Link><Link href="/track">Track order</Link></div><div><strong>HELP</strong><a href="https://vpansaksupporthub.lovable.app/" target="_blank" rel="noreferrer">Support hub</a><Link href="/info/faq">FAQs</Link><Link href="/policies/refund-policy">Refund policy</Link><Link href="/policies/shipping-policy">Shipping policy</Link><Link href="/info/useful-links" onClick={(e) => { e.preventDefault(); setUsefulLinksOpen(true); }}>Useful links</Link></div><div><strong>BUSINESS</strong><Link href="/seller">Become a seller</Link><Link href="/seller/dashboard">Seller dashboard</Link><Link href="/policies/merchant-guidelines">Merchant guidelines</Link><Link href="/foundation">Support Foundation</Link></div><div><strong>COMPANY</strong><Link href="/info/about">About VPANSAK</Link><Link href="/info/careers">Careers</Link><Link href="/info/contact">Contact us</Link></div></div>
         <div className="vp-footer-bottom"><span>© 2026 VPANSAK • Powered by A&amp;A Group</span><div><Link href="/policies/privacy-policy">Privacy</Link><Link href="/policies/terms-and-conditions">Terms</Link><a href="mailto:support.vpansak@gmail.com">support.vpansak@gmail.com</a><a href="https://instagram.com/VPANSAK" target="_blank" rel="noreferrer">Instagram</a></div></div>
       </footer>
 
@@ -516,7 +516,7 @@ export default function HomePage() {
                   <p>Co-Founder & Director managing key strategy.</p>
                   <span className="card-action-link">View Profile <ArrowRight size={14} /></span>
                 </Link>
-                <a href="https://vpansaksupporthub.lovable.app/support" target="_blank" rel="noreferrer" onClick={() => setUsefulLinksOpen(false)} className="useful-btn-card">
+                <a href="https://vpansaksupporthub.lovable.app/" target="_blank" rel="noreferrer" onClick={() => setUsefulLinksOpen(false)} className="useful-btn-card">
                   <div className="btn-card-top"><span className="card-badge help-badge">24×7 HELP</span><Headphones size={20} className="card-icon" /></div>
                   <h4>Support Hub</h4>
                   <p>Main Support Portal at Lovable.</p>
@@ -574,7 +574,7 @@ export default function HomePage() {
                 <div className="useful-link-col">
                   <div className="col-title"><Headphones size={16} /><span>Lovable Support Portals</span></div>
                   <ul>
-                    <li><a href="https://vpansaksupporthub.lovable.app/support" target="_blank" rel="noreferrer"><strong>VPANSAK Support Hub</strong><small>Main support portal</small></a></li>
+                    <li><a href="https://vpansaksupporthub.lovable.app/" target="_blank" rel="noreferrer"><strong>VPANSAK Support Hub</strong><small>Main support portal</small></a></li>
                     <li><a href="https://vpansaksupporthub.lovable.app/submit" target="_blank" rel="noreferrer"><strong>Create Support Ticket (/submit)</strong><small>Submit a new ticket</small></a></li>
                     <li><a href="https://vpansaksupporthub.lovable.app/track" target="_blank" rel="noreferrer"><strong>Track Support Ticket (/track)</strong><small>View reply history</small></a></li>
                     <li><a href="https://vpansaksupporthub.lovable.app/chat" target="_blank" rel="noreferrer"><strong>Smart AI Support Chat (/chat)</strong><small>Interactive AI help</small></a></li>

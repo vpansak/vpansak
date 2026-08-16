@@ -98,7 +98,8 @@ export default function NotFound() {
           </Link>
           <Link href="/categories">Categories</Link>
           <Link href="/track">Track Order</Link>
-          <Link href="/support">Support Hub</Link>
+          <a href="https://vpansaksupporthub.lovable.app/" target="_blank" rel="noreferrer">Support Hub</a>
+
         </nav>
       </header>
 
@@ -241,9 +242,9 @@ export default function NotFound() {
                       {submitting ? "Submitting..." : "Submit Report"}
                       <Send size={14} />
                     </button>
-                    <Link href="/support" className="btn-goto-support">
+                    <a href="https://vpansaksupporthub.lovable.app/" target="_blank" rel="noreferrer" className="btn-goto-support">
                       <Headphones size={14} /> Open Support Hub
-                    </Link>
+                    </a>
                   </div>
                 </form>
               )}
@@ -266,10 +267,10 @@ export default function NotFound() {
                 <PackageCheck size={16} />
                 <span>Order Tracking</span>
               </Link>
-              <Link href="/support">
+              <a href="https://vpansaksupporthub.lovable.app/" target="_blank" rel="noreferrer">
                 <Headphones size={16} />
                 <span>Support Hub</span>
-              </Link>
+              </a>
             </div>
           </div>
         </div>

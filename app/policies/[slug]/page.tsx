@@ -257,7 +257,7 @@ export default function PolicyPage() {
             <ArrowLeft size={14} /> Store
           </Link>
           <Link href="/info">Info Hub</Link>
-          <Link href="/support">Support</Link>
+          <a href="https://vpansaksupporthub.lovable.app/" target="_blank" rel="noreferrer">Support</a>
         </nav>
       </header>
 
@@ -284,7 +284,7 @@ export default function PolicyPage() {
 
           <strong className="sidebar-group-title">QUICK UTILITIES</strong>
           <Link href="/track"><PackageCheck size={13} style={{ marginRight: 6 }} /> Track Order Status</Link>
-          <Link href="/support"><Headphones size={13} style={{ marginRight: 6 }} /> Support Ticket Hub</Link>
+          <a href="https://vpansaksupporthub.lovable.app/" target="_blank" rel="noreferrer"><Headphones size={13} style={{ marginRight: 6 }} /> Support Hub</a>
           <Link href="/seller"><Store size={13} style={{ marginRight: 6 }} /> Become a Seller</Link>
           <Link href="/foundation"><HeartHandshake size={13} style={{ marginRight: 6 }} /> Support Foundation</Link>
         </aside>
@@ -343,15 +343,15 @@ export default function PolicyPage() {
                 <span className="card-action-link">Track Now <ArrowRight size={14} /></span>
               </Link>
 
-              <Link href="/support" className="useful-btn-card">
+              <a href="https://vpansaksupporthub.lovable.app/" target="_blank" rel="noreferrer" className="useful-btn-card">
                 <div className="btn-card-top">
                   <span className="card-badge help-badge">24×7 HELP</span>
                   <Headphones size={22} className="card-icon" />
                 </div>
-                <h4>Support Ticket Hub</h4>
+                <h4>Support Hub</h4>
                 <p>Create & track support tickets for orders, refunds, and inquiries.</p>
                 <span className="card-action-link">Get Support <ArrowRight size={14} /></span>
-              </Link>
+              </a>
 
               <Link href="/seller" className="useful-btn-card">
                 <div className="btn-card-top">
@@ -497,7 +497,7 @@ export default function PolicyPage() {
                 </div>
                 <ul>
                   <li><Link href="/track">Live Order Tracking (/track)</Link></li>
-                  <li><Link href="/support">24/7 Support Ticket Hub (/support)</Link></li>
+                  <li><a href="https://vpansaksupporthub.lovable.app/" target="_blank" rel="noreferrer"><strong>VPANSAK Support Hub</strong><small>Main support center</small></a></li>
                   <li><Link href="/info/faq">Customer Frequently Asked Questions</Link></li>
                   <li><Link href="/categories">All Marketplace Categories</Link></li>
                   <li><Link href="/account">Wishlist & Customer Account</Link></li>
@@ -512,9 +512,9 @@ export default function PolicyPage() {
               <strong>Questions about platform policies?</strong>
               <p>
                 Contact <a href="mailto:support.vpansak@gmail.com">support.vpansak@gmail.com</a> or visit the{" "}
-                <Link href="/support">
-                  Support Ticket Hub
-                </Link>.
+                <a href="https://vpansaksupporthub.lovable.app/" target="_blank" rel="noreferrer">
+                  Support Hub
+                </a>.
               </p>
             </div>
           </footer>
@@ -523,4 +523,3 @@ export default function PolicyPage() {
     </main>
   );
 }
-

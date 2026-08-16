@@ -207,7 +207,8 @@ export default function ProductPage() {
             Back to store
           </Link>
           <Link href="/account">My account</Link>
-          <Link href="/support">Support</Link>
+          <a href="https://vpansaksupporthub.lovable.app/" target="_blank" rel="noreferrer">Support</a>
+
         </nav>
       </header>
 
