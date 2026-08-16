@@ -490,11 +490,11 @@ function CheckoutContent() {
               <small>Click any active offer below to apply instantly:</small>
               <div className="coupon-pills-wrap">
                 {[
+                  { code: "FREEDOM79", label: "🇮🇳 ₹79 OFF", min: 399 },
+                  { code: "INDIA15", label: "🇮🇳 15% OFF", min: 899 },
                   { code: "WELCOME50", label: "₹50 OFF", min: 499 },
                   { code: "VPANSAK100", label: "₹100 OFF", min: 999 },
-                  { code: "VPANSAK10", label: "10% OFF", min: 499 },
                   { code: "VP50", label: "₹50 OFF", min: 399 },
-                  { code: "SAVE15", label: "15% OFF", min: 1499 },
                 ].map((c) => (
                   <button
                     key={c.code}

@@ -9,6 +9,9 @@ const fallbackPublicKeyId = "rzp_live_TLMoK497QwLs7Y";
 const fallbackKeySecret = "wgxcFGPQitPjJ6FwCTUphLcn";
 
 const DEFAULT_COUPONS = [
+  { code: "FREEDOM79", title: "Independence Freedom Offer", type: "fixed", value: 79, minOrder: 399, maxDiscount: 79 },
+  { code: "INDIA15", title: "Freedom 15% Savings", type: "percentage", value: 15, minOrder: 899, maxDiscount: 450 },
+  { code: "INDEPENDENCE100", title: "Independence Mega Savings", type: "fixed", value: 100, minOrder: 799, maxDiscount: 100 },
   { code: "WELCOME50", title: "Welcome Discount", type: "fixed", value: 50, minOrder: 499, maxDiscount: 50 },
   { code: "VPANSAK100", title: "VPANSAK Mega Offer", type: "fixed", value: 100, minOrder: 999, maxDiscount: 100 },
   { code: "VPANSAK10", title: "Welcome 10% Off", type: "percentage", value: 10, minOrder: 499, maxDiscount: 300 },
