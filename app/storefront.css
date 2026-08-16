@@ -3356,4 +3356,157 @@
   box-shadow: 0 4px 12px rgba(15, 23, 42, 0.25);
 }
 
+/* CHECKOUT SAVED ADDRESS CARD STYLING */
+.checkout-address-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.saved-address-card-selected {
+  padding: 20px;
+  border: 2px solid #1766ef;
+  border-radius: 12px;
+  background: #f0f7ff;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.saved-address-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.address-badge-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.address-type-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: #1766ef;
+  color: white;
+  font-size: 12px;
+  font-weight: 800;
+}
+.primary-pill {
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: #dbeafe;
+  color: #1d4ed8;
+  font-size: 11px;
+  font-weight: 700;
+}
+.btn-edit-address {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: white;
+  color: #0f172a;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-edit-address:hover {
+  background: #f8fafc;
+  border-color: #1766ef;
+  color: #1766ef;
+}
+.address-details-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.address-details-body strong {
+  font-size: 15px;
+  color: #0f172a;
+}
+.address-details-body p {
+  font-size: 13px;
+  color: #475569;
+  margin: 0;
+}
+.address-details-body .mobile-text {
+  font-size: 13px;
+  color: #64748b;
+  margin-top: 4px;
+}
+.address-details-body .mobile-text span {
+  color: #0f172a;
+  font-weight: 700;
+}
+.saved-address-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #e2e8f0;
+}
+.btn-add-other-address {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: 1px dashed #1766ef;
+  border-radius: 8px;
+  background: white;
+  color: #1766ef;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  width: fit-content;
+  transition: background 0.2s;
+}
+.btn-add-other-address:hover {
+  background: #eff6ff;
+}
+.all-saved-addresses-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.all-saved-addresses-list small {
+  color: #64748b;
+  font-size: 11px;
+}
+.address-options-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.address-pill-opt {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: white;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.address-pill-opt.active {
+  border-color: #1766ef;
+  background: #1766ef;
+  color: white;
+}
+.btn-cancel-edit {
+  border: 0;
+  background: transparent;
+  color: #1766ef;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0 0 10px;
+}
+
 
