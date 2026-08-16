@@ -86,16 +86,16 @@ const categories = [
 ];
 
 const heroSlides = [
-  { eyebrow: "VPANSAK SAVINGS FESTIVAL", title: "Premium tech.\nSmarter prices.", copy: "Upgrade your everyday with verified electronics, mobiles and accessories at launch prices.", offer: "Up to 60% off", button: "Explore electronics", category: "Electronics", image: "https://images.unsplash.com/photo-1526738549149-8e07eca6c147?auto=format&fit=crop&w=1800&q=88", theme: "blue" },
-  { eyebrow: "NEW SEASON EDIT", title: "Everyday style,\nmade effortless.", copy: "Fresh fashion picks, useful accessories and easy deals for every plan.", offer: "From ₹399", button: "Shop fashion", category: "Fashion", image: "https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=1800&q=88", theme: "rose" },
-  { eyebrow: "HOME REFRESH DAYS", title: "Small upgrades.\nA better home.", copy: "Thoughtful furniture, kitchen and home essentials for comfortable spaces.", offer: "Minimum 40% off", button: "Refresh your home", category: "Home", image: "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=1800&q=88", theme: "gold" },
-  { eyebrow: "MOBILE MEGA DAYS", title: "Faster phones.\nBetter everyday.", copy: "Explore dependable 5G smartphones, accessories and mobile essentials at smart prices.", offer: "From ₹9,999", button: "Shop mobiles", category: "Mobile", image: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=1800&q=88", theme: "blue" },
-  { eyebrow: "KITCHEN BESTSELLERS", title: "Cook smarter.\nServe happier.", copy: "Useful cookware, storage and everyday kitchen tools selected for modern homes.", offer: "Up to 55% off", button: "Explore kitchen", category: "Kitchen", image: "https://images.unsplash.com/photo-1556911220-bff31c812dba?auto=format&fit=crop&w=1800&q=88", theme: "gold" },
-  { eyebrow: "BEAUTY & SELF CARE", title: "Simple care.\nEveryday glow.", copy: "Discover skincare and personal-care essentials for an uncomplicated daily routine.", offer: "Starting ₹299", button: "Shop beauty", category: "Beauty", image: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1800&q=88", theme: "rose" },
-  { eyebrow: "GAMING ZONE", title: "Level up.\nPlay your way.", copy: "Controllers, audio and gaming accessories made for relaxed and responsive play.", offer: "Up to 45% off", button: "Enter gaming", category: "Gaming", image: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=1800&q=88", theme: "blue" },
-  { eyebrow: "FITNESS PICKS", title: "Move better.\nFeel stronger.", copy: "Practical sports and home-fitness essentials for stretching, training and active days.", offer: "From ₹499", button: "Shop sports", category: "Sports", image: "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=1800&q=88", theme: "gold" },
-  { eyebrow: "STUDY & WORK", title: "Focus more.\nCreate better.", copy: "Laptops, planners and desk essentials that make study and everyday work feel organised.", offer: "Up to 35% off", button: "Explore computers", category: "Computer", image: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&w=1800&q=88", theme: "blue" },
-  { eyebrow: "TOYS & CREATIVITY", title: "Big ideas.\nHappy play.", copy: "Creative toys and building sets for fun, curiosity and screen-free family time.", offer: "From ₹349", button: "Shop toys", category: "Toys", image: "https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?auto=format&fit=crop&w=1800&q=88", theme: "rose" },
+  { eyebrow: "🪔 VPANSAK GRAND FESTIVE CELEBRATION", title: "Premium tech.\nSmarter prices.", copy: "Upgrade your everyday with verified electronics, mobiles and accessories at launch prices.", offer: "Up to 60% OFF + Festive Coupons", button: "Explore festive deals", category: "Electronics", image: "https://images.unsplash.com/photo-1526738549149-8e07eca6c147?auto=format&fit=crop&w=1800&q=88", theme: "blue" },
+  { eyebrow: "🪔 FESTIVE SEASON STYLE EDIT", title: "Everyday style,\nmade effortless.", copy: "Fresh festive fashion picks, useful accessories and easy festive coupon savings.", offer: "Festive Deals From ₹399", button: "Shop festive fashion", category: "Fashion", image: "https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=1800&q=88", theme: "rose" },
+  { eyebrow: "🪔 GRAND FESTIVE HOME REFRESH", title: "Small upgrades.\nA festive home.", copy: "Thoughtful furniture, kitchen and home essentials for comfortable festive spaces.", offer: "Minimum 40% OFF", button: "Refresh your home", category: "Home", image: "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=1800&q=88", theme: "gold" },
+  { eyebrow: "🪔 MOBILE FESTIVE MEGA DAYS", title: "Faster phones.\nBetter everyday.", copy: "Explore dependable 5G smartphones, accessories and mobile essentials at festive prices.", offer: "From ₹9,999 + No Cost EMI", button: "Shop festive mobiles", category: "Mobile", image: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=1800&q=88", theme: "blue" },
+  { eyebrow: "🪔 FESTIVE KITCHEN BESTSELLERS", title: "Cook smarter.\nServe happier.", copy: "Useful cookware, storage and everyday kitchen tools selected for modern homes.", offer: "Up to 55% OFF", button: "Explore kitchen", category: "Kitchen", image: "https://images.unsplash.com/photo-1556911220-bff31c812dba?auto=format&fit=crop&w=1800&q=88", theme: "gold" },
+  { eyebrow: "🪔 FESTIVE BEAUTY & GLOW", title: "Simple care.\nEveryday glow.", copy: "Discover skincare and personal-care essentials for an uncomplicated daily routine.", offer: "Starting ₹299", button: "Shop beauty", category: "Beauty", image: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1800&q=88", theme: "rose" },
+  { eyebrow: "🪔 FESTIVE GAMING ZONE", title: "Level up.\nPlay your way.", copy: "Controllers, audio and gaming accessories made for relaxed and responsive play.", offer: "Up to 45% OFF", button: "Enter gaming", category: "Gaming", image: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=1800&q=88", theme: "blue" },
+  { eyebrow: "🪔 FESTIVE FITNESS PICKS", title: "Move better.\nFeel stronger.", copy: "Practical sports and home-fitness essentials for stretching, training and active days.", offer: "From ₹499", button: "Shop sports", category: "Sports", image: "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=1800&q=88", theme: "gold" },
+  { eyebrow: "🪔 FESTIVE STUDY & WORK", title: "Focus more.\nCreate better.", copy: "Laptops, planners and desk essentials that make study and everyday work feel organised.", offer: "Up to 35% OFF", button: "Explore computers", category: "Computer", image: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&w=1800&q=88", theme: "blue" },
+  { eyebrow: "🪔 FESTIVE TOYS & GIFTS", title: "Big ideas.\nHappy play.", copy: "Creative toys and building sets for fun, curiosity and screen-free family time.", offer: "From ₹349", button: "Shop toys", category: "Toys", image: "https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?auto=format&fit=crop&w=1800&q=88", theme: "rose" },
 ];
 
 function ProductCard({ product, wished, onWish, onAdd, authUser }: { product: CatalogProduct; wished: boolean; onWish: () => void; onAdd: () => void; authUser: unknown }) {
@@ -358,17 +358,28 @@ export default function HomePage() {
 
   const currentHero = heroSlides[hero];
 
+  const [isFestiveTheme, setIsFestiveTheme] = useState(true);
+
   return (
-    <main className="vp-store">
+    <main className={`vp-store ${isFestiveTheme ? "festive-theme-active" : ""}`}>
       {toast && <div className="vp-toast"><Sparkles /><span>{toast}</span></div>}
 
       <header className={`vp-header-shell ${isCollapsed ? "is-collapsed" : ""}`} id="top">
         <div className="mobile-header-collapsible">
-          {announcementOpen && <div className="vp-topbar vp-offer-announcement">
-            <span><Gift /> FAST &amp; FREE DELIVERY</span>
-            <p><strong>Free shipping on prepaid &amp; COD orders across India</strong><small>Easy returns • 24/7 customer support</small></p>
-            <div><Link href="/track">Track order</Link><a href="https://vpansaksupporthub.lovable.app/" target="_blank" rel="noreferrer">Help centre</a><button type="button" onClick={() => setAnnouncementOpen(false)} aria-label="Close announcement"><X /></button></div>
-          </div>}
+          {announcementOpen && (
+            <div className="vp-topbar vp-offer-announcement festive-banner-bar">
+              <span><Sparkles /> 🪔 GRAND FESTIVE SEASON CELEBRATION</span>
+              <p>
+                <strong>Biggest Discounts Storewide + Extra Coupon Discounts</strong>
+                <small>Use Codes: <b>WELCOME50</b> | <b>VPANSAK100</b> | <b>FESTIVE200</b> at Checkout</small>
+              </p>
+              <div>
+                <Link href="/track">Track order</Link>
+                <a href="https://vpansaksupporthub.lovable.app/" target="_blank" rel="noreferrer">Help centre</a>
+                <button type="button" onClick={() => setAnnouncementOpen(false)} aria-label="Close announcement"><X /></button>
+              </div>
+            </div>
+          )}
 
           <div className="vp-brand-row">
             <Link className="vp-brand" href="/" aria-label="VPANSAK Shopping home"><img src="/vpansak-logo.png" alt="VPANSAK" /><span><strong>VPANSAK</strong><small>SHOPPING</small></span></Link>
