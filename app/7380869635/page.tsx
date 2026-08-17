@@ -118,9 +118,8 @@ export default function SecretAdminPage() {
   const [emailRecipient, setEmailRecipient] = useState("");
   const [emailDraft, setEmailDraft] = useState<EmailDraft | null>(null);
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    setDenied(false);
+  const load = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true);
 
     // Set admin cookie on secret route
     document.cookie = "vpansak_admin_key=7380869635; path=/; max-age=2592000; SameSite=Lax";
@@ -128,7 +127,7 @@ export default function SecretAdminPage() {
     try {
       const res = await fetch("/api/admin");
       if (res.status === 403) {
-        setDenied(true);
+        if (!silent) setDenied(true);
         setLoading(false);
         return;
       }
@@ -146,20 +145,20 @@ export default function SecretAdminPage() {
           coupons: value.coupons || [],
         });
         setDenied(false);
-      } else {
+      } else if (!silent) {
         setDenied(true);
       }
     } catch {
-      setDenied(true);
+      if (!silent) setDenied(true);
     }
     setLoading(false);
   }, []);
 
   useEffect(() => {
-    void Promise.resolve().then(() => load());
+    void Promise.resolve().then(() => load(false));
     const timer = setInterval(() => {
-      void Promise.resolve().then(() => load());
-    }, 10000);
+      void Promise.resolve().then(() => load(true));
+    }, 15000);
     return () => clearInterval(timer);
   }, [load]);
 
@@ -541,7 +540,7 @@ export default function SecretAdminPage() {
             </button>
           ))}
         </nav>
-        <button className="admin-refresh" onClick={load}>
+        <button className="admin-refresh" onClick={() => load()}>
           <RefreshCw />
           Refresh data
         </button>
