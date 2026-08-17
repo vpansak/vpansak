@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, Banknote, Check, CreditCard, Edit3, MapPin, PackageCheck, Plus, ShieldCheck, Tag, WalletCards } from "lucide-react";
+import { ArrowLeft, Banknote, Check, Copy, CreditCard, Edit3, MapPin, PackageCheck, Plus, ShieldCheck, Sparkles, Tag, UserRound, WalletCards } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { FormEvent, Suspense, useEffect, useState } from "react";
@@ -231,23 +231,51 @@ function CheckoutContent() {
 
   if (orderId) {
     return (
-      <main className="checkout-page">
-        <header className="sub-header">
-          <Link className="shop-brand" href="/">
-            <img className="brand-logo" src="/vpansak-logo-dark.jpeg" alt="VPANSAK" />
-            <span><strong>VPANSAK</strong><small>CHECKOUT</small></span>
-          </Link>
-        </header>
-        <section className="checkout-success-page">
-          <span><Check /></span>
-          <small>ORDER CONFIRMED</small>
-          <h1>{method === "Razorpay" ? "Payment successful." : "Your order is ready."}</h1>
-          <p>Save this Order ID to view the complete status timeline and delivery updates.</p>
-          <strong>{orderId}</strong>
-          <Link href={`/track?id=${orderId}`}><PackageCheck />Track order now</Link>
-          <Link href="/account">Open my account</Link>
-        </section>
-      </main>
+      <div className="full-screen-order-success">
+        <div className="success-container-card">
+          <div className="fullscreen-green-tick">
+            <Check size={56} />
+          </div>
+          <span className="success-badge-eyebrow">
+            <Sparkles size={12} /> Order Confirmed
+          </span>
+          <h1 className="success-title">
+            {method === "Razorpay" ? "Payment Successful!" : "Order Placed Successfully!"}
+          </h1>
+          <p className="success-subtitle">
+            Thank you! Your order for <strong>{product.name}</strong> has been received and confirmed.
+          </p>
+
+          <div className="order-id-highlight-box">
+            <div>
+              <small>VPANSAK ORDER ID</small>
+              <strong>{orderId}</strong>
+            </div>
+            <button
+              type="button"
+              className="order-id-copy-btn"
+              onClick={() => {
+                navigator.clipboard?.writeText(orderId);
+                setMessage("Order ID copied!");
+              }}
+            >
+              <Copy size={13} /> Copy ID
+            </button>
+          </div>
+
+          <div className="success-action-buttons">
+            <Link href={`/track?id=${orderId}`} className="btn-track-success">
+              <PackageCheck size={18} /> Track Order Timeline
+            </Link>
+            <Link href="/account" className="btn-account-success">
+              <UserRound size={16} /> Open My Account
+            </Link>
+            <Link href="/" className="btn-account-success">
+              <ArrowLeft size={16} /> Continue Shopping
+            </Link>
+          </div>
+        </div>
+      </div>
     );
   }
 

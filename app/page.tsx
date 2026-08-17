@@ -12,6 +12,7 @@ import {
   ChevronRight,
   CircleHelp,
   Clock3,
+  Copy,
   CreditCard,
   Dumbbell,
   Gift,
@@ -478,7 +479,63 @@ export default function HomePage() {
         placeOrder(e);
       }}><section><h3><span>1</span> Delivery address</h3><div className="vp-form-grid"><label>Full name<input name="customerName" required maxLength={100} autoComplete="name" /></label><label>Mobile number<input name="mobile" required inputMode="numeric" pattern="[6-9][0-9]{9}" maxLength={10} autoComplete="tel" /></label><label className="wide">House number, area and street<input name="address" required maxLength={250} autoComplete="street-address" /></label><label>City<input name="city" required maxLength={80} autoComplete="address-level2" /></label><label>PIN code<input name="pinCode" required inputMode="numeric" pattern="[0-9]{6}" maxLength={6} autoComplete="postal-code" /></label></div></section><section><h3><span>2</span> Payment method</h3><div className="vp-payment-options"><label><input type="radio" name="paymentMethod" value="Online Payment (UPI/Cards)" defaultChecked /><CreditCard /><span><strong>UPI / Cards / Netbanking</strong><small>UPI, PhonePe, GPay, Cards &amp; Netbanking</small></span></label><label><input type="radio" name="paymentMethod" value="Cash on Delivery" /><Banknote /><span><strong>Cash on Delivery (COD)</strong><small>Pay when the order arrives</small></span></label><label className="disabled"><input type="radio" disabled /><WalletCards /><span><strong>Gift Card</strong><small>Available after wallet activation</small></span></label></div></section><section><h3><span>3</span> Apply coupon</h3><div className="vp-checkout-coupon"><Tag /><input value={coupon} onChange={(event) => setCoupon(event.target.value.toUpperCase())} placeholder="Enter promo code" /><button type="button" onClick={applyCoupon}>Apply</button></div></section><div className="vp-checkout-total"><span>Payable amount</span><strong>{money(finalTotal)}</strong></div><button className="vp-place-order" type="submit">Proceed to Complete Order <ShieldCheck /></button><p className="vp-checkout-note"><Clock3 /> Order confirmation is generated immediately with a trackable VPANSAK order ID.</p></form></div></div>}
 
-      {orderPlaced && <div className="vp-overlay centered"><div className="vp-order-success"><span><Check /></span><small>ORDER CONFIRMED</small><h2>Your VPANSAK order is placed.</h2><p>Save this order ID. It opens the complete confirmation-to-delivery timeline.</p><strong>{orderPlaced}</strong><button type="button" onClick={() => { window.location.href = `/track?id=${orderPlaced}`; }}>Track my order <ArrowRight /></button></div></div>}
+      {orderPlaced && (
+        <div className="full-screen-order-success">
+          <div className="success-container-card">
+            <div className="fullscreen-green-tick">
+              <Check size={56} />
+            </div>
+            <span className="success-badge-eyebrow">
+              <Sparkles size={12} /> Order Confirmed
+            </span>
+            <h1 className="success-title">Order Placed Successfully!</h1>
+            <p className="success-subtitle">
+              Thank you! Your order has been placed successfully and is ready for fast dispatch.
+            </p>
+
+            <div className="order-id-highlight-box">
+              <div>
+                <small>VPANSAK ORDER ID</small>
+                <strong>{orderPlaced}</strong>
+              </div>
+              <button
+                type="button"
+                className="order-id-copy-btn"
+                onClick={() => {
+                  navigator.clipboard?.writeText(orderPlaced);
+                  notify("Order ID copied!");
+                }}
+              >
+                <Copy size={13} /> Copy ID
+              </button>
+            </div>
+
+            <div className="success-action-buttons">
+              <button
+                type="button"
+                className="btn-track-success"
+                onClick={() => {
+                  window.location.href = `/track?id=${orderPlaced}`;
+                }}
+              >
+                <PackageCheck size={18} /> Track Order Timeline
+              </button>
+              <Link href="/account" className="btn-account-success">
+                <UserRound size={16} /> Open My Account
+              </Link>
+              <button
+                type="button"
+                className="btn-account-success"
+                onClick={() => {
+                  setOrderPlaced("");
+                }}
+              >
+                <ArrowRight size={16} /> Continue Shopping
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {usefulLinksOpen && (
         <div className="vp-overlay centered" onMouseDown={() => setUsefulLinksOpen(false)}>
