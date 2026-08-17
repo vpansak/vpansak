@@ -71,29 +71,32 @@ export async function GET(request: Request) {
     // Merge and deduplicate order records from SQLite and Supabase
     const orderMap = new Map<string, any>();
     for (const o of orderRows) {
-      if (o.orderId) orderMap.set(o.orderId, o);
+      if (o.orderId) orderMap.set(String(o.orderId).toUpperCase().trim(), o);
     }
     for (const co of cloudOrders) {
-      const oid = String(co.order_id || co.orderId || "").toUpperCase();
+      const oid = String(co.order_id || co.orderId || "").toUpperCase().trim();
       if (!oid) continue;
+      const normOrder = {
+        orderId: oid,
+        ownerEmail: String(co.owner_email || co.ownerEmail || "").toLowerCase(),
+        customerName: String(co.customer_name || co.customerName || ""),
+        mobile: String(co.mobile || ""),
+        address: String(co.address || ""),
+        city: String(co.city || ""),
+        pinCode: String(co.pin_code || co.pinCode || ""),
+        total: Number(co.total || 0),
+        status: String(co.status || "Order Confirmed"),
+        paymentMethod: String(co.payment_method || co.paymentMethod || "COD"),
+        createdAt: String(co.created_at || co.createdAt || new Date().toISOString()),
+      };
       if (!orderMap.has(oid)) {
-        const normOrder = {
-          orderId: oid,
-          ownerEmail: String(co.owner_email || co.ownerEmail || "").toLowerCase(),
-          customerName: String(co.customer_name || co.customerName || ""),
-          mobile: String(co.mobile || ""),
-          address: String(co.address || ""),
-          city: String(co.city || ""),
-          pinCode: String(co.pin_code || co.pinCode || ""),
-          total: Number(co.total || 0),
-          status: String(co.status || "Order Confirmed"),
-          paymentMethod: String(co.payment_method || co.paymentMethod || "COD"),
-          createdAt: String(co.created_at || co.createdAt || new Date().toISOString()),
-        };
         orderMap.set(oid, normOrder);
         try {
-          await db.insert(orders).values(normOrder).onConflictDoNothing();
+          await db.insert(orders).values(normOrder).onConflictDoNothing({ target: orders.orderId });
         } catch {}
+      } else {
+        const existing = orderMap.get(oid);
+        orderMap.set(oid, { ...normOrder, ...existing });
       }
     }
     const mergedOrders = Array.from(orderMap.values()).sort(
