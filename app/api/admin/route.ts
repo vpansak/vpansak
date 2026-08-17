@@ -2,7 +2,7 @@ import { desc, eq } from "drizzle-orm";
 import { getDb } from "../../../db";
 import { addresses, contributions, coupons, donations, notifications, officers, orders, products, profiles, reviews, sellerApplications, ticketReplies, tickets, users } from "../../../db/schema";
 import { getAuthUserFromRequest, isAdminUser } from "../../lib/auth-session";
-import { saveUserToSupabase, supabase } from "../../lib/supabase";
+import { saveContributionToSupabase, saveUserToSupabase, supabase } from "../../lib/supabase";
 
 const ADMIN = "aloksingh84959@gmail.com";
 
@@ -102,15 +102,15 @@ export async function GET(request: Request) {
     };
 
     addRecord({
-      verificationId: "VPA-FND-1000-8495",
-      certificateNumber: "VPA-CERT-2026-1000",
+      verificationId: "VPA-FND-2000-8495",
+      certificateNumber: "VPA-CERT-2026-2000",
       fullName: "Alok Singh",
       email: "aloksingh84959@gmail.com",
       mobile: "8738869635",
-      amount: 1000,
-      paymentMethod: "UPI Direct / Test",
+      amount: 2000,
+      paymentMethod: "UPI Direct / Verified",
       paymentStatus: "verified",
-      transactionId: "TXN1000TESTALOK",
+      transactionId: "TXN2000ALOKSINGH",
       submittedAt: new Date().toISOString(),
       verifiedAt: new Date().toISOString(),
     });
@@ -310,6 +310,18 @@ export async function POST(request: Request) {
           updatedAt: now,
         }).where(eq(contributions.id, row.id));
 
+        void saveContributionToSupabase({
+          ...row,
+          paymentStatus: "verified",
+          verificationMethod: row.verificationMethod || "manual_admin",
+          verifiedAt: now,
+          verifiedBy: adminEmail,
+          certificateNumber,
+          certificateGeneratedAt: now,
+          adminNote: internalNote || row.adminNote,
+          updatedAt: now,
+        });
+
         const certificateUrl = `${new URL(request.url).origin}/foundation?certificate=${encodeURIComponent(row.verificationId)}`;
         const subject = `VPANSAK Support Certificate ${certificateNumber}`;
         const bodyText = `Hello ${row.fullName},\n\nYour support contribution payment has been verified successfully!\n\nVerification ID: ${row.verificationId}\nCertificate Number: ${certificateNumber}\n\nView and download your official Certificate of Appreciation:\n${certificateUrl}\n\nThank you for supporting VPANSAK community initiatives.\n\nWarm regards,\nAlok Singh\nFounder & Authorized Signatory\nVPANSAK Support Foundation`;
@@ -325,6 +337,15 @@ export async function POST(request: Request) {
           adminNote: internalNote || row.adminNote,
           updatedAt: now,
         }).where(eq(contributions.id, row.id));
+
+        void saveContributionToSupabase({
+          ...row,
+          paymentStatus: "rejected",
+          rejectionReason: internalNote || "Manual rejection by admin",
+          publicRejectionReason,
+          adminNote: internalNote || row.adminNote,
+          updatedAt: now,
+        });
         return Response.json({ ok: true, verificationId: row.verificationId, status: "rejected" });
       }
 
@@ -334,6 +355,13 @@ export async function POST(request: Request) {
         adminNote: internalNote || row.adminNote,
         updatedAt: now,
       }).where(eq(contributions.id, row.id));
+
+      void saveContributionToSupabase({
+        ...row,
+        paymentStatus: targetStatus,
+        adminNote: internalNote || row.adminNote,
+        updatedAt: now,
+      });
 
       return Response.json({ ok: true });
     }

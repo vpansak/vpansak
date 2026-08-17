@@ -444,10 +444,10 @@ export function ProfileContent({ paramsTab }: { paramsTab?: string }) {
 
                 <div className="profile-meta-grid">
                   <span>
-                    <UserRound size={13} /> <b>Email:</b> {maskEmail(user.email)}
+                    <UserRound size={13} /> <b>Email:</b> {user.email || "Not provided"}
                   </span>
                   <span>
-                    <UserCheck size={13} /> <b>Mobile:</b> {maskMobile(user.mobile)}
+                    <UserCheck size={13} /> <b>Mobile:</b> {user.mobile || "Not set"}
                   </span>
                   <span>
                     <Clock size={13} /> <b>Member since:</b> {new Date(user.createdAt).toLocaleDateString("en-IN")}

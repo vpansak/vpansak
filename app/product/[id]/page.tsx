@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, BadgeCheck, Check, ChevronLeft, ChevronRight, Eye, Heart, Minus, PackageCheck, Plus, RefreshCw, RotateCcw, Share2, ShieldCheck, ShoppingCart, Sparkles, Star, Truck, X } from "lucide-react";
+import { ArrowLeft, BadgeCheck, Check, ChevronLeft, ChevronRight, CreditCard, Eye, Heart, Minus, PackageCheck, Plus, RefreshCw, RotateCcw, Share2, ShieldCheck, ShoppingCart, Sparkles, Star, Truck, X } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -457,13 +457,16 @@ export default function ProductPage() {
           {/* Assurance Icons */}
           <div className="product-assurances">
             <span>
+              <CreditCard /> <b>Online Payment Available</b>
+            </span>
+            <span>
               <ShieldCheck /> <b>100% Original</b>
             </span>
             <span>
               <RotateCcw /> <b>7-Day Return Policy</b>
             </span>
             <span>
-              <PackageCheck /> <b>Assured Quality</b>
+              <PackageCheck /> <b>COD &amp; Prepaid Supported</b>
             </span>
           </div>
         </div>

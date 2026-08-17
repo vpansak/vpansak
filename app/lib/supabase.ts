@@ -25,16 +25,102 @@ export async function saveOrderToSupabase(orderData: Record<string, unknown>) {
   }
 }
 
-export async function saveDonationToSupabase(donationData: Record<string, unknown>) {
+export async function saveContributionToSupabase(contributionData: Record<string, unknown>) {
   if (!supabase) return null;
   try {
-    const { data, error } = await supabase.from("donations").insert(donationData).select();
-    if (error) console.error("Supabase donation insert notice:", error.message);
-    return data;
+    const payload = {
+      verification_id: String(contributionData.verificationId || contributionData.verification_id || ""),
+      certificate_number: contributionData.certificateNumber || contributionData.certificate_number || null,
+      full_name: String(contributionData.fullName || contributionData.full_name || ""),
+      email: String(contributionData.email || "").toLowerCase().trim(),
+      mobile: String(contributionData.mobile || "").trim(),
+      amount: Number(contributionData.amount || 0),
+      payment_method: String(contributionData.paymentMethod || contributionData.payment_method || "manual"),
+      transaction_id: contributionData.transactionId || contributionData.transaction_id || null,
+      payment_screenshot_url: contributionData.paymentScreenshotUrl || contributionData.payment_screenshot_url || null,
+      razorpay_order_id: contributionData.razorpayOrderId || contributionData.razorpay_order_id || null,
+      razorpay_payment_id: contributionData.razorpayPaymentId || contributionData.razorpay_payment_id || null,
+      razorpay_signature: contributionData.razorpaySignature || contributionData.razorpay_signature || null,
+      payment_status: String(contributionData.paymentStatus || contributionData.payment_status || "pending_verification"),
+      verification_method: contributionData.verificationMethod || contributionData.verification_method || null,
+      rejection_reason: contributionData.rejectionReason || contributionData.rejection_reason || null,
+      public_rejection_reason: contributionData.publicRejectionReason || contributionData.public_rejection_reason || null,
+      admin_note: contributionData.adminNote || contributionData.admin_note || null,
+      submitted_at: String(contributionData.submittedAt || contributionData.submitted_at || new Date().toISOString()),
+      verified_at: contributionData.verifiedAt || contributionData.verified_at || null,
+      verified_by: contributionData.verifiedBy || contributionData.verified_by || null,
+      certificate_generated_at: contributionData.certificateGeneratedAt || contributionData.certificate_generated_at || null,
+      created_at: String(contributionData.createdAt || contributionData.created_at || new Date().toISOString()),
+      updated_at: String(contributionData.updatedAt || contributionData.updated_at || new Date().toISOString()),
+    };
+
+    if (!payload.verification_id) return null;
+
+    // 1. Save to Supabase 'contributions' table
+    const { data: cData, error: cErr } = await supabase.from("contributions").upsert(payload, { onConflict: "verification_id" }).select();
+    if (!cErr && cData) {
+      console.log("Saved contribution to Supabase contributions table:", payload.verification_id);
+    } else if (cErr) {
+      console.error("Supabase contributions table upsert notice:", cErr.message);
+    }
+
+    // 2. Save to Supabase 'donations' legacy table for redundancy
+    const legacyPayload = {
+      donation_id: payload.verification_id,
+      donor_name: payload.full_name,
+      email: payload.email,
+      mobile: payload.mobile,
+      amount: payload.amount,
+      payment_method: payload.payment_method,
+      payment_status: payload.payment_status,
+      certificate_id: payload.certificate_number || payload.verification_id,
+      appreciation_message: `Thank you ${payload.full_name} for contributing ₹${payload.amount}.`,
+      created_at: payload.created_at,
+    };
+    const { error: dErr } = await supabase.from("donations").upsert(legacyPayload, { onConflict: "donation_id" });
+    if (dErr) console.error("Supabase donations table upsert notice:", dErr.message);
+
+    return cData || [payload];
   } catch (err) {
-    console.error("Supabase donation insert catch:", err);
+    console.error("Supabase contribution save catch:", err);
     return null;
   }
+}
+
+export async function getContributionsFromSupabase() {
+  if (!supabase) return [];
+  try {
+    const [cRes, dRes] = await Promise.all([
+      supabase.from("contributions").select("*"),
+      supabase.from("donations").select("*"),
+    ]);
+
+    const results: any[] = [];
+    if (cRes.data) results.push(...cRes.data);
+    if (dRes.data) {
+      for (const d of dRes.data) {
+        results.push({
+          verificationId: d.donation_id || d.certificate_id,
+          certificateNumber: d.certificate_id,
+          fullName: d.donor_name,
+          email: d.email,
+          mobile: d.mobile,
+          amount: Number(d.amount || 0),
+          paymentMethod: d.payment_method || "manual",
+          paymentStatus: d.payment_status || "verified",
+          submittedAt: d.created_at,
+          createdAt: d.created_at,
+        });
+      }
+    }
+    return results;
+  } catch {
+    return [];
+  }
+}
+
+export async function saveDonationToSupabase(donationData: Record<string, unknown>) {
+  return saveContributionToSupabase(donationData);
 }
 
 export async function saveTicketToSupabase(ticketData: Record<string, unknown>) {

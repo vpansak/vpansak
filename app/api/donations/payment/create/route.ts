@@ -2,6 +2,7 @@ import { getDb } from "../../../../../db";
 import { contributions } from "../../../../../db/schema";
 import { generateVerificationId } from "../../../../lib/contributions";
 import { basicAuth, razorpayConfig } from "../../../../lib/payment";
+import { saveContributionToSupabase } from "../../../../lib/supabase";
 
 export async function POST(request: Request) {
   try {
@@ -63,7 +64,7 @@ export async function POST(request: Request) {
     const db = await getDb();
     const now = new Date().toISOString();
 
-    await db.insert(contributions).values({
+    const orderPayload = {
       verificationId,
       certificateNumber: null,
       fullName: fullName.slice(0, 100),
@@ -77,7 +78,10 @@ export async function POST(request: Request) {
       submittedAt: now,
       createdAt: now,
       updatedAt: now,
-    });
+    };
+
+    await db.insert(contributions).values(orderPayload);
+    void saveContributionToSupabase(orderPayload);
 
     return Response.json({
       keyId,

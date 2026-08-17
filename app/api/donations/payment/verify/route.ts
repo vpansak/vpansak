@@ -10,6 +10,7 @@ import {
   razorpayConfig,
   validRazorpaySignature,
 } from "../../../../lib/payment";
+import { saveContributionToSupabase } from "../../../../lib/supabase";
 
 export async function POST(request: Request) {
   try {
@@ -162,6 +163,19 @@ export async function POST(request: Request) {
     const now = new Date().toISOString();
     const certificateNumber = await generateCertificateNumber(db);
 
+    const verifiedPayload = {
+      ...row,
+      paymentStatus: "verified",
+      verificationMethod: "razorpay_auto",
+      razorpayPaymentId: paymentId,
+      razorpaySignature: signature,
+      verifiedAt: now,
+      verifiedBy: "system",
+      certificateNumber,
+      certificateGeneratedAt: now,
+      updatedAt: now,
+    };
+
     await db
       .update(contributions)
       .set({
@@ -176,6 +190,8 @@ export async function POST(request: Request) {
         updatedAt: now,
       })
       .where(eq(contributions.verificationId, verificationId));
+
+    void saveContributionToSupabase(verifiedPayload);
 
     const appreciationMessage = buildAppreciationMessage(
       row.fullName,

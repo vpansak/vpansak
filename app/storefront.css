@@ -695,6 +695,9 @@
   max-width: 1280px;
   margin: 0 auto;
   padding: 24px 16px;
+  width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 /* SUBPAGE DEDICATED HEADER & NAVIGATION */
@@ -837,6 +840,10 @@
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   text-align: left;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 .hub-card:hover {
   transform: translateY(-2px);
@@ -857,15 +864,19 @@
   flex: 1;
   display: flex;
   flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
 }
 .hub-card-info strong {
   font-size: 14px;
   color: #0f172a;
+  word-break: break-word;
 }
 .hub-card-info small {
   font-size: 11px;
   color: #64748b;
   margin-top: 2px;
+  word-break: break-word;
 }
 
 /* TOP PROFILE CARD */
@@ -1019,6 +1030,10 @@
   text-align: left;
   cursor: pointer;
   transition: transform 0.2s, box-shadow 0.2s;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 .quick-action-card:hover {
   transform: translateY(-2px);
@@ -1039,6 +1054,8 @@
   flex: 1;
   display: flex;
   flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
 }
 .quick-action-card strong {
   font-size: 14px;
@@ -2158,6 +2175,10 @@
   .quick-actions-grid {
     grid-template-columns: 1fr 1fr;
   }
+  .hub-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
   .profile-body-layout {
     grid-template-columns: 1fr;
   }
@@ -2167,16 +2188,79 @@
   .products-grid {
     grid-template-columns: 1fr 1fr;
   }
+  .available-coupons-grid {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
 @media (max-width: 600px) {
+  .profile-shell {
+    padding: 14px 10px;
+  }
   .top-profile-card {
     flex-direction: column;
     text-align: center;
     align-items: center;
+    padding: 16px;
+    gap: 14px;
+  }
+  .profile-details-column {
+    align-items: center;
+    width: 100%;
+  }
+  .profile-name-row {
+    justify-content: center;
   }
   .profile-meta-grid {
     justify-content: center;
+    gap: 8px 12px;
+    font-size: 11px;
+  }
+  .edit-profile-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  .quick-actions-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 14px 0;
+  }
+  .quick-action-card {
+    padding: 12px 10px;
+    gap: 10px;
+    border-radius: 10px;
+  }
+  .quick-action-card strong {
+    font-size: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .quick-action-card small {
+    font-size: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .hub-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .hub-card {
+    padding: 14px 16px;
+    gap: 12px;
+    border-radius: 12px;
+  }
+  .hub-card-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+  }
+  .hub-card-info strong {
+    font-size: 13px;
+  }
+  .hub-card-info small {
+    font-size: 11px;
   }
   .products-grid {
     grid-template-columns: 1fr;
@@ -2184,8 +2268,79 @@
   .addresses-list {
     grid-template-columns: 1fr;
   }
+  .available-coupons-grid {
+    grid-template-columns: 1fr;
+  }
   .form-grid-2 {
     grid-template-columns: 1fr;
+  }
+  .subpage-header-bar {
+    padding: 14px 14px 0;
+  }
+  .subpage-header-title h1 {
+    font-size: 20px;
+  }
+  .profile-dedicated-content {
+    padding: 16px 12px;
+    min-height: auto;
+  }
+  .coupon-redeem-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .coupon-input-group {
+    width: 100%;
+  }
+  .coupon-input-group input {
+    flex: 1;
+    min-width: 0;
+    width: 100%;
+  }
+  .order-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+  .order-card-body {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .order-actions {
+    width: 100%;
+  }
+  .order-actions button, .order-actions a {
+    flex: 1;
+    justify-content: center;
+    text-align: center;
+  }
+  .payment-row-card {
+    padding: 14px;
+    gap: 12px;
+  }
+  .pay-details strong {
+    font-size: 13px;
+  }
+  .privacy-card {
+    padding: 16px 14px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .privacy-card button {
+    width: 100%;
+  }
+  .ticket-card {
+    padding: 14px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .seller-status-box {
+    padding: 20px 16px;
+    flex-direction: column;
+    text-align: center;
+    align-items: center;
   }
 }
 
