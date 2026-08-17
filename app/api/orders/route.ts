@@ -51,7 +51,8 @@ export async function POST(request: Request) {
       return Response.json({ error: "Complete all checkout details." }, { status: 400 });
     }
 
-    if (String(payload.paymentMethod) !== "Cash on Delivery") {
+    const pMethod = String(payload.paymentMethod || "").toLowerCase();
+    if (!pMethod.includes("cash") && !pMethod.includes("cod")) {
       return Response.json({ error: "Online payments must be verified before confirmation." }, { status: 400 });
     }
 

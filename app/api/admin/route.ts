@@ -2,7 +2,7 @@ import { desc, eq } from "drizzle-orm";
 import { getDb } from "../../../db";
 import { addresses, contributions, coupons, donations, notifications, officers, orders, products, profiles, reviews, sellerApplications, ticketReplies, tickets, users } from "../../../db/schema";
 import { getAuthUserFromRequest, isAdminUser } from "../../lib/auth-session";
-import { saveContributionToSupabase, saveUserToSupabase, supabase } from "../../lib/supabase";
+import { getAllOrdersFromSupabase, saveContributionToSupabase, saveUserToSupabase, supabase } from "../../lib/supabase";
 
 const ADMIN = "aloksingh84959@gmail.com";
 
@@ -49,21 +49,56 @@ export async function GET(request: Request) {
     let cloudContributions: any[] = [];
     let cloudUsers: any[] = [];
     let cloudAddresses: any[] = [];
+    let cloudOrders: any[] = [];
 
     if (supabase) {
       try {
-        const [cRes, uRes, aRes] = await Promise.all([
+        const [cRes, uRes, aRes, oRes] = await Promise.all([
           supabase.from("contributions").select("*").limit(300),
           supabase.from("users").select("*").limit(300),
           supabase.from("addresses").select("*").limit(500),
+          supabase.from("orders").select("*").order("created_at", { ascending: false }).limit(500),
         ]);
         if (cRes.data) cloudContributions = cRes.data;
         if (uRes.data) cloudUsers = uRes.data;
         if (aRes.data) cloudAddresses = aRes.data;
+        if (oRes.data) cloudOrders = oRes.data;
       } catch {
         // ignore cloud fetch error
       }
     }
+
+    // Merge and deduplicate order records from SQLite and Supabase
+    const orderMap = new Map<string, any>();
+    for (const o of orderRows) {
+      if (o.orderId) orderMap.set(o.orderId, o);
+    }
+    for (const co of cloudOrders) {
+      const oid = String(co.order_id || co.orderId || "").toUpperCase();
+      if (!oid) continue;
+      if (!orderMap.has(oid)) {
+        const normOrder = {
+          orderId: oid,
+          ownerEmail: String(co.owner_email || co.ownerEmail || "").toLowerCase(),
+          customerName: String(co.customer_name || co.customerName || ""),
+          mobile: String(co.mobile || ""),
+          address: String(co.address || ""),
+          city: String(co.city || ""),
+          pinCode: String(co.pin_code || co.pinCode || ""),
+          total: Number(co.total || 0),
+          status: String(co.status || "Order Confirmed"),
+          paymentMethod: String(co.payment_method || co.paymentMethod || "COD"),
+          createdAt: String(co.created_at || co.createdAt || new Date().toISOString()),
+        };
+        orderMap.set(oid, normOrder);
+        try {
+          await db.insert(orders).values(normOrder).onConflictDoNothing();
+        } catch {}
+      }
+    }
+    const mergedOrders = Array.from(orderMap.values()).sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
 
     // Merge and deduplicate support fund contribution records
     const map = new Map<string, any>();
@@ -192,7 +227,7 @@ export async function GET(request: Request) {
 
     return Response.json({
       users: enrichedUsers,
-      orders: orderRows,
+      orders: mergedOrders,
       sellers: sellerRows,
       tickets: ticketRows,
       products: productRows,

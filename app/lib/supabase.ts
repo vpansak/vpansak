@@ -16,12 +16,49 @@ export const supabase = supabaseUrl && supabaseKey ? createClient(supabaseUrl, s
 export async function saveOrderToSupabase(orderData: Record<string, unknown>) {
   if (!supabase) return null;
   try {
-    const { data, error } = await supabase.from("orders").insert(orderData).select();
-    if (error) console.error("Supabase order insert notice:", error.message);
+    const payload = {
+      order_id: String(orderData.orderId || orderData.order_id || ""),
+      owner_email: String(orderData.ownerEmail || orderData.owner_email || "").toLowerCase().trim(),
+      customer_name: String(orderData.customerName || orderData.customer_name || ""),
+      mobile: String(orderData.mobile || "").trim(),
+      address: String(orderData.address || ""),
+      city: String(orderData.city || ""),
+      pin_code: String(orderData.pinCode || orderData.pin_code || ""),
+      total: Number(orderData.total || 0),
+      payment_method: String(orderData.paymentMethod || orderData.payment_method || "COD"),
+      status: String(orderData.status || "Order Confirmed"),
+      created_at: String(orderData.createdAt || orderData.created_at || new Date().toISOString()),
+    };
+    if (!payload.order_id) return null;
+    const { data, error } = await supabase.from("orders").upsert(payload, { onConflict: "order_id" }).select();
+    if (error) console.error("Supabase order upsert notice:", error.message);
     return data;
   } catch (err) {
-    console.error("Supabase order insert catch:", err);
+    console.error("Supabase order upsert catch:", err);
     return null;
+  }
+}
+
+export async function getAllOrdersFromSupabase() {
+  if (!supabase) return [];
+  try {
+    const { data, error } = await supabase.from("orders").select("*").order("created_at", { ascending: false }).limit(500);
+    if (error || !data) return [];
+    return data.map((row) => ({
+      orderId: String(row.order_id || row.orderId || ""),
+      ownerEmail: String(row.owner_email || "").toLowerCase(),
+      customerName: String(row.customer_name || row.customerName || ""),
+      mobile: String(row.mobile || ""),
+      address: String(row.address || ""),
+      city: String(row.city || ""),
+      pinCode: String(row.pin_code || row.pinCode || ""),
+      total: Number(row.total || 0),
+      status: String(row.status || "Order Confirmed"),
+      paymentMethod: String(row.payment_method || row.paymentMethod || "COD"),
+      createdAt: String(row.created_at || row.createdAt || new Date().toISOString()),
+    }));
+  } catch {
+    return [];
   }
 }
 
