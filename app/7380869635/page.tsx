@@ -157,6 +157,10 @@ export default function SecretAdminPage() {
 
   useEffect(() => {
     void Promise.resolve().then(() => load());
+    const timer = setInterval(() => {
+      void Promise.resolve().then(() => load());
+    }, 10000);
+    return () => clearInterval(timer);
   }, [load]);
 
   const handleAdminSignIn = async (e?: React.FormEvent) => {
