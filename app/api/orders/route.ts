@@ -4,29 +4,34 @@ import { notifications, orderItems, orders } from "../../../db/schema";
 import { getAuthUserFromRequest } from "../../lib/auth-session";
 import { getOrderFromSupabase, saveOrderToSupabase } from "../../lib/supabase";
 
-const publicOrder = (order: {
-  orderId: string;
-  status: string;
-  currentLocation?: string | null;
-  total: number;
-  createdAt: string;
-  updatedAt?: string | null;
-  paymentMethod: string;
-  city: string;
-  pinCode: string;
-  mobile: string;
-}) => ({
-  orderId: order.orderId,
-  status: order.status,
-  currentLocation: order.currentLocation || (order as any).current_location || "Processing Hub",
-  total: order.total,
-  createdAt: order.createdAt,
-  updatedAt: order.updatedAt || (order as any).updated_at || order.createdAt,
-  paymentMethod: order.paymentMethod,
-  city: order.city,
-  pinCode: order.pinCode.length > 3 ? `${order.pinCode.slice(0, 2)}***${order.pinCode.slice(-1)}` : "***",
-  mobile: order.mobile.length > 4 ? `${"*".repeat(Math.max(0, order.mobile.length - 4))}${order.mobile.slice(-4)}` : "****",
-});
+const publicOrder = (order: Record<string, any>) => {
+  const orderId = String(order.orderId || order.order_id || "").toUpperCase();
+  const status = String(order.status || "Order Confirmed");
+  const currentLocation = String(order.currentLocation || order.current_location || "Processing Hub");
+  const total = Number(order.total || 0);
+  const createdAt = String(order.createdAt || order.created_at || new Date().toISOString());
+  const updatedAt = String(order.updatedAt || order.updated_at || createdAt);
+  const paymentMethod = String(order.paymentMethod || order.payment_method || "COD");
+  const city = String(order.city || "India");
+  const pinCodeRaw = String(order.pinCode || order.pin_code || "");
+  const mobileRaw = String(order.mobile || "");
+
+  const pinCode = pinCodeRaw.length > 3 ? `${pinCodeRaw.slice(0, 2)}***${pinCodeRaw.slice(-1)}` : "***";
+  const mobile = mobileRaw.length > 4 ? `${"*".repeat(Math.max(0, mobileRaw.length - 4))}${mobileRaw.slice(-4)}` : "****";
+
+  return {
+    orderId,
+    status,
+    currentLocation,
+    total,
+    createdAt,
+    updatedAt,
+    paymentMethod,
+    city,
+    pinCode,
+    mobile,
+  };
+};
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
@@ -40,22 +45,19 @@ export async function GET(request: Request) {
   try {
     const db = await getDb();
     const [order] = await db.select().from(orders).where(eq(orders.orderId, orderId)).limit(1);
+    const remote = await getOrderFromSupabase(orderId);
 
-    if (!order) {
-      const remote = await getOrderFromSupabase(orderId);
-      if (!remote) return Response.json({ error: "No order found with this ID." }, { status: 404 });
-      return Response.json({ order: publicOrder(remote), items: [] });
+    if (!order && !remote) {
+      return Response.json({ error: "No order found with this ID." }, { status: 404 });
     }
 
-    // Check remote cloud order to ensure latest status/location if updated from another instance
-    const remote = await getOrderFromSupabase(orderId);
-    const merged = remote ? { ...order, ...remote } : order;
+    const merged = order && remote ? { ...remote, ...order, status: remote.status || order.status, currentLocation: remote.currentLocation || (remote as any).current_location || order.currentLocation } : (order || remote);
 
-    const items = await db.select().from(orderItems).where(eq(orderItems.orderId, order.orderId));
+    const items = order ? await db.select().from(orderItems).where(eq(orderItems.orderId, order.orderId)) : [];
     return Response.json({ order: publicOrder(merged), items });
   } catch (err) {
     console.error("Order tracking error:", err);
-    return Response.json({ error: "Order tracking is being initialized. Please try again shortly." }, { status: 503 });
+    return Response.json({ error: "Order tracking service is being refreshed. Please try again shortly." }, { status: 500 });
   }
 }
 
