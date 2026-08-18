@@ -350,7 +350,7 @@ export function ProfileContent({ paramsTab }: { paramsTab?: string }) {
 
   const isAdminUser =
     user.email.toLowerCase() === "aloksingh84959@gmail.com" ||
-    ["admin", "founder", "officer", "cofounder"].includes(user.role?.toLowerCase() || "");
+    ["admin", "superadmin", "founder", "officer", "cofounder"].includes(user.role?.toLowerCase() || "");
 
   const initials = (user.fullName || user.email || "VP")
     .split(" ")
@@ -382,8 +382,8 @@ export function ProfileContent({ paramsTab }: { paramsTab?: string }) {
         </Link>
         <nav>
           {isAdminUser && (
-            <Link href="/vpa-admin" className="header-admin-btn">
-              <ShieldAlert size={14} /> Admin Hub Portal
+            <Link href="/7380869635" className="header-admin-btn">
+              <ShieldAlert size={14} /> Admin Hub Console
             </Link>
           )}
           <Link href="/">
@@ -564,7 +564,7 @@ export function ProfileContent({ paramsTab }: { paramsTab?: string }) {
               </div>
               <div className="hub-grid">
                 {isAdminUser && (
-                  <Link href="/vpa-admin" className="hub-card admin-hub-special-card">
+                  <Link href="/7380869635" className="hub-card admin-hub-special-card">
                     <div className="hub-card-icon admin-gold"><ShieldAlert size={20} /></div>
                     <div className="hub-card-info">
                       <strong>VPANSAK Admin Hub</strong>

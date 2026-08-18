@@ -8,7 +8,18 @@ const ADMIN = "aloksingh84959@gmail.com";
 
 async function authorized(request: Request) {
   const user = await getAuthUserFromRequest(request);
-  if (user && isAdminUser(user)) return true;
+  if (user) {
+    const role = (user.role || "").toLowerCase();
+    const email = (user.email || "").toLowerCase().trim();
+    if (email === ADMIN || ["admin", "superadmin", "founder", "cofounder", "officer"].includes(role)) {
+      return true;
+    }
+    try {
+      const db = await getDb();
+      const [officerRow] = await db.select().from(officers).where(eq(officers.email, email)).limit(1);
+      if (officerRow && officerRow.active) return true;
+    } catch {}
+  }
   const headerEmail = request.headers.get("oai-authenticated-user-email")?.toLowerCase();
   if (headerEmail === ADMIN) return true;
   return false;
