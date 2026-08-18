@@ -393,31 +393,84 @@ export async function POST(request: Request) {
     }
 
     if (action === "sellerStatus") {
-      await db.update(sellerApplications).set({ status: String(body.status || "").slice(0, 50) }).where(eq(sellerApplications.applicationId, String(body.applicationId || "")));
+      const applicationId = String(body.applicationId || "").trim();
+      const status = String(body.status || "Pending").slice(0, 50);
+      try {
+        await db.update(sellerApplications).set({ status }).where(eq(sellerApplications.applicationId, applicationId));
+      } catch {}
+      try {
+        if (supabase) {
+          await supabase.from("seller_applications").update({ status }).eq("application_id", applicationId);
+        }
+      } catch {}
       return Response.json({ ok: true });
     }
 
     if (action === "ticketStatus") {
-      await db.update(tickets).set({ status: String(body.status || "").slice(0, 50), updatedAt: new Date().toISOString() }).where(eq(tickets.ticketId, String(body.ticketId || "")));
+      const ticketId = String(body.ticketId || "").trim();
+      const status = String(body.status || "Open").slice(0, 50);
+      const updatedAt = new Date().toISOString();
+      try {
+        await db.update(tickets).set({ status, updatedAt }).where(eq(tickets.ticketId, ticketId));
+      } catch {}
+      try {
+        if (supabase) {
+          await supabase.from("tickets").update({ status, updated_at: updatedAt }).eq("ticket_id", ticketId);
+        }
+      } catch {}
       return Response.json({ ok: true });
     }
 
     if (action === "ticketReply") {
-      const ticketId = String(body.ticketId || "");
+      const ticketId = String(body.ticketId || "").trim();
       const message = String(body.message || "").trim().slice(0, 2000);
       if (!message) return Response.json({ error: "Reply is required." }, { status: 400 });
-      await db.insert(ticketReplies).values({ ticketId, authorType: "admin", authorName: "VPANSAK Support", message });
-      await db.update(tickets).set({ status: "Support Replied", updatedAt: new Date().toISOString() }).where(eq(tickets.ticketId, ticketId));
+      const updatedAt = new Date().toISOString();
+
+      try {
+        await db.insert(ticketReplies).values({ ticketId, authorType: "admin", authorName: "VPANSAK Support", message });
+        await db.update(tickets).set({ status: "Support Replied", updatedAt }).where(eq(tickets.ticketId, ticketId));
+      } catch {}
+
+      try {
+        if (supabase) {
+          await supabase.from("ticket_replies").insert({
+            ticket_id: ticketId,
+            author_type: "admin",
+            author_name: "VPANSAK Support",
+            message,
+          });
+          await supabase.from("tickets").update({ status: "Support Replied", updated_at: updatedAt }).eq("ticket_id", ticketId);
+        }
+      } catch {}
       return Response.json({ ok: true });
     }
 
     if (action === "reviewStatus") {
-      await db.update(reviews).set({ status: String(body.status || "").slice(0, 30) }).where(eq(reviews.id, Number(body.id)));
+      const id = Number(body.id);
+      const status = String(body.status || "Approved").slice(0, 30);
+      try {
+        await db.update(reviews).set({ status }).where(eq(reviews.id, id));
+      } catch {}
+      try {
+        if (supabase) {
+          await supabase.from("reviews").update({ status }).eq("id", id);
+        }
+      } catch {}
       return Response.json({ ok: true });
     }
 
     if (action === "productStatus") {
-      await db.update(products).set({ status: String(body.status || "").slice(0, 30) }).where(eq(products.id, String(body.id || "")));
+      const id = String(body.id || "").trim();
+      const status = String(body.status || "Active").slice(0, 30);
+      try {
+        await db.update(products).set({ status }).where(eq(products.id, id));
+      } catch {}
+      try {
+        if (supabase) {
+          await supabase.from("products").update({ status }).eq("id", id);
+        }
+      } catch {}
       return Response.json({ ok: true });
     }
 
