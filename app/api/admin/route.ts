@@ -329,37 +329,66 @@ export async function POST(request: Request) {
     }
 
     if (action === "orderStatus") {
-      const id = String(body.orderId || "");
-      const status = String(body.status || "").slice(0, 50);
-      const currentLocation = String(body.currentLocation || body.location || "").slice(0, 150);
+      const id = String(body.orderId || "").toUpperCase().trim();
+      const status = String(body.status || "Order Confirmed").slice(0, 50);
+      const currentLocation = String(body.currentLocation || body.location || "Processing Hub").slice(0, 150);
       const updatedAt = new Date().toISOString();
 
-      await db.update(orders).set({
-        status,
-        ...(currentLocation ? { currentLocation } : {}),
-        updatedAt,
-      }).where(eq(orders.orderId, id));
+      let targetEmail = "";
 
-      const [order] = await db.select().from(orders).where(eq(orders.orderId, id)).limit(1);
-
-      if (order) {
-        // Sync to Supabase Cloud DB immediately
-        await saveOrderToSupabase({
-          ...order,
+      // 1. Update local SQLite orders table
+      try {
+        await db.update(orders).set({
           status,
-          currentLocation: currentLocation || order.currentLocation || "Processing Hub",
+          currentLocation,
           updatedAt,
-        });
+        }).where(eq(orders.orderId, id));
 
-        if (order.ownerEmail) {
-          await db.insert(notifications).values({
-            ownerEmail: order.ownerEmail,
-            title: "Order status updated",
-            message: `${id} status is now ${status}${currentLocation ? ` (${currentLocation})` : ""}.`,
-            type: "order",
+        const [existing] = await db.select().from(orders).where(eq(orders.orderId, id)).limit(1);
+        if (existing) {
+          targetEmail = existing.ownerEmail || "";
+        }
+      } catch {}
+
+      // 2. Sync to Supabase Cloud DB directly
+      try {
+        if (supabase) {
+          const { data } = await supabase.from("orders").select("*").eq("order_id", id).limit(1);
+          const cloudOrd = data && data[0];
+          if (cloudOrd) {
+            targetEmail = targetEmail || cloudOrd.owner_email || cloudOrd.ownerEmail || "";
+          }
+
+          await saveOrderToSupabase({
+            orderId: id,
+            ownerEmail: targetEmail || "customer@vpansak.com",
+            customerName: cloudOrd?.customer_name || cloudOrd?.customerName || "Customer",
+            mobile: cloudOrd?.mobile || "",
+            address: cloudOrd?.address || "",
+            city: cloudOrd?.city || "",
+            pinCode: cloudOrd?.pin_code || cloudOrd?.pinCode || "",
+            total: Number(cloudOrd?.total || 0),
+            status,
+            currentLocation,
+            paymentMethod: cloudOrd?.payment_method || cloudOrd?.paymentMethod || "COD",
+            updatedAt,
+            createdAt: cloudOrd?.created_at || cloudOrd?.createdAt || updatedAt,
           });
         }
+      } catch {}
+
+      // 3. Insert notification for customer
+      if (targetEmail) {
+        try {
+          await db.insert(notifications).values({
+            ownerEmail: targetEmail,
+            title: "Order status updated",
+            message: `Order ${id} is now ${status}${currentLocation ? ` (${currentLocation})` : ""}.`,
+            type: "order",
+          }).onConflictDoNothing();
+        } catch {}
       }
+
       return Response.json({ ok: true, status, currentLocation, updatedAt });
     }
 
