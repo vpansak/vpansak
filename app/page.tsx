@@ -47,6 +47,7 @@ import {
   Truck,
   UserRound,
   Utensils,
+  Mail,
   WalletCards,
   X,
   Zap,
@@ -56,6 +57,20 @@ import {
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { CatalogProduct, catalogProducts } from "./lib/catalog";
+
+const InstagramIcon = ({ size = 16 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+    <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+  </svg>
+);
+
+const XIcon = ({ size = 15 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+  </svg>
+);
 
 const money = (amount: number) => new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(amount);
 
@@ -371,9 +386,18 @@ export default function HomePage() {
           <div className="vp-brand-row">
             <Link className="vp-brand" href="/" aria-label="VPANSAK Shopping home"><img src="/vpansak-logo.png" alt="VPANSAK" /><span><strong>VPANSAK</strong><small>SHOPPING</small></span></Link>
             <button className="vp-location" type="button" onClick={() => notify("Add your delivery PIN at checkout")}><MapPin /><span><small>Delivering across</small>India</span><ChevronDown /></button>
+            
+            <div className="desktop-search-wrap">
+              <div className="vp-search-wrap">
+                <form className="vp-search" onSubmit={(event) => { event.preventDefault(); document.getElementById("catalog")?.scrollIntoView({ behavior: "smooth" }); }}><Search /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search for products, brands and categories" aria-label="Search products" /><button>Search</button></form>
+                {(suggestions.length > 0 || isInfoQuery) && <div className="vp-suggestions"><small>SEARCH SUGGESTIONS</small>{isInfoQuery && <Link href="/info" style={{ background: "#edf4ff", borderLeft: "3px solid #1766ef" }}><Search /><span>About VPANSAK Shopping<small>Company Info, Founders, Refunds, Sellers &amp; Policies</small></span><strong>View Info</strong></Link>}{suggestions.map((product) => <Link key={product.id} href={`/product/${product.id}`}><Search /><span>{product.name}<small>{product.category}</small></span><strong>{money(product.price)}</strong></Link>)}</div>}
+              </div>
+            </div>
+
             <div className="vp-header-actions">
               <Link href={authUser ? "/account" : "/login"}><UserRound /><span><small>{authUser ? `Hello, ${authUser.fullName || authUser.email.split("@")[0]}` : "Hello, sign in"}</small>My Account</span></Link>
               <Link href={authUser ? "/account" : "/login"}><Heart /><span><small>{wishlist.length} saved</small>Wishlist</span></Link>
+              <Link href={authUser ? "/account" : "/track"} className="vp-header-orders"><Box /><span><small>Track &amp; manage</small>Orders</span></Link>
               <button type="button" onClick={() => setCartOpen(true)}><ShoppingCart /><span><small>{cartCount} items</small>{cartCount ? money(subtotal) : "My Cart"}</span>{cartCount > 0 && <i>{cartCount}</i>}</button>
             </div>
             <button className="vp-mobile-menu" type="button" onClick={() => setMenuOpen((open) => !open)} aria-label="Open menu">{menuOpen ? <X /> : <Menu />}</button>
@@ -460,7 +484,7 @@ export default function HomePage() {
 
       <footer className="vp-footer">
         <div className="vp-footer-main"><div className="vp-footer-brand"><Link className="vp-brand" href="/"><img src="/vpansak-logo.png" alt="VPANSAK" /><span><strong>VPANSAK</strong><small>SHOPPING</small></span></Link><p>A secure, useful and customer-focused digital marketplace by A&amp;A Group.</p><span><ShieldCheck /> Secure shopping experience</span></div><div><strong>SHOP</strong><Link href="/categories">All categories</Link><a href="#catalog">Top offers</a><Link href="/account">Wishlist</Link><Link href="/track">Track order</Link></div><div><strong>HELP</strong><a href="https://vpansaksupporthub.lovable.app/" target="_blank" rel="noreferrer">Support hub</a><Link href="/info/faq">FAQs</Link><Link href="/policies/refund-policy">Refund policy</Link><Link href="/policies/shipping-policy">Shipping policy</Link><Link href="/info/useful-links" onClick={(e) => { e.preventDefault(); setUsefulLinksOpen(true); }}>Useful links</Link></div><div><strong>BUSINESS</strong><Link href="/seller">Become a seller</Link><Link href="/seller/dashboard">Seller dashboard</Link><Link href="/policies/merchant-guidelines">Merchant guidelines</Link><Link href="/foundation">Support Foundation</Link></div><div><strong>COMPANY</strong><Link href="/info/about">About VPANSAK</Link><Link href="/info/careers">Careers</Link><Link href="/info/contact">Contact us</Link></div></div>
-        <div className="vp-footer-bottom"><span>© 2026 VPANSAK • Powered by A&amp;A Group</span><div><Link href="/policies/privacy-policy">Privacy</Link><Link href="/policies/terms-and-conditions">Terms</Link><a href="mailto:support.vpansak@gmail.com">support.vpansak@gmail.com</a><a href="https://instagram.com/VPANSAK" target="_blank" rel="noreferrer">Instagram</a></div></div>
+        <div className="vp-footer-bottom"><span>© 2026 VPANSAK • Powered by A&amp;A Group</span><div><Link href="/policies/privacy-policy">Privacy</Link><Link href="/policies/terms-and-conditions">Terms</Link><div className="vp-social-icons"><a href="mailto:support.vpansak@gmail.com" title="support.vpansak@gmail.com" aria-label="Email support"><Mail size={16} /></a><a href="https://instagram.com/VPANSAK" target="_blank" rel="noreferrer" title="Instagram @VPANSAK" aria-label="Instagram"><InstagramIcon size={16} /></a><a href="https://x.com/vpansak_" target="_blank" rel="noreferrer" title="X @vpansak_" aria-label="X @vpansak_"><XIcon size={15} /></a></div></div></div>
       </footer>
 
 
