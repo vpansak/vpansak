@@ -51,18 +51,18 @@ export async function GET(request: Request) {
       donationRows,
       couponRows
     ] = await Promise.all([
-      db.select().from(users).orderBy(desc(users.createdAt)).limit(300),
-      db.select().from(profiles).limit(300),
-      db.select().from(orders).orderBy(desc(orders.createdAt)).limit(500),
-      db.select().from(addresses).limit(500),
-      db.select().from(sellerApplications).orderBy(desc(sellerApplications.createdAt)).limit(100),
-      db.select().from(tickets).orderBy(desc(tickets.updatedAt)).limit(300),
-      db.select().from(products).orderBy(desc(products.createdAt)).limit(100),
-      db.select().from(reviews).orderBy(desc(reviews.createdAt)).limit(100),
-      db.select().from(officers).orderBy(desc(officers.createdAt)).limit(100),
-      db.select().from(contributions).orderBy(desc(contributions.createdAt)).limit(300),
-      db.select().from(donations).orderBy(desc(donations.createdAt)).limit(300),
-      db.select().from(coupons).limit(100),
+      db.select().from(users).orderBy(desc(users.createdAt)).limit(300).catch(() => []),
+      db.select().from(profiles).limit(300).catch(() => []),
+      db.select().from(orders).orderBy(desc(orders.createdAt)).limit(500).catch(() => []),
+      db.select().from(addresses).limit(500).catch(() => []),
+      db.select().from(sellerApplications).orderBy(desc(sellerApplications.createdAt)).limit(100).catch(() => []),
+      db.select().from(tickets).orderBy(desc(tickets.createdAt)).limit(300).catch(() => []),
+      db.select().from(products).orderBy(desc(products.createdAt)).limit(100).catch(() => []),
+      db.select().from(reviews).orderBy(desc(reviews.createdAt)).limit(100).catch(() => []),
+      db.select().from(officers).orderBy(desc(officers.createdAt)).limit(100).catch(() => []),
+      db.select().from(contributions).orderBy(desc(contributions.createdAt)).limit(300).catch(() => []),
+      db.select().from(donations).orderBy(desc(donations.createdAt)).limit(300).catch(() => []),
+      db.select().from(coupons).limit(100).catch(() => []),
     ]);
 
     // Fetch from Supabase Cloud Database to ensure 100% full history sync
@@ -70,19 +70,22 @@ export async function GET(request: Request) {
     let cloudUsers: any[] = [];
     let cloudAddresses: any[] = [];
     let cloudOrders: any[] = [];
+    let cloudTickets: any[] = [];
 
     if (supabase) {
       try {
-        const [cRes, uRes, aRes, oRes] = await Promise.all([
-          supabase.from("contributions").select("*").limit(300),
-          supabase.from("users").select("*").limit(300),
-          supabase.from("addresses").select("*").limit(500),
-          supabase.from("orders").select("*").order("created_at", { ascending: false }).limit(500),
+        const [cRes, uRes, aRes, oRes, tRes] = await Promise.all([
+          Promise.resolve(supabase.from("contributions").select("*").limit(300)).catch(() => ({ data: null })),
+          Promise.resolve(supabase.from("users").select("*").limit(300)).catch(() => ({ data: null })),
+          Promise.resolve(supabase.from("addresses").select("*").limit(500)).catch(() => ({ data: null })),
+          Promise.resolve(supabase.from("orders").select("*").order("created_at", { ascending: false }).limit(500)).catch(() => ({ data: null })),
+          Promise.resolve(supabase.from("tickets").select("*").order("created_at", { ascending: false }).limit(300)).catch(() => ({ data: null })),
         ]);
-        if (cRes.data) cloudContributions = cRes.data;
-        if (uRes.data) cloudUsers = uRes.data;
-        if (aRes.data) cloudAddresses = aRes.data;
-        if (oRes.data) cloudOrders = oRes.data;
+        if (cRes?.data) cloudContributions = cRes.data;
+        if (uRes?.data) cloudUsers = uRes.data;
+        if (aRes?.data) cloudAddresses = aRes.data;
+        if (oRes?.data) cloudOrders = oRes.data;
+        if (tRes?.data) cloudTickets = tRes.data;
       } catch {
         // ignore cloud fetch error
       }
@@ -250,11 +253,42 @@ export async function GET(request: Request) {
       };
     });
 
+    // Merge support tickets from SQLite and Supabase
+    const ticketMap = new Map<string, any>();
+    for (const t of ticketRows) {
+      if (t.ticketId) ticketMap.set(String(t.ticketId).toUpperCase().trim(), t);
+    }
+    for (const ct of cloudTickets) {
+      const tid = String(ct.ticket_id || ct.ticketId || "").toUpperCase().trim();
+      if (!tid) continue;
+      const normTicket = {
+        id: ct.id,
+        ticketId: tid,
+        customerName: String(ct.customer_name || ct.customerName || "Customer"),
+        email: String(ct.email || "").toLowerCase(),
+        mobile: String(ct.mobile || ""),
+        category: String(ct.category || "General"),
+        subject: String(ct.subject || "Support Query"),
+        description: String(ct.description || ""),
+        priority: String(ct.priority || "Normal"),
+        status: String(ct.status || "Open"),
+        assignedOfficer: ct.assigned_officer || ct.assignedOfficer || null,
+        createdAt: String(ct.created_at || ct.createdAt || new Date().toISOString()),
+        updatedAt: String(ct.updated_at || ct.updatedAt || ct.created_at || new Date().toISOString()),
+      };
+      if (!ticketMap.has(tid)) {
+        ticketMap.set(tid, normTicket);
+      }
+    }
+    const mergedTickets = Array.from(ticketMap.values()).sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+
     return Response.json({
       users: enrichedUsers,
       orders: mergedOrders,
       sellers: sellerRows,
-      tickets: ticketRows,
+      tickets: mergedTickets,
       products: productRows,
       reviews: reviewRows,
       officers: officerRows,
