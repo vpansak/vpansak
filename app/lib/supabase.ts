@@ -27,6 +27,8 @@ export async function saveOrderToSupabase(orderData: Record<string, unknown>) {
       total: Number(orderData.total || 0),
       payment_method: String(orderData.paymentMethod || orderData.payment_method || "COD"),
       status: String(orderData.status || "Order Confirmed"),
+      current_location: String(orderData.currentLocation || orderData.current_location || "Fulfillment Hub"),
+      updated_at: String(orderData.updatedAt || orderData.updated_at || new Date().toISOString()),
       created_at: String(orderData.createdAt || orderData.created_at || new Date().toISOString()),
     };
     if (!payload.order_id) return null;
@@ -54,7 +56,9 @@ export async function getAllOrdersFromSupabase() {
       pinCode: String(row.pin_code || row.pinCode || ""),
       total: Number(row.total || 0),
       status: String(row.status || "Order Confirmed"),
+      currentLocation: String(row.current_location || row.currentLocation || "Fulfillment Hub"),
       paymentMethod: String(row.payment_method || row.paymentMethod || "COD"),
+      updatedAt: String(row.updated_at || row.updatedAt || row.created_at || new Date().toISOString()),
       createdAt: String(row.created_at || row.createdAt || new Date().toISOString()),
     }));
   } catch {
@@ -218,8 +222,10 @@ export async function getOrderFromSupabase(orderId: string) {
     return {
       orderId: String(data.order_id || orderId),
       status: String(data.status || "Order Confirmed"),
+      currentLocation: String(data.current_location || data.currentLocation || "Processing Hub"),
       total: Number(data.total || 0),
       createdAt: String(data.created_at || new Date().toISOString()),
+      updatedAt: String(data.updated_at || data.updatedAt || data.created_at || new Date().toISOString()),
       paymentMethod: String(data.payment_method || "COD"),
       city: String(data.city || ""),
       pinCode: String(data.pin_code || ""),

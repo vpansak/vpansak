@@ -5,24 +5,336 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 
-type TrackedOrder={orderId:string;status:string;total:number;createdAt:string;paymentMethod:string;city:string;pinCode:string;mobile:string};
-type Item={id:number;productName:string;price:number;quantity:number};
-const stages=["Order Confirmed","Packed","Shipped","Out for Delivery","Delivered"];
-const money=(n:number)=>new Intl.NumberFormat("en-IN",{style:"currency",currency:"INR",maximumFractionDigits:0}).format(n);
+type TrackedOrder = {
+  orderId: string;
+  status: string;
+  currentLocation?: string;
+  total: number;
+  createdAt: string;
+  updatedAt?: string;
+  paymentMethod: string;
+  city: string;
+  pinCode: string;
+  mobile: string;
+};
 
-function TrackContent(){
- const query=useSearchParams();const [id,setId]=useState(query.get("id")||"");const [order,setOrder]=useState<TrackedOrder|null>(null);const [items,setItems]=useState<Item[]>([]);const [error,setError]=useState("");const [loading,setLoading]=useState(false);
- const track=async(value=id)=>{const orderId=value.trim().toUpperCase();if(!orderId || orderId.length < 4){setError("Enter a valid Order ID such as VPO123456.");setOrder(null);return;}setLoading(true);setError("");try{const res=await fetch(`/api/orders?id=${encodeURIComponent(orderId)}`);const data=await res.json();if(!res.ok){setError(data.error||"Order not found");setOrder(null);}else{setOrder(data.order);setItems(data.items||[]);history.replaceState(null,"",`/track?id=${orderId}`)}}catch{setError("Tracking service is temporarily unavailable.")}setLoading(false)};
- useEffect(()=>{const initial=query.get("id");if(!initial)return;const timer=window.setTimeout(()=>{void track(initial)},0);return()=>window.clearTimeout(timer)},[]);
- const current=order?stages.indexOf(order.status):-1;const exceptional=order&&current<0?order.status:"";
- return <main className="track-page"><header className="sub-header"><Link className="shop-brand" href="/"><img className="brand-logo" src="/vpansak-logo-dark.jpeg" alt="VPANSAK"/><span><strong>VPANSAK</strong><small>ORDER TRACKING</small></span></Link><nav><Link href="/"><ArrowLeft/>Back to store</Link><Link href="/account">My orders</Link><a href="https://vpansaksupporthub.lovable.app/" target="_blank" rel="noreferrer">Support</a></nav></header>
- <section className="track-hero"><small>LIVE ORDER STATUS</small><h1>Track your VPANSAK order.</h1><p>Enter the exact Order ID from your confirmation screen. For privacy, only limited delivery details are displayed.</p><form onSubmit={(e)=>{e.preventDefault();track()}}><Search/><input value={id} onChange={(e)=>setId(e.target.value.toUpperCase())} placeholder="VPO123456" maxLength={40}/><button disabled={loading}>{loading?"Checking…":"Track order"}</button></form>{error&&<div className="track-error">{error}</div>}</section>
- {!order?<section className="track-help"><article><PackageCheck/><h3>Where is my Order ID?</h3><p>Your Order ID starts with <b>VPO</b> and appears after successful checkout.</p></article><article><ShieldCheck/><h3>Privacy protected</h3><p>Full mobile number and delivery address are never displayed on the public page.</p></article><article><Headphones/><h3>Need help?</h3><p>Create a support ticket if your status has not changed for an expected period.</p><a href="https://vpansaksupporthub.lovable.app/submit" target="_blank" rel="noreferrer">Open Support Hub</a></article></section>:
- <section className="track-result-page"><header><div><small>ORDER ID</small><h2>{order.orderId}</h2><p>Placed on {new Date(order.createdAt).toLocaleString("en-IN")}</p></div><span>{order.status}</span></header>{exceptional&&<div className="tracking-special"><PackageCheck/><span><strong>{exceptional}</strong><small>This order is in a special workflow. Open Support Hub for cancellation, return or refund details.</small></span></div>}<div className="order-timeline">{stages.map((stage,index)=><div className={index<=current?"complete":index===current+1?"next":""} key={stage}><span>{index<=current&&current>=0?<Check/>:<Circle/>}</span><div><strong>{stage}</strong><small>{index<current?"Completed":index===current?"Current status":index===current+1&&current>=0?"Next update":"Pending"}</small></div>{index<stages.length-1&&<i/>}</div>)}</div><div className="tracking-columns"><section><h3><PackageCheck/>Order summary</h3>{items.length?items.map((item)=><div className="tracked-item" key={item.id}><span><strong>{item.productName}</strong><small>Quantity: {item.quantity}</small></span><b>{money(item.price*item.quantity)}</b></div>):<p className="privacy-note">Item details are available in the signed-in account dashboard.</p>}<div className="tracked-total"><span>Total amount</span><strong>{money(order.total)}</strong></div></section><section><h3><MapPin/>Delivery information</h3><dl><div><dt>City</dt><dd>{order.city}</dd></div><div><dt>PIN code</dt><dd>{order.pinCode}</dd></div><div><dt>Mobile</dt><dd>{order.mobile}</dd></div><div><dt>Payment</dt><dd>{order.paymentMethod}</dd></div></dl><p className="privacy-note"><ShieldCheck/>Sensitive customer information is masked for security.</p></section></div><div className="track-actions"><div><Clock3/><span><strong>Status updates</strong><small>Refresh this page to see the latest admin update.</small></span></div><a href={`https://vpansaksupporthub.lovable.app/submit?order=${order.orderId}`} target="_blank" rel="noreferrer"><Headphones/>Get order help</a></div></section>}
- </main>
+type Item = { id: number; productName: string; price: number; quantity: number };
 
+const stages = ["Order Confirmed", "Packed", "Shipped", "Out for Delivery", "Delivered"];
+
+const money = (n: number) =>
+  new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(n);
+
+function TrackContent() {
+  const query = useSearchParams();
+  const [id, setId] = useState(query.get("id") || "");
+  const [order, setOrder] = useState<TrackedOrder | null>(null);
+  const [items, setItems] = useState<Item[]>([]);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const track = async (value = id) => {
+    const orderId = value.trim().toUpperCase();
+    if (!orderId || orderId.length < 4) {
+      setError("Enter a valid Order ID such as VPO123456.");
+      setOrder(null);
+      return;
+    }
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch(`/api/orders?id=${encodeURIComponent(orderId)}`);
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Order not found");
+        setOrder(null);
+      } else {
+        setOrder(data.order);
+        setItems(data.items || []);
+        history.replaceState(null, "", `/track?id=${orderId}`);
+      }
+    } catch {
+      setError("Tracking service is temporarily unavailable.");
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    const initial = query.get("id");
+    if (!initial) return;
+    const timer = window.setTimeout(() => {
+      void track(initial);
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  // Real-time live polling for tracking updates
+  useEffect(() => {
+    if (!order?.orderId) return;
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch(`/api/orders?id=${encodeURIComponent(order.orderId)}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.order) {
+            setOrder(data.order);
+            if (data.items) setItems(data.items);
+          }
+        }
+      } catch {}
+    }, 3000); // Real-time poll every 3 seconds
+
+    return () => clearInterval(interval);
+  }, [order?.orderId]);
+
+  const current = order ? stages.indexOf(order.status) : -1;
+  const exceptional = order && current < 0 ? order.status : "";
+
+  return (
+    <main className="track-page">
+      <header className="sub-header">
+        <Link className="shop-brand" href="/">
+          <img className="brand-logo" src="/vpansak-logo-dark.jpeg" alt="VPANSAK" />
+          <span>
+            <strong>VPANSAK</strong>
+            <small>ORDER TRACKING</small>
+          </span>
+        </Link>
+        <nav>
+          <Link href="/">
+            <ArrowLeft />
+            Back to store
+          </Link>
+          <Link href="/account">My orders</Link>
+          <a href="https://vpansaksupporthub.lovable.app/" target="_blank" rel="noreferrer">
+            Support
+          </a>
+        </nav>
+      </header>
+
+      <section className="track-hero">
+        <small>LIVE ORDER STATUS</small>
+        <h1>Track your VPANSAK order.</h1>
+        <p>Enter the exact Order ID from your confirmation screen. Real-time updates &amp; checkpoint tracking enabled.</p>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            track();
+          }}
+        >
+          <Search />
+          <input
+            value={id}
+            onChange={(e) => setId(e.target.value.toUpperCase())}
+            placeholder="VPO123456"
+            maxLength={40}
+          />
+          <button disabled={loading}>{loading ? "Checking…" : "Track order"}</button>
+        </form>
+        {error && <div className="track-error">{error}</div>}
+      </section>
+
+      {!order ? (
+        <section className="track-help">
+          <article>
+            <PackageCheck />
+            <h3>Where is my Order ID?</h3>
+            <p>Your Order ID starts with <b>VPO</b> and appears after successful checkout.</p>
+          </article>
+          <article>
+            <ShieldCheck />
+            <h3>Privacy protected</h3>
+            <p>Full mobile number and delivery address are never displayed on the public page.</p>
+          </article>
+          <article>
+            <Headphones />
+            <h3>Need help?</h3>
+            <p>Create a support ticket if your status has not changed for an expected period.</p>
+            <a href="https://vpansaksupporthub.lovable.app/submit" target="_blank" rel="noreferrer">
+              Open Support Hub
+            </a>
+          </article>
+        </section>
+      ) : (
+        <section className="track-result-page">
+          <header>
+            <div>
+              <small>ORDER ID</small>
+              <h2>{order.orderId}</h2>
+              <p>Placed on {new Date(order.createdAt).toLocaleString("en-IN")}</p>
+            </div>
+            <span>{order.status}</span>
+          </header>
+
+          <div
+            className="tracking-live-location"
+            style={{
+              margin: "16px 0",
+              padding: "14px 18px",
+              borderRadius: 10,
+              background: "linear-gradient(90deg, #0b2447, #133b70)",
+              color: "white",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              flexWrap: "wrap",
+              gap: 10,
+              border: "1px solid #1f4a86",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <MapPin size={22} style={{ color: "#38bdf8" }} />
+              <div>
+                <small style={{ color: "#93c5fd", fontSize: 9, fontWeight: 800, letterSpacing: "0.1em" }}>
+                  LIVE CHECKPOINT LOCATION
+                </small>
+                <h4 style={{ margin: "2px 0 0", fontSize: 15, fontWeight: 800 }}>
+                  {order.currentLocation || `${order.city} Sorting Center`}
+                </h4>
+                <p style={{ margin: 0, color: "#bfdbfe", fontSize: 10 }}>
+                  Updated: {order.updatedAt ? new Date(order.updatedAt).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", second: "2-digit" }) : "Just now"}
+                </p>
+              </div>
+            </div>
+            <span
+              style={{
+                padding: "4px 10px",
+                borderRadius: 20,
+                background: "#10b98122",
+                border: "1px solid #10b98166",
+                color: "#34d399",
+                fontSize: 10,
+                fontWeight: 800,
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+              }}
+            >
+              <i style={{ width: 6, height: 6, borderRadius: "50%", background: "#10b981" }} /> Live Sync Active
+            </span>
+          </div>
+
+          {exceptional && (
+            <div className="tracking-special">
+              <PackageCheck />
+              <span>
+                <strong>{exceptional}</strong>
+                <small>This order is in a special workflow. Open Support Hub for cancellation, return or refund details.</small>
+              </span>
+            </div>
+          )}
+
+          <div className="order-timeline">
+            {stages.map((stage, index) => (
+              <div className={index <= current ? "complete" : index === current + 1 ? "next" : ""} key={stage}>
+                <span>{index <= current && current >= 0 ? <Check /> : <Circle />}</span>
+                <div>
+                  <strong>{stage}</strong>
+                  <small>
+                    {index < current
+                      ? "Completed"
+                      : index === current
+                      ? "Current status"
+                      : index === current + 1 && current >= 0
+                      ? "Next update"
+                      : "Pending"}
+                  </small>
+                </div>
+                {index < stages.length - 1 && <i />}
+              </div>
+            ))}
+          </div>
+
+          <div className="tracking-columns">
+            <section>
+              <h3>
+                <PackageCheck />
+                Order summary
+              </h3>
+              {items.length ? (
+                items.map((item) => (
+                  <div className="tracked-item" key={item.id}>
+                    <span>
+                      <strong>{item.productName}</strong>
+                      <small>Quantity: {item.quantity}</small>
+                    </span>
+                    <b>{money(item.price * item.quantity)}</b>
+                  </div>
+                ))
+              ) : (
+                <p className="privacy-note">Item details are available in the signed-in account dashboard.</p>
+              )}
+              <div className="tracked-total">
+                <span>Total amount</span>
+                <strong>{money(order.total)}</strong>
+              </div>
+            </section>
+
+            <section>
+              <h3>
+                <MapPin />
+                Delivery information
+              </h3>
+              <dl>
+                <div>
+                  <dt>City</dt>
+                  <dd>{order.city}</dd>
+                </div>
+                <div>
+                  <dt>PIN code</dt>
+                  <dd>{order.pinCode}</dd>
+                </div>
+                <div>
+                  <dt>Mobile</dt>
+                  <dd>{order.mobile}</dd>
+                </div>
+                <div>
+                  <dt>Payment</dt>
+                  <dd>{order.paymentMethod}</dd>
+                </div>
+              </dl>
+              <p className="privacy-note">
+                <ShieldCheck />
+                Sensitive customer information is masked for security.
+              </p>
+            </section>
+          </div>
+
+          <div className="track-actions">
+            <div>
+              <Clock3 />
+              <span>
+                <strong>Real-time Status updates</strong>
+                <small>Updates from admin panel sync live on this page without refreshing.</small>
+              </span>
+            </div>
+            <a
+              href={`https://vpansaksupporthub.lovable.app/submit?order=${order.orderId}`}
+              target="_blank"
+              rel="noreferrer"
+            >
+              <Headphones />
+              Get order help
+            </a>
+          </div>
+        </section>
+      )}
+    </main>
+  );
 }
 
-export default function TrackPage(){
- return <Suspense fallback={<main className="track-page"><section className="track-hero"><p>Loading order tracking…</p></section></main>}><TrackContent/></Suspense>;
+export default function TrackPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="track-page">
+          <section className="track-hero">
+            <p>Loading order tracking…</p>
+          </section>
+        </main>
+      }
+    >
+      <TrackContent />
+    </Suspense>
+  );
 }

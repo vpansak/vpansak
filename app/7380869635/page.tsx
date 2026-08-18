@@ -49,6 +49,8 @@ type Row = {
   title?: string;
   body?: string;
   status?: string;
+  currentLocation?: string;
+  city?: string;
   paymentStatus?: string;
   paymentMethod?: string;
   total?: number;
@@ -1211,11 +1213,24 @@ function UserRows({ rows, action }: { rows: Row[]; action: (b: Record<string, un
 }
 
 function OrderRows({ rows, action }: { rows: Row[]; action: (b: Record<string, unknown>) => void }) {
+  const handleStatusChange = (r: Row, newStatus: string) => {
+    const defaultLocation = r.currentLocation || (newStatus === "Delivered" ? "Delivered to Customer" : newStatus === "Out for Delivery" ? `Out for delivery from local hub` : `${r.city || "Delhi"} Fulfillment Hub`);
+    const loc = window.prompt(`Update status to "${newStatus}".\n\nEnter current location / tracking checkpoint for ${r.orderId}:`, defaultLocation);
+    if (loc === null) return; // User cancelled prompt
+    action({ action: "orderStatus", orderId: r.orderId, status: newStatus, currentLocation: loc.trim() || defaultLocation });
+  };
+
+  const handleUpdateLocation = (r: Row) => {
+    const loc = window.prompt(`Enter current location / tracking checkpoint for ${r.orderId}:`, r.currentLocation || `${r.city || "Delhi"} Fulfillment Hub`);
+    if (loc === null || !loc.trim()) return;
+    action({ action: "orderStatus", orderId: r.orderId, status: r.status || "Order Confirmed", currentLocation: loc.trim() });
+  };
+
   return (
     <div className="manage-rows">
       {rows.length ? (
         rows.map((r) => (
-          <article key={r.orderId}>
+          <article key={r.orderId} style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
             <span>
               <strong>
                 {r.orderId} • {r.customerName}
@@ -1223,10 +1238,20 @@ function OrderRows({ rows, action }: { rows: Row[]; action: (b: Record<string, u
               <small>
                 Payment: {r.paymentMethod} • Amount: {money(r.total)}
               </small>
+              <div style={{ marginTop: 4, color: "#38bdf8", fontSize: 11, display: "flex", alignItems: "center", gap: 5 }}>
+                <span>📍 Checkpoint: <strong>{r.currentLocation || "Processing Hub"}</strong></span>
+                <button
+                  type="button"
+                  onClick={() => handleUpdateLocation(r)}
+                  style={{ background: "#ffffff18", border: "1px solid #ffffff25", color: "#93c5fd", padding: "2px 6px", borderRadius: 4, fontSize: 10, cursor: "pointer" }}
+                >
+                  Edit Location
+                </button>
+              </div>
             </span>
             <select
               value={r.status}
-              onChange={(e) => action({ action: "orderStatus", orderId: r.orderId, status: e.target.value })}
+              onChange={(e) => handleStatusChange(r, e.target.value)}
             >
               <option>Order Confirmed</option>
               <option>Packed</option>

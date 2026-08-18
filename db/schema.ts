@@ -32,6 +32,8 @@ export const orders = sqliteTable("orders", {
   paymentMethod: text("payment_method").notNull(),
   total: integer("total").notNull(),
   status: text("status").notNull().default("Order Confirmed"),
+  currentLocation: text("current_location").default("Fulfillment Hub"),
+  updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
   createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });
 

@@ -2,7 +2,7 @@ import { desc, eq } from "drizzle-orm";
 import { getDb } from "../../../db";
 import { addresses, contributions, coupons, donations, notifications, officers, orders, products, profiles, reviews, sellerApplications, ticketReplies, tickets, users } from "../../../db/schema";
 import { getAuthUserFromRequest, isAdminUser } from "../../lib/auth-session";
-import { getAllOrdersFromSupabase, saveContributionToSupabase, saveUserToSupabase, supabase } from "../../lib/supabase";
+import { getAllOrdersFromSupabase, saveContributionToSupabase, saveOrderToSupabase, saveUserToSupabase, supabase } from "../../lib/supabase";
 
 const ADMIN = "aloksingh84959@gmail.com";
 
@@ -86,7 +86,9 @@ export async function GET(request: Request) {
         pinCode: String(co.pin_code || co.pinCode || ""),
         total: Number(co.total || 0),
         status: String(co.status || "Order Confirmed"),
+        currentLocation: String(co.current_location || co.currentLocation || "Processing Hub"),
         paymentMethod: String(co.payment_method || co.paymentMethod || "COD"),
+        updatedAt: String(co.updated_at || co.updatedAt || co.created_at || new Date().toISOString()),
         createdAt: String(co.created_at || co.createdAt || new Date().toISOString()),
       };
       if (!orderMap.has(oid)) {
@@ -275,17 +277,36 @@ export async function POST(request: Request) {
     if (action === "orderStatus") {
       const id = String(body.orderId || "");
       const status = String(body.status || "").slice(0, 50);
-      await db.update(orders).set({ status }).where(eq(orders.orderId, id));
+      const currentLocation = String(body.currentLocation || body.location || "").slice(0, 150);
+      const updatedAt = new Date().toISOString();
+
+      await db.update(orders).set({
+        status,
+        ...(currentLocation ? { currentLocation } : {}),
+        updatedAt,
+      }).where(eq(orders.orderId, id));
+
       const [order] = await db.select().from(orders).where(eq(orders.orderId, id)).limit(1);
-      if (order?.ownerEmail) {
-        await db.insert(notifications).values({
-          ownerEmail: order.ownerEmail,
-          title: "Order status updated",
-          message: `${id} is now ${status}.`,
-          type: "order",
+
+      if (order) {
+        // Sync to Supabase Cloud DB immediately
+        await saveOrderToSupabase({
+          ...order,
+          status,
+          currentLocation: currentLocation || order.currentLocation || "Processing Hub",
+          updatedAt,
         });
+
+        if (order.ownerEmail) {
+          await db.insert(notifications).values({
+            ownerEmail: order.ownerEmail,
+            title: "Order status updated",
+            message: `${id} status is now ${status}${currentLocation ? ` (${currentLocation})` : ""}.`,
+            type: "order",
+          });
+        }
       }
-      return Response.json({ ok: true });
+      return Response.json({ ok: true, status, currentLocation, updatedAt });
     }
 
     if (action === "sellerStatus") {
