@@ -428,11 +428,11 @@ export function ProfileContent({ paramsTab }: { paramsTab?: string }) {
                   <h2>{user.fullName || user.email.split("@")[0]}</h2>
                   {isAdminUser ? (
                     <span className="badge-admin-superuser">
-                      <ShieldAlert size={12} /> Admin Superuser (Alok Singh)
+                      <ShieldAlert size={12} /> {user.email.toLowerCase() === "aloksingh84959@gmail.com" ? "Admin Superuser (Alok Singh)" : `${(user.role || "Officer").toUpperCase()} Account`}
                     </span>
                   ) : (
                     <span className="badge-active">
-                      <CheckCircle2 size={12} /> Active
+                      <CheckCircle2 size={12} /> Active Account
                     </span>
                   )}
                   {user.emailVerified && (

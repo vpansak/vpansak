@@ -123,23 +123,11 @@ export default function SecretAdminPage() {
   const load = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);
 
-    // Set admin cookies to unlock console directly on secret route
+    // Set admin key cookie to unlock console directly on secret route without mutating user session
     document.cookie = "vpansak_admin_key=7380869635; path=/; max-age=2592000; SameSite=Lax";
 
     try {
-      let res = await fetch("/api/admin");
-      if (res.status === 403) {
-        const payload = JSON.stringify({
-          email: "aloksingh84959@gmail.com",
-          fullName: "Super Admin",
-          role: "admin",
-          ts: Date.now(),
-        });
-        const token = btoa(payload).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-        document.cookie = `vpansak_session=${token}; path=/; max-age=2592000; SameSite=Lax`;
-        res = await fetch("/api/admin");
-      }
-
+      const res = await fetch("/api/admin");
       if (res.ok) {
         const value = await res.json();
         setData({
