@@ -182,6 +182,24 @@ export async function GET(request: Request) {
     donationRows.forEach(addRecord);
     cloudContributions.forEach(addRecord);
 
+    // Sync cloud records into local database so verification actions work seamlessly
+    for (const record of map.values()) {
+      try {
+        await db.insert(contributions).values({
+          verificationId: record.verificationId,
+          certificateNumber: record.certificateNumber || null,
+          fullName: record.fullName,
+          email: record.email,
+          mobile: record.mobile || "",
+          amount: record.amount || 0,
+          paymentMethod: record.paymentMethod || "manual",
+          transactionId: record.transactionId || null,
+          paymentStatus: record.paymentStatus || "pending_verification",
+          submittedAt: record.submittedAt || new Date().toISOString(),
+        }).onConflictDoNothing({ target: contributions.verificationId });
+      } catch {}
+    }
+
     const mergedDonations = Array.from(map.values()).sort(
       (a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime()
     );

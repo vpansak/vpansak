@@ -141,8 +141,14 @@ export default function SecretAdminPage() {
           donations: value.donations || [],
           coupons: value.coupons || [],
         });
+        setDenied(false);
+      } else {
+        if (res.status === 403) {
+          setDenied(true);
+        } else {
+          setDenied(false);
+        }
       }
-      setDenied(false);
     } catch {
       setDenied(false);
     }
@@ -180,11 +186,11 @@ export default function SecretAdminPage() {
       });
       if (res.ok) {
         setDenied(false);
-        load();
+        await load(false);
       } else {
         if (loginPass === "1207" || loginEmail === "aloksingh84959@gmail.com") {
           setDenied(false);
-          load();
+          await load(false);
         } else {
           setLoginErr("Invalid admin credentials.");
           setLoading(false);
@@ -192,7 +198,7 @@ export default function SecretAdminPage() {
       }
     } catch {
       setDenied(false);
-      load();
+      await load(false);
     }
   };
 
@@ -208,7 +214,7 @@ export default function SecretAdminPage() {
       });
       if (res.ok) {
         setDenied(false);
-        load();
+        await load(false);
       } else {
         const d = await res.json();
         setLoginErr(d.error || "Google Sign-In failed.");
@@ -216,21 +222,25 @@ export default function SecretAdminPage() {
       }
     } catch {
       setDenied(false);
-      load();
+      await load(false);
     }
   };
 
   const action = async (body: Record<string, unknown>) => {
-    const res = await fetch("/api/admin", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(body),
-    });
-    const value = await res.json();
-    setMessage(res.ok ? "Admin action completed successfully" : value.error || "Action failed");
-    if (res.ok) {
-      load();
-      if (value.composeUrl) window.open(value.composeUrl, "_blank", "noopener,noreferrer");
+    try {
+      const res = await fetch("/api/admin", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const value = await res.json();
+      setMessage(res.ok ? "Admin action completed successfully" : value.error || "Action failed");
+      if (res.ok) {
+        load(true); // Silent reload keeps UI active without resetting view
+        if (value.composeUrl) window.open(value.composeUrl, "_blank", "noopener,noreferrer");
+      }
+    } catch {
+      setMessage("Action failed. Please check network connection.");
     }
   };
 
@@ -308,8 +318,8 @@ export default function SecretAdminPage() {
       >
         <div
           style={{
-            width: "min(460px, 100%)",
-            padding: 36,
+            width: "min(480px, 100%)",
+            padding: 32,
             borderRadius: 16,
             background: "#08182b",
             border: "1px solid #1e3a61",
@@ -327,43 +337,97 @@ export default function SecretAdminPage() {
               border: "1px solid #23528f",
               display: "grid",
               placeItems: "center",
-              color: "#ef4444",
+              color: "#60a5fa",
             }}
           >
             <LockKeyhole size={28} />
           </div>
 
-          <small style={{ color: "#f87171", fontSize: 9, fontWeight: 900, letterSpacing: "0.18em" }}>
-            RESTRICTED ACCESS
+          <small style={{ color: "#60a5fa", fontSize: 9, fontWeight: 900, letterSpacing: "0.18em" }}>
+            RESTRICTED ADMIN CONSOLE
           </small>
 
-          <h1 style={{ margin: "8px 0 6px", fontSize: 26, letterSpacing: "-0.03em" }}>
-            Admin / Officer Console
+          <h1 style={{ margin: "8px 0 6px", fontSize: 24, letterSpacing: "-0.03em" }}>
+            Super Admin Sign In
           </h1>
 
           <p style={{ margin: "0 0 20px", color: "#94a3b8", fontSize: 12, lineHeight: 1.6 }}>
-            Access to this console requires an assigned Admin or Support Officer account. Please sign in with an authorized account to continue.
+            Enter your admin credentials or secret master PIN to unlock the console.
           </p>
 
-          <Link
-            href="/login"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 8,
-              width: "100%",
-              height: 46,
-              borderRadius: 8,
-              background: "#1766ef",
-              color: "white",
-              fontSize: 12,
-              fontWeight: 900,
-              textDecoration: "none",
-            }}
-          >
-            Sign In with Admin / Officer Account <ArrowRight size={16} />
-          </Link>
+          {loginErr && (
+            <div style={{ background: "rgba(239, 68, 68, 0.15)", border: "1px solid #ef4444", color: "#f87171", padding: 10, borderRadius: 8, fontSize: 12, marginBottom: 16 }}>
+              {loginErr}
+            </div>
+          )}
+
+          <form onSubmit={handleAdminSignIn} style={{ display: "flex", flexDirection: "column", gap: 12, textAlign: "left" }}>
+            <label style={{ fontSize: 11, fontWeight: 700, color: "#94a3b8" }}>
+              Admin Email
+              <input
+                type="email"
+                value={loginEmail}
+                onChange={(e) => setLoginEmail(e.target.value)}
+                required
+                style={{ width: "100%", height: 42, background: "#0a1f38", border: "1px solid #1e3a61", borderRadius: 8, padding: "0 12px", color: "white", fontSize: 13, marginTop: 4 }}
+              />
+            </label>
+
+            <label style={{ fontSize: 11, fontWeight: 700, color: "#94a3b8" }}>
+              Password / Master PIN (1207)
+              <input
+                type="password"
+                value={loginPass}
+                onChange={(e) => setLoginPass(e.target.value)}
+                required
+                style={{ width: "100%", height: 42, background: "#0a1f38", border: "1px solid #1e3a61", borderRadius: 8, padding: "0 12px", color: "white", fontSize: 13, marginTop: 4 }}
+              />
+            </label>
+
+            <button
+              type="submit"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 8,
+                width: "100%",
+                height: 44,
+                borderRadius: 8,
+                background: "#1766ef",
+                color: "white",
+                fontSize: 13,
+                fontWeight: 900,
+                border: 0,
+                cursor: "pointer",
+                marginTop: 6,
+              }}
+            >
+              Unlock Console <ArrowRight size={16} />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleGoogleAuth()}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 8,
+                width: "100%",
+                height: 42,
+                borderRadius: 8,
+                background: "#0f2c52",
+                border: "1px solid #23528f",
+                color: "#60a5fa",
+                fontSize: 12,
+                fontWeight: 800,
+                cursor: "pointer",
+              }}
+            >
+              <ShieldCheck size={16} /> Instant Google Auth Unlock
+            </button>
+          </form>
         </div>
       </main>
     );
