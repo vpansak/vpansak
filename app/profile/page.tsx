@@ -1130,12 +1130,12 @@ export function ProfileContent({ paramsTab }: { paramsTab?: string }) {
 
                   <div className="available-coupons-grid">
                     {[
+                      { code: "RAKHI79", title: "₹79 OFF", min: "Min Order: ₹399 • Rakhi Special" },
+                      { code: "RAKHI15", title: "15% OFF", min: "Min Order: ₹899 • Sibling Offer" },
+                      { code: "SIBLING100", title: "₹100 OFF", min: "Min Order: ₹799 • Rakhi Mega" },
                       { code: "WELCOME50", title: "₹50 OFF", min: "Min Order: ₹499 • First order" },
                       { code: "VPANSAK100", title: "₹100 OFF", min: "Min Order: ₹999 • Storewide" },
-                      { code: "VPANSAK10", title: "10% OFF", min: "Min Order: ₹499 • Max ₹300 OFF" },
-                      { code: "VP50", title: "₹50 OFF", min: "Min Order: ₹399 • Daily deal" },
-                      { code: "SAVE15", title: "15% OFF", min: "Min Order: ₹1,499 • Mega savings" },
-                      { code: "FESTIVE200", title: "₹200 OFF", min: "Min Order: ₹1,999 • Festive special" },
+                      { code: "FESTIVE200", title: "₹200 OFF", min: "Min Order: ₹1,999 • Rakshabandhan special" },
                     ].map((c) => (
                       <article className="coupon-item" key={c.code}>
                         <span>{c.code}</span>

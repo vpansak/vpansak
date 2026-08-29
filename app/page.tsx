@@ -102,16 +102,16 @@ const categories = [
 ];
 
 const heroSlides = [
-  { eyebrow: "🇮🇳 INDEPENDENCE DAY FREEDOM SALE", title: "Premium tech.\nSmarter prices.", copy: "Upgrade your everyday with verified electronics, mobiles and accessories at launch prices.", offer: "Up to 60% OFF + Freedom Coupons", button: "Explore Freedom Deals", category: "Electronics", image: "https://images.unsplash.com/photo-1526738549149-8e07eca6c147?auto=format&fit=crop&w=1800&q=88", theme: "blue" },
-  { eyebrow: "🇮🇳 FREEDOM SEASON STYLE EDIT", title: "Everyday style,\nmade effortless.", copy: "Fresh festive fashion picks, useful accessories and easy freedom coupon savings.", offer: "Freedom Deals From ₹399", button: "Shop Freedom Fashion", category: "Fashion", image: "https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=1800&q=88", theme: "rose" },
-  { eyebrow: "🇮🇳 SWATANTRATA HOME REFRESH", title: "Small upgrades.\nA better home.", copy: "Thoughtful furniture, kitchen and home essentials for comfortable spaces.", offer: "Minimum 40% OFF", button: "Refresh your home", category: "Home", image: "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=1800&q=88", theme: "gold" },
-  { eyebrow: "🇮🇳 MOBILE FREEDOM MEGA DAYS", title: "Faster phones.\nBetter everyday.", copy: "Explore dependable 5G smartphones, accessories and mobile essentials at smart prices.", offer: "From ₹9,999 + Freedom Discounts", button: "Shop Freedom Mobiles", category: "Mobile", image: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=1800&q=88", theme: "blue" },
-  { eyebrow: "🇮🇳 SWATANTRATA KITCHEN BESTSELLERS", title: "Cook smarter.\nServe happier.", copy: "Useful cookware, storage and everyday kitchen tools selected for modern homes.", offer: "Up to 55% OFF", button: "Explore kitchen", category: "Kitchen", image: "https://images.unsplash.com/photo-1556911220-bff31c812dba?auto=format&fit=crop&w=1800&q=88", theme: "gold" },
-  { eyebrow: "🇮🇳 FREEDOM BEAUTY & GLOW", title: "Simple care.\nEveryday glow.", copy: "Discover skincare and personal-care essentials for an uncomplicated daily routine.", offer: "Starting ₹299", button: "Shop beauty", category: "Beauty", image: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1800&q=88", theme: "rose" },
-  { eyebrow: "🇮🇳 FREEDOM GAMING ZONE", title: "Level up.\nPlay your way.", copy: "Controllers, audio and gaming accessories made for relaxed and responsive play.", offer: "Up to 45% OFF", button: "Enter gaming", category: "Gaming", image: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=1800&q=88", theme: "blue" },
-  { eyebrow: "🇮🇳 SWATANTRATA FITNESS PICKS", title: "Move better.\nFeel stronger.", copy: "Practical sports and home-fitness essentials for stretching, training and active days.", offer: "From ₹499", button: "Shop sports", category: "Sports", image: "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=1800&q=88", theme: "gold" },
-  { eyebrow: "🇮🇳 FREEDOM STUDY & WORK", title: "Focus more.\nCreate better.", copy: "Laptops, planners and desk essentials that make study and everyday work feel organised.", offer: "Up to 35% OFF", button: "Explore computers", category: "Computer", image: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&w=1800&q=88", theme: "blue" },
-  { eyebrow: "🇮🇳 FREEDOM TOYS & GIFTS", title: "Big ideas.\nHappy play.", copy: "Creative toys and building sets for fun, curiosity and screen-free family time.", offer: "From ₹349", button: "Shop toys", category: "Toys", image: "https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?auto=format&fit=crop&w=1800&q=88", theme: "rose" },
+  { eyebrow: "🪔 RAKSHABANDHAN SPECIAL GIFT SALE", title: "Premium tech.\nSmarter prices.", copy: "Upgrade your everyday with verified electronics, mobiles and Rakhi gift picks at launch prices.", offer: "Up to 60% OFF + Sibling Coupons", button: "Explore Rakhi Deals", category: "Electronics", image: "https://images.unsplash.com/photo-1526738549149-8e07eca6c147?auto=format&fit=crop&w=1800&q=88", theme: "blue" },
+  { eyebrow: "📿 RAKHI FESTIVE FASHION EDIT", title: "Everyday style,\nmade effortless.", copy: "Fresh festive fashion picks, traditional wear and easy Rakhi coupon savings for brothers & sisters.", offer: "Rakhi Specials From ₹399", button: "Shop Festive Fashion", category: "Fashion", image: "https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=1800&q=88", theme: "rose" },
+  { eyebrow: "🎁 SIBLING CELEBRATION HOME UPGRADE", title: "Small upgrades.\nA better home.", copy: "Thoughtful decor, sweet kitchenware and home essentials for warm festive celebrations.", offer: "Minimum 40% OFF", button: "Refresh your home", category: "Home", image: "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=1800&q=88", theme: "gold" },
+  { eyebrow: "📱 RAKSHABANDHAN MOBILE SURPRISE", title: "Faster phones.\nBetter everyday.", copy: "Gift dependable 5G smartphones, wireless audio and mobile accessories to your sibling.", offer: "From ₹9,999 + Rakhi Discounts", button: "Shop Rakhi Mobiles", category: "Mobile", image: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=1800&q=88", theme: "blue" },
+  { eyebrow: "🍲 FESTIVE SWEETS & KITCHEN BESTSELLERS", title: "Cook festive feasts.\nShare sweet moments.", copy: "Useful cookware, festive dessert makers and kitchen tools selected for modern homes.", offer: "Up to 55% OFF", button: "Explore kitchen", category: "Kitchen", image: "https://images.unsplash.com/photo-1556911220-bff31c812dba?auto=format&fit=crop&w=1800&q=88", theme: "gold" },
+  { eyebrow: "✨ RAKHI BEAUTY & GLOW GIFT HAMPERS", title: "Skincare hampers.\nEveryday glow.", copy: "Discover luxury skincare and beauty hampers perfect for Rakhi gifting.", offer: "Starting ₹299", button: "Shop beauty hampers", category: "Beauty", image: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1800&q=88", theme: "rose" },
+  { eyebrow: "🎮 RAKSHABANDHAN GAMING & GADGETS", title: "Surprise gifts.\nPlay your way.", copy: "Next-gen controllers, immersive audio and gaming accessories for brothers.", offer: "Up to 45% OFF", button: "Enter gaming", category: "Gaming", image: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=1800&q=88", theme: "blue" },
+  { eyebrow: "🏋️ HEALTH & FITNESS RAKHI GIFTS", title: "Move better.\nFeel stronger.", copy: "Practical sports, smartwatch and fitness gear for active brothers and sisters.", offer: "From ₹499", button: "Shop sports", category: "Sports", image: "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=1800&q=88", theme: "gold" },
+  { eyebrow: "💻 WORK & STUDY RAKHI GIFTS", title: "Focus more.\nAchieve better.", copy: "Laptops, smart backpacks and desk essentials for your sibling's work and study.", offer: "Up to 35% OFF", button: "Explore laptops", category: "Computer", image: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&w=1800&q=88", theme: "blue" },
+  { eyebrow: "🧸 RAKSHABANDHAN TOYS & KIDS GIFTS", title: "Big smiles.\nHappy play.", copy: "Creative building sets, toys and fun gifts for younger brothers and sisters.", offer: "From ₹349", button: "Shop toys", category: "Toys", image: "https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?auto=format&fit=crop&w=1800&q=88", theme: "rose" },
 ];
 
 function ProductCard({ product, wished, onWish, onAdd, authUser }: { product: CatalogProduct; wished: boolean; onWish: () => void; onAdd: () => void; authUser: unknown }) {
@@ -373,15 +373,21 @@ export default function HomePage() {
 
   const currentHero = heroSlides[hero];
 
-  const isFestiveTheme = true;
+  const [isFestiveTheme, setIsFestiveTheme] = useState(true);
 
   return (
-    <main className="vp-store festive-theme-active">
+    <main className={`vp-store ${isFestiveTheme ? "festive-theme-active" : ""}`}>
       {toast && <div className="vp-toast"><Sparkles /><span>{toast}</span></div>}
 
       <header className={`vp-header-shell ${isCollapsed ? "is-collapsed" : ""}`} id="top">
         <div className="mobile-header-collapsible">
-
+          {isFestiveTheme && (
+            <div className="rakhi-banner-bar">
+              <span>🪔 RAKSHABANDHAN SPECIAL</span>
+              <strong>Rakhi Gifts & Sibling Celebration Offers are Live!</strong>
+              <b>CODE: RAKHI15 (15% OFF)</b>
+            </div>
+          )}
 
           <div className="vp-brand-row">
             <Link className="vp-brand" href="/" aria-label="VPANSAK Shopping home"><img src="/vpansak-logo.png" alt="VPANSAK" /><span><strong>VPANSAK</strong><small>SHOPPING</small></span></Link>
@@ -692,6 +698,21 @@ export default function HomePage() {
           </div>
         </div>
       )}
+      <div className="vp-festive-toggle-widget">
+        <button
+          className={`vp-festive-btn ${isFestiveTheme ? "active" : ""}`}
+          type="button"
+          onClick={() => setIsFestiveTheme(!isFestiveTheme)}
+          title="Toggle Rakshabandhan Festive Theme"
+        >
+          <span className="flag-icon">🪔</span>
+          <span className="widget-label">
+            <strong>Rakshabandhan Theme</strong>
+            <small>Rakhi Special Mode</small>
+          </span>
+          <span className="toggle-pill">{isFestiveTheme ? "ACTIVE 📿" : "ENABLE"}</span>
+        </button>
+      </div>
     </main>
   );
 }

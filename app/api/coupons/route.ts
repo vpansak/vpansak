@@ -3,14 +3,17 @@ import { getDb } from "../../../db";
 import { coupons } from "../../../db/schema";
 
 const DEFAULT_COUPONS = [
-  { code: "FREEDOM79", title: "Independence Freedom Offer", type: "fixed", value: 79, minOrder: 399, maxDiscount: 79 },
-  { code: "INDIA15", title: "Freedom 15% Savings", type: "percentage", value: 15, minOrder: 899, maxDiscount: 450 },
-  { code: "INDEPENDENCE100", title: "Independence Mega Savings", type: "fixed", value: 100, minOrder: 799, maxDiscount: 100 },
+  { code: "RAKHI79", title: "Rakshabandhan Special Gift Offer", type: "fixed", value: 79, minOrder: 399, maxDiscount: 79 },
+  { code: "RAKHI15", title: "Rakshabandhan 15% Savings", type: "percentage", value: 15, minOrder: 899, maxDiscount: 450 },
+  { code: "SIBLING100", title: "Rakhi Sibling Mega Savings", type: "fixed", value: 100, minOrder: 799, maxDiscount: 100 },
+  { code: "FREEDOM79", title: "Rakshabandhan Special Gift Offer", type: "fixed", value: 79, minOrder: 399, maxDiscount: 79 },
+  { code: "INDIA15", title: "Rakshabandhan 15% Savings", type: "percentage", value: 15, minOrder: 899, maxDiscount: 450 },
+  { code: "INDEPENDENCE100", title: "Rakhi Sibling Mega Savings", type: "fixed", value: 100, minOrder: 799, maxDiscount: 100 },
   { code: "WELCOME50", title: "Welcome Discount", type: "fixed", value: 50, minOrder: 499, maxDiscount: 50 },
   { code: "VPANSAK100", title: "VPANSAK Mega Offer", type: "fixed", value: 100, minOrder: 999, maxDiscount: 100 },
   { code: "VPANSAK10", title: "Welcome 10% Off", type: "percentage", value: 10, minOrder: 499, maxDiscount: 300 },
   { code: "VP50", title: "Storewide ₹50 Off", type: "fixed", value: 50, minOrder: 399, maxDiscount: 50 },
-  { code: "FESTIVE200", title: "Festive Season Off", type: "fixed", value: 200, minOrder: 1999, maxDiscount: 200 },
+  { code: "FESTIVE200", title: "Rakshabandhan Festive Off", type: "fixed", value: 200, minOrder: 1999, maxDiscount: 200 },
   { code: "SAVE15", title: "Super Saver 15% Off", type: "percentage", value: 15, minOrder: 1499, maxDiscount: 500 },
 ];
 
