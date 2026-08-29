@@ -373,21 +373,19 @@ export default function HomePage() {
 
   const currentHero = heroSlides[hero];
 
-  const [isFestiveTheme, setIsFestiveTheme] = useState(true);
+  const isFestiveTheme = true;
 
   return (
-    <main className={`vp-store ${isFestiveTheme ? "festive-theme-active" : ""}`}>
+    <main className="vp-store festive-theme-active">
       {toast && <div className="vp-toast"><Sparkles /><span>{toast}</span></div>}
 
       <header className={`vp-header-shell ${isCollapsed ? "is-collapsed" : ""}`} id="top">
         <div className="mobile-header-collapsible">
-          {isFestiveTheme && (
-            <div className="rakhi-banner-bar">
-              <span>🪔 RAKSHABANDHAN SPECIAL</span>
-              <strong>Rakhi Gifts & Sibling Celebration Offers are Live!</strong>
-              <b>CODE: RAKHI15 (15% OFF)</b>
-            </div>
-          )}
+          <div className="rakhi-banner-bar">
+            <span>🪔 RAKSHABANDHAN SPECIAL</span>
+            <strong>Rakhi Gifts & Sibling Celebration Offers are Live!</strong>
+            <b>CODE: RAKHI15 (15% OFF)</b>
+          </div>
 
           <div className="vp-brand-row">
             <Link className="vp-brand" href="/" aria-label="VPANSAK Shopping home"><img src="/vpansak-logo.png" alt="VPANSAK" /><span><strong>VPANSAK</strong><small>SHOPPING</small></span></Link>
@@ -698,21 +696,6 @@ export default function HomePage() {
           </div>
         </div>
       )}
-      <div className="vp-festive-toggle-widget">
-        <button
-          className={`vp-festive-btn ${isFestiveTheme ? "active" : ""}`}
-          type="button"
-          onClick={() => setIsFestiveTheme(!isFestiveTheme)}
-          title="Toggle Rakshabandhan Festive Theme"
-        >
-          <span className="flag-icon">🪔</span>
-          <span className="widget-label">
-            <strong>Rakshabandhan Theme</strong>
-            <small>Rakhi Special Mode</small>
-          </span>
-          <span className="toggle-pill">{isFestiveTheme ? "ACTIVE 📿" : "ENABLE"}</span>
-        </button>
-      </div>
     </main>
   );
 }

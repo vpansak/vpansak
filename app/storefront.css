@@ -3874,89 +3874,41 @@
   font-weight: 800 !important;
 }
 
-/* Floating Rakshabandhan Festive Theme Toggle Widget */
-.vp-festive-toggle-widget {
-  position: fixed;
-  bottom: 80px;
-  left: 20px;
-  z-index: 99;
+/* Site-Wide Festive Overrides Across All Tabs & Pages */
+.festive-theme-active .vp-main-nav {
+  background: linear-gradient(135deg, #1e1b4b 0%, #31103f 100%) !important;
+  border-bottom: 2px solid #f59e0b !important;
 }
 
-.vp-festive-btn {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: #1e1b4b;
-  color: #ffffff;
-  border: 2px solid #f59e0b;
-  padding: 8px 14px;
-  border-radius: 30px;
-  cursor: pointer;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35), 0 0 14px rgba(245, 158, 11, 0.45);
-  transition: all 0.3s ease;
-}
-
-.vp-festive-btn:hover {
-  transform: translateY(-3px) scale(1.02);
-  border-color: #e11d48;
-  box-shadow: 0 6px 25px rgba(225, 29, 72, 0.5);
-}
-
-.vp-festive-btn.active {
-  background: linear-gradient(135deg, #4c0519 0%, #831843 100%);
-  border: 2px solid #fef08a;
-}
-
-.vp-festive-btn .flag-icon {
-  font-size: 20px;
-  line-height: 1;
-}
-
-.vp-festive-btn .widget-label {
-  display: flex;
-  flex-direction: column;
-  text-align: left;
-}
-
-.vp-festive-btn .widget-label strong {
-  font-size: 12px;
-  font-weight: 800;
-  color: #ffffff;
-  line-height: 1.2;
-}
-
-.vp-festive-btn .widget-label small {
-  font-size: 10px;
-  color: #fef08a;
+.festive-theme-active .vp-main-nav a,
+.festive-theme-active .vp-main-nav button {
+  color: #fef08a !important;
   font-weight: 700;
 }
 
-.vp-festive-btn .toggle-pill {
-  background: #f59e0b;
-  color: #1e1b4b;
-  font-size: 10px;
-  font-weight: 900;
-  padding: 2px 7px;
-  border-radius: 10px;
+.festive-theme-active .vp-main-nav a:hover,
+.festive-theme-active .vp-main-nav button:hover {
+  background: rgba(245, 158, 11, 0.2) !important;
+  color: #ffffff !important;
 }
 
-.vp-festive-btn.active .toggle-pill {
-  background: #e11d48;
-  color: #ffffff;
+.festive-theme-active .vp-category-strip button:hover {
+  border-color: #f59e0b !important;
+  box-shadow: 0 4px 15px rgba(245, 158, 11, 0.25) !important;
 }
 
-@media (max-width: 768px) {
-  .vp-festive-toggle-widget {
-    bottom: 75px;
-    left: 12px;
-  }
-  .vp-festive-btn {
-    padding: 6px 10px;
-    gap: 6px;
-  }
-  .vp-festive-btn .widget-label {
-    display: none;
-  }
+.festive-theme-active .btn-account-primary,
+.festive-theme-active .checkout-btn-primary,
+.festive-theme-active .btn-use-coupon {
+  background: linear-gradient(135deg, #e11d48, #991b1b) !important;
+  color: #ffffff !important;
+  border: 1px solid #fef08a !important;
+}
+
+.festive-theme-active .btn-account-primary:hover,
+.festive-theme-active .checkout-btn-primary:hover {
+  background: linear-gradient(135deg, #be123c, #881337) !important;
+  box-shadow: 0 4px 18px rgba(225, 29, 72, 0.4) !important;
 }
 
 /* ==========================================================================
