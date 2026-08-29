@@ -1,6 +1,6 @@
 "use client";
 
-import { Bot, CheckCircle2, ChevronRight, CircleHelp, Headphones, Mail, MessageSquareText, Search, Send, ShieldCheck, Store, TicketCheck, ExternalLink } from "lucide-react";
+import { Bot, CheckCircle2, ChevronRight, CircleHelp, Headphones, MessageSquareText, Search, Send, ShieldCheck, Store, TicketCheck, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 

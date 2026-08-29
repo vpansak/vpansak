@@ -1,49 +1,252 @@
-import { asc, desc, eq } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
 import { getDb } from "../../../db";
 import { officers, ticketReplies, tickets } from "../../../db/schema";
 import { getAuthUserFromRequest } from "../../lib/auth-session";
+import { buildTicketEmailHtml, sendEmailViaResend } from "../../lib/email";
 import { getTicketFromSupabase, saveTicketToSupabase } from "../../lib/supabase";
 
-const publicTicket = (ticket: { ticketId: string; customerName: string; category: string; subject: string; priority: string; status: string; createdAt: string; updatedAt: string }) => ({ ticketId: ticket.ticketId, customerName: `${ticket.customerName.slice(0, 1)}***`, category: ticket.category, subject: ticket.subject, priority: ticket.priority, status: ticket.status, createdAt: ticket.createdAt, updatedAt: ticket.updatedAt });
+const SUPER_ADMIN_EMAIL = "aloksingh84959@gmail.com";
+
+const publicTicket = (ticket: {
+  ticketId: string;
+  customerName: string;
+  category: string;
+  subject: string;
+  priority: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+}) => ({
+  ticketId: ticket.ticketId,
+  customerName: `${ticket.customerName.slice(0, 1)}***`,
+  category: ticket.category,
+  subject: ticket.subject,
+  priority: ticket.priority,
+  status: ticket.status,
+  createdAt: ticket.createdAt,
+  updatedAt: ticket.updatedAt,
+});
 
 export async function GET(request: Request) {
   const id = new URL(request.url).searchParams.get("id")?.trim().toUpperCase();
-  if (!id || !/^VPT\d{6}$/.test(id)) return Response.json({ error: "Enter a valid Ticket ID." }, { status: 400 });
+  if (!id || !/^VPT\d{6}$/.test(id))
+    return Response.json({ error: "Enter a valid Ticket ID." }, { status: 400 });
   try {
     const db = await getDb();
     const [ticket] = await db.select().from(tickets).where(eq(tickets.ticketId, id)).limit(1);
     if (!ticket) {
       const remoteTicket = await getTicketFromSupabase(id);
-      if (!remoteTicket) return Response.json({ error: "Ticket not found." }, { status: 404 });
-      return Response.json({ ticket: publicTicket(remoteTicket), replies: [{ authorType: "system", authorName: "VPANSAK Support", message: "Your request has been received. Our support team will review it and share an update here.", createdAt: remoteTicket.createdAt }] });
+      if (!remoteTicket)
+        return Response.json({ error: "Ticket not found." }, { status: 404 });
+      return Response.json({
+        ticket: publicTicket(remoteTicket),
+        replies: [
+          {
+            authorType: "system",
+            authorName: "VPANSAK Support",
+            message:
+              "Your request has been received. Our support team will review it and share an update here.",
+            createdAt: remoteTicket.createdAt,
+          },
+        ],
+      });
     }
-    const replies = await db.select({ authorType: ticketReplies.authorType, authorName: ticketReplies.authorName, message: ticketReplies.message, createdAt: ticketReplies.createdAt }).from(ticketReplies).where(eq(ticketReplies.ticketId, id)).orderBy(asc(ticketReplies.createdAt));
-    return Response.json({ ticket: publicTicket(ticket), replies: replies.map((reply: { authorType: string; authorName: string; message: string; createdAt: string })=>({...reply,authorName:reply.authorType==="customer"?"Customer":reply.authorName})) });
-  } catch { return Response.json({ error: "Ticket tracking is temporarily unavailable." }, { status: 503 }); }
+    const replies = await db
+      .select({
+        authorType: ticketReplies.authorType,
+        authorName: ticketReplies.authorName,
+        message: ticketReplies.message,
+        createdAt: ticketReplies.createdAt,
+      })
+      .from(ticketReplies)
+      .where(eq(ticketReplies.ticketId, id))
+      .orderBy(asc(ticketReplies.createdAt));
+    return Response.json({
+      ticket: publicTicket(ticket),
+      replies: replies.map(
+        (reply: { authorType: string; authorName: string; message: string; createdAt: string }) => ({
+          ...reply,
+          authorName: reply.authorType === "customer" ? "Customer" : reply.authorName,
+        })
+      ),
+    });
+  } catch {
+    return Response.json(
+      { error: "Ticket tracking is temporarily unavailable." },
+      { status: 503 }
+    );
+  }
 }
 
 export async function POST(request: Request) {
   try {
-    const authUser = await getAuthUserFromRequest(request);
-    if (!authUser || !authUser.email) {
-      return Response.json({ error: "Please sign in to create a support ticket." }, { status: 401 });
+    const authUser = await getAuthUserFromRequest(request).catch(() => null);
+    const body = ((await request.json().catch(() => ({}))) || {}) as Record<string, string>;
+
+    const customerName = String(body.customerName || authUser?.fullName || "").trim();
+    const email = String(body.email || authUser?.email || "").trim().toLowerCase();
+    const mobile = String(body.mobile || authUser?.mobile || "").trim();
+    const category = String(body.category || "").trim();
+    const priority = String(body.priority || "Normal").trim();
+    const subject = String(body.subject || "").trim();
+    const descriptionInput = String(body.description || body.message || "").trim();
+    const orderId = String(body.orderId || "").trim().toUpperCase();
+
+    if (!customerName || !email || !category || !subject || !descriptionInput) {
+      return Response.json(
+        { error: "Complete all required ticket details (name, email, category, subject, description)." },
+        { status: 400 }
+      );
     }
-    const email = authUser.email.toLowerCase();
-    const body = await request.json() as Record<string, string>;
-    const required = ["customerName", "category", "subject", "description"];
-    if (required.some((key) => !String(body[key] || "").trim())) return Response.json({ error: "Complete all required ticket details." }, { status: 400 });
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return Response.json(
+        { error: "Please enter a valid email address." },
+        { status: 400 }
+      );
+    }
+
     const ticketId = `VPT${Math.floor(100000 + Math.random() * 900000)}`;
     const db = await getDb();
-    const [officer] = await db.select().from(officers).where(eq(officers.active, true)).orderBy(asc(officers.assignedCount), asc(officers.id)).limit(1);
-    const orderReference=body.orderId?.trim().toUpperCase();
-    const descriptionText = `${orderReference?`Order: ${orderReference}\n`:""}${body.description.trim()}`.slice(0,2000);
-    await db.insert(tickets).values({ ticketId, customerName: body.customerName.trim().slice(0,100), email, mobile: body.mobile?.trim().slice(0,20) || authUser.mobile || "", category: body.category.trim().slice(0,50), subject: body.subject.trim().slice(0,150), description: descriptionText, priority: body.priority?.trim().slice(0,20) || "Normal", assignedOfficer: officer?.email ?? null });
-    await db.insert(ticketReplies).values({ ticketId, authorType: "system", authorName: "VPANSAK Support", message: "Your request has been received. Our support team will review it and share an update here." });
-    if (officer) await db.update(officers).set({ assignedCount: officer.assignedCount + 1 }).where(eq(officers.id, officer.id));
-    await saveTicketToSupabase({ ticket_id: ticketId, customer_name: body.customerName.trim().slice(0,100), email, mobile: body.mobile?.trim().slice(0,20) || authUser.mobile || "", category: body.category.trim().slice(0,50), subject: body.subject.trim().slice(0,150), description: descriptionText, priority: body.priority?.trim().slice(0,20) || "Normal", status: "Open" });
-    return Response.json({ ticketId, status: "Open", assigned: Boolean(officer) }, { status: 201 });
-  } catch (err) {
-    console.error("Create ticket error:", err);
-    return Response.json({ error: "Ticket could not be created. Please try again." }, { status: 500 });
+
+    // Select random active officer
+    const activeOfficers = await db
+      .select()
+      .from(officers)
+      .where(eq(officers.active, true));
+
+    let selectedOfficer: (typeof activeOfficers)[number] | null = null;
+    if (activeOfficers.length > 0) {
+      const randomIndex = Math.floor(Math.random() * activeOfficers.length);
+      selectedOfficer = activeOfficers[randomIndex];
+    }
+
+    const descriptionText = `${orderId ? `Order: ${orderId}\n` : ""}${descriptionInput}`.slice(
+      0,
+      2000
+    );
+
+    // Save ticket locally
+    await db.insert(tickets).values({
+      ticketId,
+      customerName: customerName.slice(0, 100),
+      email,
+      mobile: mobile.slice(0, 20),
+      category: category.slice(0, 50),
+      subject: subject.slice(0, 150),
+      description: descriptionText,
+      priority: priority.slice(0, 20),
+      assignedOfficer: selectedOfficer?.email ?? null,
+    });
+
+    // Save system reply record
+    await db.insert(ticketReplies).values({
+      ticketId,
+      authorType: "system",
+      authorName: "VPANSAK Support",
+      message:
+        "Your request has been received. Our support team will review it and share an update here.",
+    });
+
+    // Increment assigned officer count if assigned
+    if (selectedOfficer) {
+      await db
+        .update(officers)
+        .set({ assignedCount: selectedOfficer.assignedCount + 1 })
+        .where(eq(officers.id, selectedOfficer.id));
+    }
+
+    // Backup ticket to Supabase
+    void saveTicketToSupabase({
+      ticket_id: ticketId,
+      customer_name: customerName.slice(0, 100),
+      email,
+      mobile: mobile.slice(0, 20),
+      category: category.slice(0, 50),
+      subject: subject.slice(0, 150),
+      description: descriptionText,
+      priority: priority.slice(0, 20),
+      status: "Open",
+    }).catch(() => null);
+
+    // Prepare email notifications via Resend
+    let notificationSent = false;
+    try {
+      const nowIST = new Date().toLocaleString("en-IN", {
+        timeZone: "Asia/Kolkata",
+        dateStyle: "full",
+        timeStyle: "medium",
+      });
+
+      const assignmentStatus = selectedOfficer
+        ? `Assigned to ${selectedOfficer.fullName} (${selectedOfficer.email})`
+        : "Unassigned (No active support officer)";
+
+      const emailSubject = `New VPANSAK Support Ticket – ${ticketId} – ${subject.slice(0, 80)}`;
+
+      const emailHtml = buildTicketEmailHtml({
+        ticketId,
+        submittedAtIst: nowIST,
+        customerName,
+        customerEmail: email,
+        mobile,
+        category,
+        priority,
+        subject,
+        description: descriptionText,
+        orderId: orderId || undefined,
+        assignedOfficerName: selectedOfficer?.fullName,
+        officerId: selectedOfficer?.officerId,
+        officerEmail: selectedOfficer?.email,
+        assignmentStatus,
+        uploadedFileLinks: [],
+      });
+
+      // 1. Email Super Admin unconditionally
+      const adminResult = await sendEmailViaResend({
+        to: SUPER_ADMIN_EMAIL,
+        subject: emailSubject,
+        html: emailHtml,
+        idempotencyKey: `${ticketId}-admin`,
+      });
+
+      if (adminResult.success) {
+        notificationSent = true;
+      }
+
+      // 2. Email Assigned Officer if active officer was selected
+      if (selectedOfficer && selectedOfficer.email) {
+        const officerResult = await sendEmailViaResend({
+          to: selectedOfficer.email,
+          subject: emailSubject,
+          html: emailHtml,
+          idempotencyKey: `${ticketId}-officer`,
+        });
+        if (officerResult.success) {
+          notificationSent = true;
+        }
+      }
+    } catch (emailErr: unknown) {
+      const msg = emailErr instanceof Error ? emailErr.message : String(emailErr);
+      console.error("Ticket notification dispatch failed:", msg);
+    }
+
+    return Response.json(
+      {
+        ticketId,
+        status: "Open",
+        assigned: Boolean(selectedOfficer),
+        assignedOfficer: selectedOfficer?.email || null,
+        notificationSent,
+      },
+      { status: 201 }
+    );
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error("Create ticket error:", msg);
+    return Response.json(
+      { error: "Ticket could not be created. Please try again." },
+      { status: 500 }
+    );
   }
 }
