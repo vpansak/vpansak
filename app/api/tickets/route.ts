@@ -92,9 +92,10 @@ export async function POST(request: Request) {
     const descriptionInput = String(body.description || body.message || "").trim();
     const orderId = String(body.orderId || "").trim().toUpperCase();
 
-    if (!customerName || !email || !category || !subject || !descriptionInput) {
+    // 1. Mandatory field checks (including mobile)
+    if (!customerName || !email || !mobile || !category || !subject || !descriptionInput) {
       return Response.json(
-        { error: "Complete all required ticket details (name, email, category, subject, description)." },
+        { error: "Complete all required ticket details (name, email, mobile, category, subject, description)." },
         { status: 400 }
       );
     }
@@ -102,6 +103,15 @@ export async function POST(request: Request) {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return Response.json(
         { error: "Please enter a valid email address." },
+        { status: 400 }
+      );
+    }
+
+    // 2. Validate mobile length and allowed characters before saving
+    const digitsOnly = mobile.replace(/\D/g, "");
+    if (!/^\+?[0-9\s-]{7,20}$/.test(mobile) || digitsOnly.length < 7 || digitsOnly.length > 15) {
+      return Response.json(
+        { error: "Please enter a valid mobile number (7 to 15 digits)." },
         { status: 400 }
       );
     }
@@ -126,7 +136,7 @@ export async function POST(request: Request) {
       2000
     );
 
-    // Save ticket locally
+    // Save ticket locally in D1/SQLite
     await db.insert(tickets).values({
       ticketId,
       customerName: customerName.slice(0, 100),
@@ -156,18 +166,23 @@ export async function POST(request: Request) {
         .where(eq(officers.id, selectedOfficer.id));
     }
 
-    // Backup ticket to Supabase
-    void saveTicketToSupabase({
-      ticket_id: ticketId,
-      customer_name: customerName.slice(0, 100),
-      email,
-      mobile: mobile.slice(0, 20),
-      category: category.slice(0, 50),
-      subject: subject.slice(0, 150),
-      description: descriptionText,
-      priority: priority.slice(0, 20),
-      status: "Open",
-    }).catch(() => null);
+    // 3. Await Supabase backup, catching failure separately so local ticket is preserved
+    try {
+      await saveTicketToSupabase({
+        ticket_id: ticketId,
+        customer_name: customerName.slice(0, 100),
+        email,
+        mobile: mobile.slice(0, 20),
+        category: category.slice(0, 50),
+        subject: subject.slice(0, 150),
+        description: descriptionText,
+        priority: priority.slice(0, 20),
+        status: "Open",
+      });
+    } catch (supabaseErr: unknown) {
+      const msg = supabaseErr instanceof Error ? supabaseErr.message : String(supabaseErr);
+      console.error("Supabase ticket backup failed (local ticket preserved):", msg);
+    }
 
     // Prepare email notifications via Resend
     let notificationSent = false;
@@ -202,7 +217,7 @@ export async function POST(request: Request) {
         uploadedFileLinks: [],
       });
 
-      // 1. Email Super Admin unconditionally
+      // 4. Email Super Admin unconditionally - notificationSent is set ONLY on Super Admin success
       const adminResult = await sendEmailViaResend({
         to: SUPER_ADMIN_EMAIL,
         subject: emailSubject,
@@ -210,21 +225,16 @@ export async function POST(request: Request) {
         idempotencyKey: `${ticketId}-admin`,
       });
 
-      if (adminResult.success) {
-        notificationSent = true;
-      }
+      notificationSent = adminResult.success;
 
-      // 2. Email Assigned Officer if active officer was selected
+      // Email Assigned Officer if active officer was selected (does not alter notificationSent)
       if (selectedOfficer && selectedOfficer.email) {
-        const officerResult = await sendEmailViaResend({
+        await sendEmailViaResend({
           to: selectedOfficer.email,
           subject: emailSubject,
           html: emailHtml,
           idempotencyKey: `${ticketId}-officer`,
         });
-        if (officerResult.success) {
-          notificationSent = true;
-        }
       }
     } catch (emailErr: unknown) {
       const msg = emailErr instanceof Error ? emailErr.message : String(emailErr);
