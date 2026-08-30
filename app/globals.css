@@ -639,3 +639,33 @@ input,select,textarea,button{max-width:100%;box-sizing:border-box}
   border: 1px solid #334155;
 }
 
+/* Raksha Bandhan Lucky Wheel Utilities */
+.clip-path-pointer {
+  clip-path: polygon(50% 100%, 0 0, 100% 0);
+}
+
+@keyframes animateSpinSlow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.animate-spin-slow {
+  animation: animateSpinSlow 20s linear infinite;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+@keyframes scaleUp {
+  from { transform: scale(0.85); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+.animate-scale-up {
+  animation: scaleUp 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+

@@ -3,6 +3,14 @@ import { getDb } from "../../../db";
 import { coupons } from "../../../db/schema";
 
 const DEFAULT_COUPONS = [
+  { code: "RAKHI75", title: "75% OFF Grand Sibling Discount", type: "percentage", value: 75, minOrder: 199, maxDiscount: 2000 },
+  { code: "FREEGIFT", title: "Free Rakhi Gift Hamper Offer", type: "fixed", value: 150, minOrder: 199, maxDiscount: 150 },
+  { code: "RAKHI500", title: "Flat ₹500 Cashback Voucher", type: "fixed", value: 500, minOrder: 999, maxDiscount: 500 },
+  { code: "SILVERRAKHI", title: "Free Silver Rakhi Voucher", type: "fixed", value: 200, minOrder: 299, maxDiscount: 200 },
+  { code: "SUPER90", title: "90% OFF Bumper Sibling Jackpot", type: "percentage", value: 90, minOrder: 199, maxDiscount: 3000 },
+  { code: "FREESHIP", title: "Free Express Shipping + ₹100 OFF", type: "fixed", value: 100, minOrder: 199, maxDiscount: 100 },
+  { code: "RAKHI50", title: "50% OFF Festive Discount", type: "percentage", value: 50, minOrder: 299, maxDiscount: 1000 },
+  { code: "SWEET200", title: "₹200 OFF Rakhi Sweets & Chocolates", type: "fixed", value: 200, minOrder: 499, maxDiscount: 200 },
   { code: "RAKHI79", title: "Rakshabandhan Special Gift Offer", type: "fixed", value: 79, minOrder: 399, maxDiscount: 79 },
   { code: "RAKHI15", title: "Rakshabandhan 15% Savings", type: "percentage", value: 15, minOrder: 899, maxDiscount: 450 },
   { code: "SIBLING100", title: "Rakhi Sibling Mega Savings", type: "fixed", value: 100, minOrder: 799, maxDiscount: 100 },

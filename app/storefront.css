@@ -4218,5 +4218,48 @@ select,
   }
 }
 
+/* Floating Raksha Bandhan Lucky Wheel Badge */
+.rakhi-floating-event-btn {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #be123c, #881337, #f59e0b);
+  color: #ffffff;
+  font-weight: 900;
+  font-size: 13px;
+  box-shadow: 0 10px 30px rgba(190, 18, 60, 0.6), 0 0 0 3px rgba(254, 240, 138, 0.8);
+  border: 1px solid #f59e0b;
+  text-decoration: none;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  animation: rakhiPulse 2.5s infinite;
+}
+
+.rakhi-floating-event-btn:hover {
+  transform: translateY(-4px) scale(1.08);
+  box-shadow: 0 15px 40px rgba(190, 18, 60, 0.8), 0 0 0 4px #ffffff;
+  color: #fef08a;
+}
+
+@keyframes rakhiPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+@media (max-width: 720px) {
+  .rakhi-floating-event-btn {
+    bottom: 74px;
+    right: 16px;
+    padding: 8px 14px;
+    font-size: 11px;
+  }
+}
+
+
 
 

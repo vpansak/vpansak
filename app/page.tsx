@@ -381,11 +381,11 @@ export default function HomePage() {
 
       <header className={`vp-header-shell ${isCollapsed ? "is-collapsed" : ""}`} id="top">
         <div className="mobile-header-collapsible">
-          <div className="rakhi-banner-bar">
-            <span>🪔 RAKSHABANDHAN SPECIAL</span>
-            <strong>Rakhi Gifts & Sibling Celebration Offers are Live!</strong>
-            <b>CODE: RAKHI15 (15% OFF)</b>
-          </div>
+          <Link href="/event" className="rakhi-banner-bar">
+            <span>🪔 RAKSHABANDHAN LUCKY WHEEL</span>
+            <strong>Spin & Win Up to 90% OFF Discount Vouchers & Free Rakhi Hampers!</strong>
+            <b>SPIN & WIN →</b>
+          </Link>
 
           <div className="vp-brand-row">
             <Link className="vp-brand" href="/" aria-label="VPANSAK Shopping home"><img src="/vpansak-logo.png" alt="VPANSAK" /><span><strong>VPANSAK</strong><small>SHOPPING</small></span></Link>
@@ -418,7 +418,8 @@ export default function HomePage() {
 
       <nav className={menuOpen ? "vp-main-nav open" : "vp-main-nav"} aria-label="Main navigation">
         <Link href="/categories"><Menu /> All Categories</Link>
-        {categories.slice(0, 7).map((item) => <button type="button" key={item.name} onClick={() => chooseCategory(item.value)}>{item.name}</button>)}
+        <Link href="/event" style={{ color: "#be123c", fontWeight: "bold" }}><Sparkles size={14} /> 🪔 Lucky Wheel Event</Link>
+        {categories.slice(0, 6).map((item) => <button type="button" key={item.name} onClick={() => chooseCategory(item.value)}>{item.name}</button>)}
         <Link href="/seller"><Store /> Become a Seller</Link>
       </nav>
 
@@ -696,6 +697,12 @@ export default function HomePage() {
           </div>
         </div>
       )}
+
+      {/* Floating Raksha Bandhan Lucky Wheel Shortcut Button */}
+      <Link href="/event" className="rakhi-floating-event-btn" title="Raksha Bandhan Lucky Wheel">
+        <span className="text-lg animate-bounce">🪔</span>
+        <span className="font-extrabold text-xs">Lucky Wheel</span>
+      </Link>
     </main>
   );
 }
