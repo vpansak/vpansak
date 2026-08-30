@@ -16,10 +16,10 @@ function hashOtp(otp: string): string {
 }
 
 async function sendEmailJsOtp(toEmail: string, userName: string, otpCode: string): Promise<boolean> {
-  const serviceId = process.env.EMAILJS_SERVICE_ID || "vpansak";
-  const templateId = process.env.EMAILJS_TEMPLATE_ID || "template_di6hvjm";
-  const publicKey = process.env.EMAILJS_PUBLIC_KEY || "jjG3XUesW7Yt8McRJ";
-  const privateKey = process.env.EMAILJS_PRIVATE_KEY || "G-re211vGlwHrNVCniNgz";
+  const serviceId = process.env.EMAILJS_SERVICE_ID || "service_15li5i6";
+  const templateId = process.env.EMAILJS_TEMPLATE_ID || "template_yv895a7";
+  const publicKey = process.env.EMAILJS_PUBLIC_KEY || "K2hOwDJVfSGpJ3nih";
+  const privateKey = process.env.EMAILJS_PRIVATE_KEY || "30mafPjRgPPn5im53Idzh";
 
   try {
     const response = await fetch("https://api.emailjs.com/api/v1.0/email/send", {
@@ -41,13 +41,19 @@ async function sendEmailJsOtp(toEmail: string, userName: string, otpCode: string
           reply_to: toEmail,
           user_name: userName || "VPANSAK User",
           otp_code: otpCode,
+          passcode: otpCode,
+          code: otpCode,
+          verification_code: otpCode,
+          subject: "VPANSAK Password Reset Verification Code",
+          title: "Password Reset Verification Code",
+          message: `Your 6-digit OTP code to reset your VPANSAK account password is: ${otpCode}. Valid for 10 minutes. Do not share this OTP with anyone.`,
           expiry_minutes: "10",
         },
       }),
     });
 
     if (response.ok) {
-      console.log(`[EMAILJS OK] Sent OTP to ${toEmail}`);
+      console.log(`[EMAILJS OK] Sent Password Reset OTP to ${toEmail}`);
       return true;
     } else {
       const errText = await response.text();
