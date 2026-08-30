@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { getDb } from "../../../../db";
-import { pendingUserRegistrations, users } from "../../../../db/schema";
+import { pendingUserRegistrations, profiles, users } from "../../../../db/schema";
 import {
   generateVerificationToken,
   hashPassword,
@@ -127,7 +127,51 @@ export async function POST(request: Request) {
       });
     }
 
-    // Backup to Supabase Cloud Database immediately
+    // Insert/upsert into active users table immediately so account is permanent
+    await db
+      .insert(users)
+      .values({
+        email,
+        passwordHash,
+        fullName,
+        mobile,
+        role: "customer",
+        authProvider: "email",
+        emailVerified: true,
+        accountStatus: "active",
+        securityQuestionId,
+        securityAnswerHash,
+        createdAt: now.toISOString(),
+        updatedAt: now.toISOString(),
+      })
+      .onConflictDoUpdate({
+        target: users.email,
+        set: {
+          passwordHash,
+          fullName,
+          mobile,
+          securityQuestionId,
+          securityAnswerHash,
+          updatedAt: now.toISOString(),
+        },
+      });
+
+    // Create profile record
+    await db
+      .insert(profiles)
+      .values({
+        email,
+        fullName,
+        mobile,
+        createdAt: now.toISOString(),
+        updatedAt: now.toISOString(),
+      })
+      .onConflictDoUpdate({
+        target: profiles.email,
+        set: { fullName, mobile, updatedAt: now.toISOString() },
+      });
+
+    // Save/Backup to Supabase Cloud Database immediately
     await saveUserToSupabase({
       email,
       passwordHash,
@@ -136,7 +180,7 @@ export async function POST(request: Request) {
       role: "customer",
       securityQuestionId,
       securityAnswerHash,
-      emailVerified: 0,
+      emailVerified: 1,
       accountStatus: "active",
       createdAt: now.toISOString(),
     });
