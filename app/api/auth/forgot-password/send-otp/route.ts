@@ -16,13 +16,34 @@ function hashOtp(otp: string): string {
 }
 
 async function sendEmailJsOtp(toEmail: string, userName: string, otpCode: string, baseUrl?: string): Promise<boolean> {
-  const serviceId = process.env.EMAILJS_SERVICE_ID || "service_15li5i6";
-  const templateId = process.env.EMAILJS_TEMPLATE_ID || "template_yv895a7";
-  const publicKey = process.env.EMAILJS_PUBLIC_KEY || "K2hOwDJVfSGpJ3nih";
-  const privateKey = process.env.EMAILJS_PRIVATE_KEY || "30mafPjRgPPn5im53Idzh";
+  // Primary OTP Template Config
+  const primaryServiceId = process.env.EMAILJS_OTP_SERVICE_ID || "vpansak";
+  const primaryTemplateId = process.env.EMAILJS_OTP_TEMPLATE_ID || "template_di6hvjm";
+  const primaryPublicKey = process.env.EMAILJS_OTP_PUBLIC_KEY || "jjG3XUesW7Yt8McRJ";
+  const primaryPrivateKey = process.env.EMAILJS_OTP_PRIVATE_KEY || "G-re211vGlwHrNVCniNgz";
 
   const appOrigin = baseUrl || process.env.APP_URL || "https://vpansak.vercel.app";
   const resetLink = `${appOrigin.replace(/\/+$/, "")}/forgot-password?email=${encodeURIComponent(toEmail)}&code=${otpCode}`;
+
+  const templateParams = {
+    to_email: toEmail,
+    user_email: toEmail,
+    email: toEmail,
+    to: toEmail,
+    recipient: toEmail,
+    send_to: toEmail,
+    reply_to: toEmail,
+    user_name: userName || "VPANSAK User",
+    otp_code: otpCode,
+    passcode: otpCode,
+    code: otpCode,
+    verification_code: otpCode,
+    verification_link: resetLink,
+    subject: "VPANSAK Password Reset Verification Code",
+    title: "Password Reset Verification Code",
+    message: `Your 6-digit OTP code to reset your VPANSAK account password is: ${otpCode}. Valid for 10 minutes. Do not share this OTP with anyone.`,
+    expiry_minutes: "10",
+  };
 
   try {
     const response = await fetch("https://api.emailjs.com/api/v1.0/email/send", {
@@ -33,39 +54,45 @@ async function sendEmailJsOtp(toEmail: string, userName: string, otpCode: string
         "User-Agent": "Mozilla/5.0 (VPANSAK Backend Email Service)",
       },
       body: JSON.stringify({
-        service_id: serviceId,
-        template_id: templateId,
-        user_id: publicKey,
-        accessToken: privateKey,
-        template_params: {
-          to_email: toEmail,
-          user_email: toEmail,
-          email: toEmail,
-          reply_to: toEmail,
-          user_name: userName || "VPANSAK User",
-          otp_code: otpCode,
-          passcode: otpCode,
-          code: otpCode,
-          verification_code: otpCode,
-          verification_link: resetLink,
-          subject: "VPANSAK Password Reset Verification Code",
-          title: "Password Reset Verification Code",
-          message: `Your 6-digit OTP code to reset your VPANSAK account password is: ${otpCode}. Valid for 10 minutes. Do not share this OTP with anyone.`,
-          expiry_minutes: "10",
-        },
+        service_id: primaryServiceId,
+        template_id: primaryTemplateId,
+        user_id: primaryPublicKey,
+        accessToken: primaryPrivateKey,
+        template_params: templateParams,
       }),
     });
 
     if (response.ok) {
-      console.log(`[EMAILJS OK] Sent Password Reset OTP to ${toEmail}`);
+      console.log(`[EMAILJS OTP OK] Sent 6-digit OTP code ${otpCode} to ${toEmail}`);
       return true;
-    } else {
-      const errText = await response.text();
-      console.error(`[EMAILJS FAIL] ${response.status}: ${errText}`);
-      return false;
     }
+
+    const errText = await response.text();
+    console.warn(`[EMAILJS OTP NOTICE] Primary OTP send notice: ${response.status} - ${errText}`);
   } catch (err) {
-    console.error("[EMAILJS ERROR]", err);
+    console.error("[EMAILJS OTP ERROR]", err);
+  }
+
+  // Fallback to secondary template
+  try {
+    const fallbackResponse = await fetch("https://api.emailjs.com/api/v1.0/email/send", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Origin": "https://vpansak.vercel.app",
+        "User-Agent": "Mozilla/5.0 (VPANSAK Backend Email Service)",
+      },
+      body: JSON.stringify({
+        service_id: process.env.EMAILJS_SERVICE_ID || "service_15li5i6",
+        template_id: process.env.EMAILJS_TEMPLATE_ID || "template_yv895a7",
+        user_id: process.env.EMAILJS_PUBLIC_KEY || "K2hOwDJVfSGpJ3nih",
+        accessToken: process.env.EMAILJS_PRIVATE_KEY || "30mafPjRgPPn5im53Idzh",
+        template_params: templateParams,
+      }),
+    });
+
+    return fallbackResponse.ok;
+  } catch {
     return false;
   }
 }
