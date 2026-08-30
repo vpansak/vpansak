@@ -89,6 +89,19 @@ export async function POST(request: Request) {
       );
     }
 
+    // Auto-sync password hash from Supabase if missing or NO_HASH locally
+    if (!user.passwordHash || user.passwordHash === "NO_HASH" || !user.passwordHash.includes(":")) {
+      const remoteUser = await getUserFromSupabase(email);
+      if (remoteUser && remoteUser.passwordHash && remoteUser.passwordHash.includes(":")) {
+        user.passwordHash = remoteUser.passwordHash;
+        try {
+          await db.update(users).set({ passwordHash: remoteUser.passwordHash }).where(eq(users.email, email));
+        } catch {
+          // ignore
+        }
+      }
+    }
+
     if (!user.passwordHash || user.passwordHash === "NO_HASH" || !user.passwordHash.includes(":")) {
       return Response.json(
         { error: "Your account credentials need a password update. Please click 'Forgot Password?' to set your password." },
