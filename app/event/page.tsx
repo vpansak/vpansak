@@ -29,7 +29,11 @@ import {
   Award,
   Flame,
   CheckCircle2,
-  FlameKindling
+  FlameKindling,
+  MessageCircle,
+  Smile,
+  Music,
+  Medal
 } from "lucide-react";
 import { catalogProducts, CatalogProduct } from "../lib/catalog";
 
@@ -139,14 +143,30 @@ const SEGMENTS: WheelSegment[] = [
 
 // Live Winner Feed Ticker Items
 const RECENT_WINNERS = [
-  { name: "Priya S.", city: "Delhi", prize: "90% OFF (SUPER90)", icon: "💥" },
+  { name: "Priya Sharma", city: "Delhi", prize: "90% OFF (SUPER90)", icon: "💥" },
   { name: "Aman Verma", city: "Mumbai", prize: "Free Designer Silver Rakhi", icon: "📿" },
-  { name: "Neha Sharma", city: "Jaipur", prize: "75% OFF (RAKHI75)", icon: "🪔" },
+  { name: "Neha Agarwal", city: "Jaipur", prize: "75% OFF (RAKHI75)", icon: "🪔" },
   { name: "Karan Patel", city: "Ahmedabad", prize: "Flat ₹500 Cashback", icon: "💳" },
   { name: "Simran Kaur", city: "Chandigarh", prize: "Free Rakhi Gift Hamper", icon: "🎁" },
   { name: "Rahul Joshi", city: "Pune", prize: "Free Shipping + ₹100 OFF", icon: "🚚" },
   { name: "Ananya Roy", city: "Kolkata", prize: "50% OFF Festive Voucher", icon: "🌟" },
   { name: "Vicky Malhotra", city: "Lucknow", prize: "₹200 Sweets Discount", icon: "🍫" },
+];
+
+// Initial Public Sibling Wall Posts
+const INITIAL_WALL_POSTS = [
+  { sender: "Pooja", receiver: "Rahul (Bhai)", message: "Happy Raksha Bandhan Bhai! Best brother in the whole world! ❤️📿", time: "2 mins ago" },
+  { sender: "Vikram", receiver: "Sneha (Didi)", message: "Happy Rakhi Didi! Thanks for always saving me from mom! 🎁", time: "5 mins ago" },
+  { sender: "Kavita", receiver: "Rohan", message: "Sending lots of love, prayers, and sweetness your way! 🍫🪔", time: "12 mins ago" },
+  { sender: "Amit", receiver: "Riya", message: "Wishing you lifetime of success and happiness dear sister! 🌟", time: "20 mins ago" },
+];
+
+// Virtual Rakhis Selection List
+const VIRTUAL_RAKHIS = [
+  { id: "rakhi-1", name: "Rudraksha Silk Thread Rakhi", icon: "📿", desc: "Auspicious red & gold silk thread" },
+  { id: "rakhi-2", name: "Royal Diamond Emblem Rakhi", icon: "💎", desc: "Sparkling silver diamond emblem" },
+  { id: "rakhi-3", name: "Pure Silver Ganesha Rakhi", icon: "🐘", desc: "Crafted pure silver blessing Rakhi" },
+  { id: "rakhi-4", name: "Floral Marigold Velvet Rakhi", icon: "🌸", desc: "Fresh marigold silk flower Rakhi" },
 ];
 
 // Audio Sound Synthesis Helper (Web Audio API)
@@ -185,7 +205,7 @@ class SoundFx {
       osc.start();
       osc.stop(this.ctx.currentTime + 0.035);
     } catch {
-      // ignore browser restriction
+      // ignore
     }
   }
 
@@ -209,6 +229,33 @@ class SoundFx {
         gain.connect(this.ctx.destination);
         osc.start(this.ctx.currentTime + idx * 0.07);
         osc.stop(this.ctx.currentTime + idx * 0.07 + 0.4);
+      });
+    } catch {
+      // ignore
+    }
+  }
+
+  playRakhiTieSound() {
+    if (!this.enabled) return;
+    try {
+      this.initCtx();
+      if (!this.ctx) return;
+      // Festive Shehnai/Bell Chime simulation
+      const bellFreqs = [587.33, 880, 1174.66, 1760];
+      bellFreqs.forEach((freq, idx) => {
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(freq, this.ctx.currentTime + idx * 0.09);
+
+        gain.gain.setValueAtTime(0.3, this.ctx.currentTime + idx * 0.09);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + idx * 0.09 + 0.5);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(this.ctx.currentTime + idx * 0.09);
+        osc.stop(this.ctx.currentTime + idx * 0.09 + 0.5);
       });
     } catch {
       // ignore
@@ -251,7 +298,7 @@ export default function EventPage() {
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [soundOn, setSoundOn] = useState<boolean>(true);
 
-  // Live Countdown State (Raksha Bandhan Timer)
+  // Live Countdown State
   const [timeLeft, setTimeLeft] = useState({ hours: 4, minutes: 38, seconds: 42 });
 
   // Ticker Live Winner State
@@ -260,6 +307,16 @@ export default function EventPage() {
   // Mystery Box State
   const [boxOpened, setBoxOpened] = useState(false);
   const [mysteryCoupon, setMysteryCoupon] = useState<string | null>(null);
+
+  // Virtual Rakhi Ceremony State
+  const [selectedRakhi, setSelectedRakhi] = useState(VIRTUAL_RAKHIS[0]);
+  const [rakhiTied, setRakhiTied] = useState(false);
+
+  // Public Wall Messages State
+  const [wallPosts, setWallPosts] = useState(INITIAL_WALL_POSTS);
+  const [wallSender, setWallSender] = useState("");
+  const [wallReceiver, setWallReceiver] = useState("");
+  const [wallMsg, setWallMsg] = useState("");
 
   // Sibling Gift Finder Quiz State
   const [giftTarget, setGiftTarget] = useState<"Sister" | "Brother" | "All">("All");
@@ -298,7 +355,7 @@ export default function EventPage() {
     return () => clearInterval(ticker);
   }, []);
 
-  // Initialize from LocalStorage
+  // Initialize from LocalStorage & Petals
   useEffect(() => {
     if (typeof window !== "undefined") {
       const savedSpins = localStorage.getItem("rakhi_spins_count");
@@ -317,7 +374,6 @@ export default function EventPage() {
         }
       }
 
-      // Start background floating flower petals canvas animation
       initPetalCanvas();
     }
   }, []);
@@ -351,12 +407,12 @@ export default function EventPage() {
 
     const colors = ["#FFD700", "#FF1493", "#E63946", "#FFB703", "#FF8C00", "#FFC0CB"];
 
-    for (let i = 0; i < 40; i++) {
+    for (let i = 0; i < 45; i++) {
       petals.push({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
-        size: Math.random() * 8 + 6,
-        speedY: Math.random() * 1.5 + 0.8,
+        size: Math.random() * 9 + 6,
+        speedY: Math.random() * 1.6 + 0.8,
         speedX: Math.random() * 0.8 - 0.4,
         angle: Math.random() * 360,
         spin: Math.random() * 2 - 1,
@@ -382,7 +438,7 @@ export default function EventPage() {
         ctx.beginPath();
         ctx.ellipse(0, 0, p.size, p.size / 2, 0, 0, Math.PI * 2);
         ctx.fillStyle = p.color;
-        ctx.globalAlpha = 0.5;
+        ctx.globalAlpha = 0.55;
         ctx.fill();
         ctx.restore();
       });
@@ -397,14 +453,13 @@ export default function EventPage() {
   const handleSpin = () => {
     if (isSpinning) return;
     if (spinsLeft <= 0) {
-      alert("आपकी आज की लकी व्हील स्पिन की सीमा समाप्त हो चुकी है! (You have used all daily spins!). Send a Rakhi greeting below to get 1 bonus spin!");
+      alert("आपकी आज की लकी व्हील स्पिन की सीमा समाप्त हो चुकी है! (You have used all daily spins!). Tie a virtual Rakhi below to unlock bonus spins!");
       return;
     }
 
     setIsSpinning(true);
     setWonSegment(null);
 
-    // Pick winning segment based on probability
     const totalProb = SEGMENTS.reduce((sum, s) => sum + s.probability, 0);
     let randomProb = Math.random() * totalProb;
     let selectedIdx = 0;
@@ -444,7 +499,6 @@ export default function EventPage() {
       setSpinsLeft(newSpins);
       localStorage.setItem("rakhi_spins_count", newSpins.toString());
 
-      // Save coupon
       const newClaimed = [
         { code: selectedSeg.code, desc: selectedSeg.description, date: new Date().toLocaleDateString("en-IN") },
         ...claimedCoupons.filter((c) => c.code !== selectedSeg.code),
@@ -452,6 +506,43 @@ export default function EventPage() {
       setClaimedCoupons(newClaimed);
       localStorage.setItem("rakhi_claimed_coupons", JSON.stringify(newClaimed));
     }, 4500);
+  };
+
+  // Perform Virtual Rakhi Tying Ceremony
+  const handleTieRakhi = () => {
+    if (soundOn) audioManager.playRakhiTieSound();
+    setRakhiTied(true);
+
+    // Grant Rakhi Blessing Coupon RAKHI75
+    const newClaimed = [
+      { code: "RAKHI75", desc: "Rakhi Blessing 75% OFF Voucher", date: new Date().toLocaleDateString("en-IN") },
+      ...claimedCoupons.filter((c) => c.code !== "RAKHI75"),
+    ];
+    setClaimedCoupons(newClaimed);
+    localStorage.setItem("rakhi_claimed_coupons", JSON.stringify(newClaimed));
+
+    // Grant +1 Bonus Spin
+    const updatedSpins = spinsLeft + 1;
+    setSpinsLeft(updatedSpins);
+    localStorage.setItem("rakhi_spins_count", updatedSpins.toString());
+
+    triggerConfetti();
+  };
+
+  // Post to Public Wall
+  const handlePostWall = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!wallSender || !wallMsg) return;
+    const newPost = {
+      sender: wallSender,
+      receiver: wallReceiver || "Sibling",
+      message: wallMsg,
+      time: "Just now",
+    };
+    setWallPosts([newPost, ...wallPosts]);
+    setWallSender("");
+    setWallReceiver("");
+    setWallMsg("");
   };
 
   // Scratch / Mystery Box Unlock
@@ -481,7 +572,7 @@ export default function EventPage() {
     setTimeout(() => setCopiedCode(null), 2500);
   };
 
-  // Grant Bonus Spin
+  // Grant Bonus Spin via Wish Card
   const handleGenerateCard = (e: React.FormEvent) => {
     e.preventDefault();
     setCardGenerated(true);
@@ -520,16 +611,16 @@ export default function EventPage() {
 
     const colors = ["#FFD700", "#FF1493", "#FF4500", "#00BFFF", "#32CD32", "#FF007F", "#FFA500", "#FFFFFF"];
 
-    for (let i = 0; i < 200; i++) {
+    for (let i = 0; i < 220; i++) {
       particles.push({
         x: canvas.width / 2,
         y: canvas.height / 3,
-        vx: (Math.random() - 0.5) * 20,
-        vy: (Math.random() - 0.8) * 20,
+        vx: (Math.random() - 0.5) * 22,
+        vy: (Math.random() - 0.8) * 22,
         color: colors[Math.floor(Math.random() * colors.length)],
-        size: Math.random() * 10 + 4,
+        size: Math.random() * 11 + 4,
         rotation: Math.random() * 360,
-        vr: (Math.random() - 0.5) * 15,
+        vr: (Math.random() - 0.5) * 16,
       });
     }
 
@@ -540,7 +631,7 @@ export default function EventPage() {
       particles.forEach((p) => {
         p.x += p.vx;
         p.y += p.vy;
-        p.vy += 0.32; // gravity
+        p.vy += 0.32;
         p.rotation += p.vr;
 
         ctx.save();
@@ -551,7 +642,7 @@ export default function EventPage() {
         ctx.restore();
       });
 
-      if (frame < 130) {
+      if (frame < 135) {
         requestAnimationFrame(animate);
       } else {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -560,7 +651,6 @@ export default function EventPage() {
     animate();
   };
 
-  // Filtered products based on gift quiz
   const filteredQuizProducts = catalogProducts.filter((product) => {
     const priceMatch = product.price <= giftBudget;
     const vibeMatch =
@@ -648,7 +738,7 @@ export default function EventPage() {
           </div>
 
           <div className="flex-1 overflow-hidden">
-            <div className="flex items-center gap-2 text-[#FFC482] animate-fade-in key={currentWinnerIdx}">
+            <div className="flex items-center gap-2 text-[#FFC482] animate-fade-in">
               <span className="text-base">{activeWinner.icon}</span>
               <strong className="text-white">{activeWinner.name}</strong> from <span>{activeWinner.city}</span> just won{" "}
               <strong className="text-[#FFD700]">{activeWinner.prize}</strong>!
@@ -697,7 +787,7 @@ export default function EventPage() {
 
               {spinsLeft === 0 ? (
                 <a
-                  href="#rakhi-card-generator"
+                  href="#virtual-rakhi-section"
                   className="px-3 py-1.5 rounded-lg bg-[#FFD700] text-[#2D040A] text-xs font-extrabold hover:bg-white transition-colors shadow-md"
                 >
                   +1 Bonus Spin
@@ -837,6 +927,131 @@ export default function EventPage() {
                 {isSpinning ? "LUCKY WHEEL IS SPINNING..." : "SPIN THE LUCKY WHEEL NOW / पहिया घुमाएं"}
               </button>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* NEW FEATURE 1: Interactive Virtual Rakhi Tying Ceremony */}
+      <section id="virtual-rakhi-section" className="max-w-5xl mx-auto px-4 py-10 relative z-10">
+        <div className="p-8 rounded-3xl bg-gradient-to-br from-[#400611] via-[#580816] to-[#2D040A] border-2 border-[#FFD700]/50 shadow-2xl text-center space-y-6">
+          <div className="space-y-2">
+            <span className="px-3 py-1 rounded-full bg-[#FFD700]/20 border border-[#FFD700]/50 text-[#FFD700] text-xs font-extrabold uppercase">
+              📿 DIGITAL RAKHI CEREMONY
+            </span>
+            <h3 className="text-3xl sm:text-4xl font-black text-white">
+              Perform Virtual Rakhi Tying Ceremony!
+            </h3>
+            <p className="text-sm text-[#FFC482] max-w-xl mx-auto">
+              Select a designer Rakhi below and perform virtual Rakhi tying to receive auspicious blessings & unlock 1 Bonus Spin + 75% OFF Coupon!
+            </p>
+          </div>
+
+          {/* Rakhi Selection Cards */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-3xl mx-auto">
+            {VIRTUAL_RAKHIS.map((r) => (
+              <button
+                key={r.id}
+                onClick={() => setSelectedRakhi(r)}
+                className={`p-4 rounded-2xl border-2 transition-all flex flex-col items-center justify-center gap-2 ${
+                  selectedRakhi.id === r.id
+                    ? "bg-[#FFD700] text-[#2D040A] border-[#FFFFFF] shadow-xl scale-105"
+                    : "bg-[#2D040A] text-white border-[#FFD700]/30 hover:border-[#FFD700]"
+                }`}
+              >
+                <span className="text-3xl">{r.icon}</span>
+                <strong className="text-xs font-black text-center">{r.name}</strong>
+                <small className="text-[10px] opacity-80">{r.desc}</small>
+              </button>
+            ))}
+          </div>
+
+          {/* Virtual Thali Stage */}
+          <div className="p-6 rounded-2xl bg-[#2D040A] border border-[#FFD700]/40 max-w-md mx-auto text-center space-y-4">
+            <div className="flex items-center justify-center gap-6 text-4xl my-2">
+              <span>🪔</span>
+              <span className="animate-bounce">{selectedRakhi.icon}</span>
+              <span>🍬</span>
+            </div>
+
+            {rakhiTied ? (
+              <div className="p-4 rounded-xl bg-[#1F4E3D] border border-[#A3E635] text-white space-y-2 animate-scale-up">
+                <span className="text-xs font-black text-[#A3E635] uppercase block">🎉 RAKHI TIED SUCCESSFULLY!</span>
+                <p className="text-xs text-[#FFC482]">You received Rakhi Blessings + 75% OFF Coupon & +1 Bonus Spin!</p>
+                <strong className="text-lg font-mono text-[#FFD700] block">CODE: RAKHI75</strong>
+              </div>
+            ) : (
+              <button
+                onClick={handleTieRakhi}
+                className="w-full py-3.5 rounded-xl bg-gradient-to-r from-[#FFD700] via-[#FF8C00] to-[#E63946] text-[#2D040A] font-extrabold text-sm uppercase flex items-center justify-center gap-2 hover:opacity-95 shadow-lg border border-[#FFD700]"
+              >
+                <Medal size={18} /> Tie {selectedRakhi.name} & Get Coupon + Spin
+              </button>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* NEW FEATURE 2: Public Sibling Wish Wall */}
+      <section className="max-w-5xl mx-auto px-4 py-10 relative z-10">
+        <div className="p-8 rounded-3xl bg-gradient-to-r from-[#400611] to-[#580816] border-2 border-[#FFD700]/40 shadow-2xl space-y-6">
+          <div className="text-center space-y-2">
+            <span className="px-3 py-1 rounded-full bg-[#FFD700]/20 border border-[#FFD700]/50 text-[#FFD700] text-xs font-extrabold uppercase">
+              💬 PUBLIC RAKHI WISH WALL
+            </span>
+            <h3 className="text-2xl sm:text-3xl font-black text-white">
+              Share Sibling Wishes On The Live Rakhi Wall!
+            </h3>
+            <p className="text-xs sm:text-sm text-[#FFC482]">
+              Post your sweet message to your brother/sister for everyone to see during this grand festival!
+            </p>
+          </div>
+
+          {/* Post Form */}
+          <form onSubmit={handlePostWall} className="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-3xl mx-auto">
+            <input
+              type="text"
+              required
+              placeholder="Your Name"
+              value={wallSender}
+              onChange={(e) => setWallSender(e.target.value)}
+              className="px-4 py-2 rounded-xl bg-[#2D040A] border border-[#FFD700]/30 text-white placeholder-gray-500 text-xs focus:outline-none focus:border-[#FFD700]"
+            />
+            <input
+              type="text"
+              placeholder="Sibling's Name (e.g. Rahul / Priya)"
+              value={wallReceiver}
+              onChange={(e) => setWallReceiver(e.target.value)}
+              className="px-4 py-2 rounded-xl bg-[#2D040A] border border-[#FFD700]/30 text-white placeholder-gray-500 text-xs focus:outline-none focus:border-[#FFD700]"
+            />
+            <div className="flex gap-2 sm:col-span-3">
+              <input
+                type="text"
+                required
+                placeholder="Write your Rakhi wish... (e.g. Happy Rakhi Didi!)"
+                value={wallMsg}
+                onChange={(e) => setWallMsg(e.target.value)}
+                className="flex-1 px-4 py-2.5 rounded-xl bg-[#2D040A] border border-[#FFD700]/30 text-white placeholder-gray-500 text-xs focus:outline-none focus:border-[#FFD700]"
+              />
+              <button
+                type="submit"
+                className="px-5 py-2.5 rounded-xl bg-[#FFD700] text-[#2D040A] font-extrabold text-xs uppercase shrink-0 hover:bg-white transition-colors"
+              >
+                Post Wish
+              </button>
+            </div>
+          </form>
+
+          {/* Live Posts Feed */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-4xl mx-auto pt-2">
+            {wallPosts.map((post, idx) => (
+              <div key={idx} className="p-4 rounded-2xl bg-[#2D040A] border border-[#FFD700]/30 space-y-1 text-xs">
+                <div className="flex items-center justify-between text-[#FFD700] font-bold">
+                  <span>{post.sender} ➔ {post.receiver}</span>
+                  <span className="text-[10px] text-gray-400 font-normal">{post.time}</span>
+                </div>
+                <p className="text-white text-xs">{post.message}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
