@@ -22,50 +22,49 @@ export async function POST(request: Request) {
       user = allUsers.find((u: any) => String(u.email || "").toLowerCase().trim() === email);
     }
 
-    if (!user) {
-      const remoteUser = await getUserFromSupabase(email);
-      if (remoteUser) {
-        try {
-          await db
-            .insert(users)
-            .values({
-              email: remoteUser.email,
+    const remoteUser = await getUserFromSupabase(email);
+    if (remoteUser) {
+      try {
+        await db
+          .insert(users)
+          .values({
+            email: remoteUser.email,
+            passwordHash: remoteUser.passwordHash || "NO_HASH",
+            fullName: remoteUser.fullName,
+            mobile: remoteUser.mobile,
+            role: remoteUser.role,
+            authProvider: remoteUser.authProvider || "email",
+            emailVerified: true,
+            accountStatus: remoteUser.accountStatus || "active",
+            securityQuestionId: remoteUser.securityQuestionId || null,
+            securityAnswerHash: remoteUser.securityAnswerHash || null,
+            createdAt: remoteUser.createdAt,
+          })
+          .onConflictDoUpdate({
+            target: users.email,
+            set: {
               passwordHash: remoteUser.passwordHash || "NO_HASH",
               fullName: remoteUser.fullName,
               mobile: remoteUser.mobile,
-              role: remoteUser.role,
-              authProvider: remoteUser.authProvider || "email",
-              emailVerified: true,
               accountStatus: remoteUser.accountStatus || "active",
-              securityQuestionId: remoteUser.securityQuestionId || null,
-              securityAnswerHash: remoteUser.securityAnswerHash || null,
-              createdAt: remoteUser.createdAt,
-            })
-            .onConflictDoUpdate({
-              target: users.email,
-              set: {
-                passwordHash: remoteUser.passwordHash || "NO_HASH",
-                fullName: remoteUser.fullName,
-                mobile: remoteUser.mobile,
-              },
-            });
-        } catch (e) {
-          console.error("SQLite user restore notice:", e);
-        }
-
-        const [fetched] = await db.select().from(users).where(eq(users.email, remoteUser.email)).limit(1);
-        user = fetched || {
-          id: 99999,
-          email: remoteUser.email,
-          passwordHash: remoteUser.passwordHash,
-          fullName: remoteUser.fullName,
-          mobile: remoteUser.mobile,
-          role: remoteUser.role,
-          authProvider: remoteUser.authProvider || "email",
-          emailVerified: 1,
-          accountStatus: remoteUser.accountStatus || "active",
-        } as any;
+            },
+          });
+      } catch (e) {
+        console.error("SQLite user restore notice:", e);
       }
+
+      const [fetched] = await db.select().from(users).where(eq(users.email, remoteUser.email)).limit(1);
+      user = fetched || {
+        id: 99999,
+        email: remoteUser.email,
+        passwordHash: remoteUser.passwordHash,
+        fullName: remoteUser.fullName,
+        mobile: remoteUser.mobile,
+        role: remoteUser.role,
+        authProvider: remoteUser.authProvider || "email",
+        emailVerified: 1,
+        accountStatus: remoteUser.accountStatus || "active",
+      } as any;
     }
 
     if (!user) {
