@@ -24,7 +24,12 @@ import {
   Truck,
   Send,
   Zap,
-  Sparkle
+  Sparkle,
+  HelpCircle,
+  Award,
+  Flame,
+  CheckCircle2,
+  FlameKindling
 } from "lucide-react";
 import { catalogProducts, CatalogProduct } from "../lib/catalog";
 
@@ -132,7 +137,19 @@ const SEGMENTS: WheelSegment[] = [
   },
 ];
 
-// Web Audio API helper for sound synthesis (Works everywhere reliably)
+// Live Winner Feed Ticker Items
+const RECENT_WINNERS = [
+  { name: "Priya S.", city: "Delhi", prize: "90% OFF (SUPER90)", icon: "💥" },
+  { name: "Aman Verma", city: "Mumbai", prize: "Free Designer Silver Rakhi", icon: "📿" },
+  { name: "Neha Sharma", city: "Jaipur", prize: "75% OFF (RAKHI75)", icon: "🪔" },
+  { name: "Karan Patel", city: "Ahmedabad", prize: "Flat ₹500 Cashback", icon: "💳" },
+  { name: "Simran Kaur", city: "Chandigarh", prize: "Free Rakhi Gift Hamper", icon: "🎁" },
+  { name: "Rahul Joshi", city: "Pune", prize: "Free Shipping + ₹100 OFF", icon: "🚚" },
+  { name: "Ananya Roy", city: "Kolkata", prize: "50% OFF Festive Voucher", icon: "🌟" },
+  { name: "Vicky Malhotra", city: "Lucknow", prize: "₹200 Sweets Discount", icon: "🍫" },
+];
+
+// Audio Sound Synthesis Helper (Web Audio API)
 class SoundFx {
   private ctx: AudioContext | null = null;
   public enabled: boolean = true;
@@ -149,7 +166,7 @@ class SoundFx {
     }
   }
 
-  playTick() {
+  playTick(rate = 1.0) {
     if (!this.enabled) return;
     try {
       this.initCtx();
@@ -157,18 +174,18 @@ class SoundFx {
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
       osc.type = "sine";
-      osc.frequency.setValueAtTime(600, this.ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(150, this.ctx.currentTime + 0.04);
+      osc.frequency.setValueAtTime(650 * rate, this.ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(180, this.ctx.currentTime + 0.035);
 
-      gain.gain.setValueAtTime(0.25, this.ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.04);
+      gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.035);
 
       osc.connect(gain);
       gain.connect(this.ctx.destination);
       osc.start();
-      osc.stop(this.ctx.currentTime + 0.04);
+      osc.stop(this.ctx.currentTime + 0.035);
     } catch {
-      // ignore browser audio policy restrictions
+      // ignore browser restriction
     }
   }
 
@@ -177,22 +194,45 @@ class SoundFx {
     try {
       this.initCtx();
       if (!this.ctx) return;
-      const notes = [440, 554.37, 659.25, 880, 1108.73];
+      const notes = [523.25, 659.25, 783.99, 1046.5, 1318.5]; // C5, E5, G5, C6, E6
       notes.forEach((freq, idx) => {
         if (!this.ctx) return;
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
         osc.type = "triangle";
-        osc.frequency.setValueAtTime(freq, this.ctx.currentTime + idx * 0.08);
+        osc.frequency.setValueAtTime(freq, this.ctx.currentTime + idx * 0.07);
 
-        gain.gain.setValueAtTime(0.3, this.ctx.currentTime + idx * 0.08);
-        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + idx * 0.08 + 0.35);
+        gain.gain.setValueAtTime(0.35, this.ctx.currentTime + idx * 0.07);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + idx * 0.07 + 0.4);
 
         osc.connect(gain);
         gain.connect(this.ctx.destination);
-        osc.start(this.ctx.currentTime + idx * 0.08);
-        osc.stop(this.ctx.currentTime + idx * 0.08 + 0.35);
+        osc.start(this.ctx.currentTime + idx * 0.07);
+        osc.stop(this.ctx.currentTime + idx * 0.07 + 0.4);
       });
+    } catch {
+      // ignore
+    }
+  }
+
+  playBoxOpenSound() {
+    if (!this.enabled) return;
+    try {
+      this.initCtx();
+      if (!this.ctx) return;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = "sawtooth";
+      osc.frequency.setValueAtTime(300, this.ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(900, this.ctx.currentTime + 0.2);
+
+      gain.gain.setValueAtTime(0.25, this.ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.25);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start();
+      osc.stop(this.ctx.currentTime + 0.25);
     } catch {
       // ignore
     }
@@ -211,6 +251,21 @@ export default function EventPage() {
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [soundOn, setSoundOn] = useState<boolean>(true);
 
+  // Live Countdown State (Raksha Bandhan Timer)
+  const [timeLeft, setTimeLeft] = useState({ hours: 4, minutes: 38, seconds: 42 });
+
+  // Ticker Live Winner State
+  const [currentWinnerIdx, setCurrentWinnerIdx] = useState(0);
+
+  // Mystery Box State
+  const [boxOpened, setBoxOpened] = useState(false);
+  const [mysteryCoupon, setMysteryCoupon] = useState<string | null>(null);
+
+  // Sibling Gift Finder Quiz State
+  const [giftTarget, setGiftTarget] = useState<"Sister" | "Brother" | "All">("All");
+  const [giftVibe, setGiftVibe] = useState<string>("All");
+  const [giftBudget, setGiftBudget] = useState<number>(5000);
+
   // Wish card state
   const [siblingName, setSiblingName] = useState<string>("");
   const [siblingRole, setSiblingRole] = useState<string>("Sister");
@@ -218,8 +273,30 @@ export default function EventPage() {
   const [cardGenerated, setCardGenerated] = useState<boolean>(false);
   const [cardCopied, setCardCopied] = useState<boolean>(false);
 
-  // Canvas Confetti Ref
+  // Canvas Refs
   const confettiCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const petalCanvasRef = useRef<HTMLCanvasElement | null>(null);
+
+  // Countdown timer effect
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev.seconds > 0) return { ...prev, seconds: prev.seconds - 1 };
+        if (prev.minutes > 0) return { ...prev, minutes: prev.minutes - 1, seconds: 59 };
+        if (prev.hours > 0) return { hours: prev.hours - 1, minutes: 59, seconds: 59 };
+        return prev;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Ticker winner rotation effect
+  useEffect(() => {
+    const ticker = setInterval(() => {
+      setCurrentWinnerIdx((prev) => (prev + 1) % RECENT_WINNERS.length);
+    }, 3500);
+    return () => clearInterval(ticker);
+  }, []);
 
   // Initialize from LocalStorage
   useEffect(() => {
@@ -239,6 +316,9 @@ export default function EventPage() {
           // ignore
         }
       }
+
+      // Start background floating flower petals canvas animation
+      initPetalCanvas();
     }
   }, []);
 
@@ -246,6 +326,71 @@ export default function EventPage() {
     const next = !soundOn;
     setSoundOn(next);
     audioManager.enabled = next;
+  };
+
+  // Petal Canvas Effect
+  const initPetalCanvas = () => {
+    const canvas = petalCanvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const petals: {
+      x: number;
+      y: number;
+      size: number;
+      speedY: number;
+      speedX: number;
+      angle: number;
+      spin: number;
+      color: string;
+    }[] = [];
+
+    const colors = ["#FFD700", "#FF1493", "#E63946", "#FFB703", "#FF8C00", "#FFC0CB"];
+
+    for (let i = 0; i < 40; i++) {
+      petals.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        size: Math.random() * 8 + 6,
+        speedY: Math.random() * 1.5 + 0.8,
+        speedX: Math.random() * 0.8 - 0.4,
+        angle: Math.random() * 360,
+        spin: Math.random() * 2 - 1,
+        color: colors[Math.floor(Math.random() * colors.length)],
+      });
+    }
+
+    const animatePetals = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      petals.forEach((p) => {
+        p.y += p.speedY;
+        p.x += p.speedX;
+        p.angle += p.spin;
+
+        if (p.y > canvas.height) {
+          p.y = -10;
+          p.x = Math.random() * canvas.width;
+        }
+
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate((p.angle * Math.PI) / 180);
+        ctx.beginPath();
+        ctx.ellipse(0, 0, p.size, p.size / 2, 0, 0, Math.PI * 2);
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = 0.5;
+        ctx.fill();
+        ctx.restore();
+      });
+
+      requestAnimationFrame(animatePetals);
+    };
+
+    animatePetals();
   };
 
   // Spin Logic
@@ -272,34 +417,20 @@ export default function EventPage() {
     }
 
     const selectedSeg = SEGMENTS[selectedIdx];
-
-    // Calculate rotation angle
-    // Each segment is 360 / 8 = 45 degrees
     const segAngle = 360 / SEGMENTS.length;
-
-    // Target angle calculation:
-    // To land on selectedIdx at pointer top (270deg or 90deg offset depending on zero),
-    // Center of segment i is at (i * segAngle + segAngle / 2)
-    // We rotate wheel clockwise by N full turns (e.g. 5 to 8 turns) plus offset so pointer lands on segment.
     const numFullTurns = 6 + Math.floor(Math.random() * 3);
     const targetSegCenter = selectedIdx * segAngle + segAngle / 2;
-
-    // Pointer is at TOP (270 degrees in SVG coordinates if 0 is right, or 0 top).
-    // In CSS rotation, 0deg top means segment 0 starts at top right or top.
-    // Landing segment target angle formula:
     const targetRotation = rotation + (numFullTurns * 360) + (360 - targetSegCenter);
 
-    // Play ticking sound periodically during spin
     let tickCount = 0;
     const tickInterval = setInterval(() => {
       tickCount++;
-      if (soundOn) audioManager.playTick();
+      if (soundOn) audioManager.playTick(1 + (tickCount % 5) * 0.1);
       if (tickCount >= 30) clearInterval(tickInterval);
-    }, 150);
+    }, 140);
 
     setRotation(targetRotation);
 
-    // End spin after transition (4 seconds)
     setTimeout(() => {
       clearInterval(tickInterval);
       setIsSpinning(false);
@@ -323,6 +454,26 @@ export default function EventPage() {
     }, 4500);
   };
 
+  // Scratch / Mystery Box Unlock
+  const handleOpenMysteryBox = () => {
+    if (boxOpened) return;
+    if (soundOn) audioManager.playBoxOpenSound();
+    setBoxOpened(true);
+
+    const surpriseCodes = ["RAKHI200", "SIBLING100", "FREEDOM79"];
+    const picked = surpriseCodes[Math.floor(Math.random() * surpriseCodes.length)];
+    setMysteryCoupon(picked);
+
+    const newClaimed = [
+      { code: picked, desc: "Mystery Surprise Gift Voucher", date: new Date().toLocaleDateString("en-IN") },
+      ...claimedCoupons.filter((c) => c.code !== picked),
+    ];
+    setClaimedCoupons(newClaimed);
+    localStorage.setItem("rakhi_claimed_coupons", JSON.stringify(newClaimed));
+
+    triggerConfetti();
+  };
+
   // Copy coupon handler
   const handleCopy = (code: string) => {
     navigator.clipboard.writeText(code);
@@ -334,7 +485,6 @@ export default function EventPage() {
   const handleGenerateCard = (e: React.FormEvent) => {
     e.preventDefault();
     setCardGenerated(true);
-    // Add bonus spin!
     const updatedSpins = spinsLeft + 1;
     setSpinsLeft(updatedSpins);
     localStorage.setItem("rakhi_spins_count", updatedSpins.toString());
@@ -368,18 +518,18 @@ export default function EventPage() {
       vr: number;
     }[] = [];
 
-    const colors = ["#FFD700", "#FF1493", "#FF4500", "#00BFFF", "#32CD32", "#FF007F", "#FFA500"];
+    const colors = ["#FFD700", "#FF1493", "#FF4500", "#00BFFF", "#32CD32", "#FF007F", "#FFA500", "#FFFFFF"];
 
-    for (let i = 0; i < 150; i++) {
+    for (let i = 0; i < 200; i++) {
       particles.push({
         x: canvas.width / 2,
         y: canvas.height / 3,
-        vx: (Math.random() - 0.5) * 16,
-        vy: (Math.random() - 0.8) * 16,
+        vx: (Math.random() - 0.5) * 20,
+        vy: (Math.random() - 0.8) * 20,
         color: colors[Math.floor(Math.random() * colors.length)],
-        size: Math.random() * 9 + 4,
+        size: Math.random() * 10 + 4,
         rotation: Math.random() * 360,
-        vr: (Math.random() - 0.5) * 12,
+        vr: (Math.random() - 0.5) * 15,
       });
     }
 
@@ -390,7 +540,7 @@ export default function EventPage() {
       particles.forEach((p) => {
         p.x += p.vx;
         p.y += p.vy;
-        p.vy += 0.3; // gravity
+        p.vy += 0.32; // gravity
         p.rotation += p.vr;
 
         ctx.save();
@@ -401,7 +551,7 @@ export default function EventPage() {
         ctx.restore();
       });
 
-      if (frame < 120) {
+      if (frame < 130) {
         requestAnimationFrame(animate);
       } else {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -410,32 +560,66 @@ export default function EventPage() {
     animate();
   };
 
+  // Filtered products based on gift quiz
+  const filteredQuizProducts = catalogProducts.filter((product) => {
+    const priceMatch = product.price <= giftBudget;
+    const vibeMatch =
+      giftVibe === "All" ||
+      (giftVibe === "Tech" && (product.category === "Electronics" || product.category === "Mobile" || product.category === "Computer")) ||
+      (giftVibe === "Fashion" && product.category === "Fashion") ||
+      (giftVibe === "Beauty" && product.category === "Beauty") ||
+      (giftVibe === "Home" && (product.category === "Home" || product.category === "Kitchen" || product.category === "Grocery"));
+    return priceMatch && vibeMatch;
+  });
+
+  const activeWinner = RECENT_WINNERS[currentWinnerIdx];
+
   return (
-    <div className="rakhi-event-shell min-h-screen bg-[#2D040A] text-white selection:bg-[#FFD700] selection:text-[#2D040A]">
-      {/* Confetti Overlay Canvas */}
+    <div className="rakhi-event-shell min-h-screen bg-[#2D040A] text-white selection:bg-[#FFD700] selection:text-[#2D040A] relative overflow-hidden">
+      
+      {/* Background Floating Marigold Petals Canvas */}
+      <canvas
+        ref={petalCanvasRef}
+        className="fixed inset-0 pointer-events-none z-[1] opacity-60"
+      />
+
+      {/* Confetti Explosion Canvas */}
       <canvas
         ref={confettiCanvasRef}
         className="fixed inset-0 pointer-events-none z-[9999]"
       />
 
-      {/* Top Raksha Bandhan Navigation Bar */}
-      <header className="sticky top-0 z-50 bg-[#400611]/90 backdrop-blur-md border-b border-[#FFD700]/30 shadow-2xl">
+      {/* Top Countdown & Announcement Ribbon */}
+      <div className="bg-gradient-to-r from-[#991b1b] via-[#be123c] to-[#f59e0b] text-white py-2 px-4 text-center border-b border-[#FFD700]/50 shadow-lg relative z-50 flex items-center justify-center gap-4 flex-wrap text-xs sm:text-sm">
+        <span className="font-extrabold flex items-center gap-1.5 animate-pulse">
+          <Flame size={16} className="text-[#FFD700]" /> 🪔 RAKSHA BANDHAN MEGA FESTIVAL EVENT IS LIVE!
+        </span>
+        <div className="inline-flex items-center gap-2 bg-[#2D040A]/80 px-3 py-1 rounded-full border border-[#FFD700]/40">
+          <Clock size={14} className="text-[#FFD700]" />
+          <span className="font-mono font-black text-[#FFD700]">
+            Ends in: {String(timeLeft.hours).padStart(2, "0")}h : {String(timeLeft.minutes).padStart(2, "0")}m : {String(timeLeft.seconds).padStart(2, "0")}s
+          </span>
+        </div>
+      </div>
+
+      {/* Top Navigation Bar */}
+      <header className="sticky top-0 z-50 bg-[#400611]/95 backdrop-blur-md border-b border-[#FFD700]/30 shadow-2xl">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#FFD700] via-[#FF8C00] to-[#E63946] flex items-center justify-center font-extrabold text-[#2D040A] shadow-lg group-hover:scale-105 transition-transform">
+            <div className="w-11 h-11 rounded-full bg-gradient-to-tr from-[#FFD700] via-[#FF8C00] to-[#E63946] flex items-center justify-center font-extrabold text-[#2D040A] text-xl shadow-lg group-hover:scale-105 transition-transform border-2 border-[#FFD700]">
               🪔
             </div>
             <div>
-              <span className="text-xs uppercase tracking-widest text-[#FFD700] font-bold block">
+              <span className="text-[10px] uppercase tracking-widest text-[#FFD700] font-bold block">
                 VPANSAK FESTIVAL EXCLUSIVE
               </span>
-              <h1 className="text-lg font-black text-white tracking-wide flex items-center gap-2">
-                रक्षाबंधन लकी व्हील <span className="text-[#FFD700] text-sm font-normal">| Lucky Wheel</span>
+              <h1 className="text-base sm:text-xl font-black text-white tracking-wide flex items-center gap-2">
+                रक्षाबंधन लकी व्हील <span className="text-[#FFD700] text-xs sm:text-sm font-normal">| Lucky Wheel</span>
               </h1>
             </div>
           </Link>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <button
               onClick={toggleSound}
               className="px-3 py-1.5 rounded-full bg-[#580816] hover:bg-[#800A20] border border-[#FFD700]/40 text-xs font-semibold flex items-center gap-2 text-[#FFD700] transition-colors"
@@ -455,16 +639,34 @@ export default function EventPage() {
         </div>
       </header>
 
-      {/* Main Hero & Wheel Stage */}
-      <section className="relative overflow-hidden pt-8 pb-16 px-4">
-        {/* Festive Background Glows & Pattern */}
-        <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-gradient-to-r from-[#FFD700]/20 via-[#E63946]/30 to-[#B7094C]/20 rounded-full blur-3xl pointer-events-none" />
+      {/* Live Winners Ticker Bar */}
+      <div className="bg-[#1f0207] border-b border-[#FFD700]/20 py-2 px-4 relative z-20 overflow-hidden">
+        <div className="max-w-6xl mx-auto flex items-center justify-between gap-4 text-xs">
+          <div className="flex items-center gap-2 text-[#FFD700] font-bold shrink-0">
+            <span className="w-2 h-2 rounded-full bg-[#A3E635] animate-ping" />
+            <span>LIVE WINNERS FEED:</span>
+          </div>
 
-        <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10 items-center relative z-10">
+          <div className="flex-1 overflow-hidden">
+            <div className="flex items-center gap-2 text-[#FFC482] animate-fade-in key={currentWinnerIdx}">
+              <span className="text-base">{activeWinner.icon}</span>
+              <strong className="text-white">{activeWinner.name}</strong> from <span>{activeWinner.city}</span> just won{" "}
+              <strong className="text-[#FFD700]">{activeWinner.prize}</strong>!
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Hero & Wheel Stage */}
+      <section className="relative pt-6 pb-16 px-4 z-10">
+        {/* Festive Background Lighting */}
+        <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[700px] h-[700px] bg-gradient-to-r from-[#FFD700]/20 via-[#E63946]/30 to-[#B7094C]/20 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10 items-center relative">
           
           {/* Left Side: Offer Details & Festive Info */}
           <div className="lg:col-span-5 text-center lg:text-left space-y-6">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#FFD700]/10 border border-[#FFD700]/50 text-[#FFD700] text-xs font-extrabold tracking-wider uppercase backdrop-blur-sm animate-pulse">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#FFD700]/10 border border-[#FFD700]/50 text-[#FFD700] text-xs font-extrabold tracking-wider uppercase backdrop-blur-sm shadow-inner">
               <Sparkles size={14} className="text-[#FFD700]" /> RAKSHA BANDHAN SPECIAL GRAND EVENT 📿
             </div>
 
@@ -476,13 +678,13 @@ export default function EventPage() {
             </h2>
 
             <p className="text-sm sm:text-base text-[#FFE8C5] leading-relaxed">
-              Celebrate the bond of love this Rakshabandhan! Spin the golden wheel to win guaranteed sibling discounts, free designer Silver Rakhis, gift hampers, and instant cashback coupons!
+              Celebrate the pure bond of love this Rakshabandhan! Spin the golden wheel to win guaranteed sibling discounts, free designer Silver Rakhis, gift hampers, and instant cashback coupons!
             </p>
 
             {/* Daily Spin Tracker Counter */}
-            <div className="p-4 rounded-2xl bg-[#400611]/80 border border-[#FFD700]/40 backdrop-blur-md shadow-xl flex items-center justify-between max-w-md mx-auto lg:mx-0">
+            <div className="p-4 rounded-2xl bg-[#400611]/90 border border-[#FFD700]/40 backdrop-blur-md shadow-2xl flex items-center justify-between max-w-md mx-auto lg:mx-0">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#FFD700] to-[#E63946] flex items-center justify-center text-[#2D040A] font-black text-xl shadow-inner">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#FFD700] to-[#E63946] flex items-center justify-center text-[#2D040A] font-black text-2xl shadow-inner border border-[#FFD700]">
                   🎯
                 </div>
                 <div>
@@ -496,7 +698,7 @@ export default function EventPage() {
               {spinsLeft === 0 ? (
                 <a
                   href="#rakhi-card-generator"
-                  className="px-3 py-1.5 rounded-lg bg-[#FFD700] text-[#2D040A] text-xs font-extrabold hover:bg-white transition-colors"
+                  className="px-3 py-1.5 rounded-lg bg-[#FFD700] text-[#2D040A] text-xs font-extrabold hover:bg-white transition-colors shadow-md"
                 >
                   +1 Bonus Spin
                 </a>
@@ -509,19 +711,19 @@ export default function EventPage() {
 
             {/* Feature Pills */}
             <div className="grid grid-cols-2 gap-3 pt-2 max-w-md mx-auto lg:mx-0">
-              <div className="p-3 rounded-xl bg-[#580816]/70 border border-[#FFD700]/20 flex items-center gap-2.5">
+              <div className="p-3 rounded-xl bg-[#580816]/80 border border-[#FFD700]/30 flex items-center gap-2.5 shadow-md">
                 <Gift className="text-[#FFD700] shrink-0" size={18} />
                 <span className="text-xs text-white font-semibold">100% Guaranteed Prizes</span>
               </div>
-              <div className="p-3 rounded-xl bg-[#580816]/70 border border-[#FFD700]/20 flex items-center gap-2.5">
+              <div className="p-3 rounded-xl bg-[#580816]/80 border border-[#FFD700]/30 flex items-center gap-2.5 shadow-md">
                 <Tag className="text-[#FFD700] shrink-0" size={18} />
                 <span className="text-xs text-white font-semibold">Instant Checkout Use</span>
               </div>
-              <div className="p-3 rounded-xl bg-[#580816]/70 border border-[#FFD700]/20 flex items-center gap-2.5">
+              <div className="p-3 rounded-xl bg-[#580816]/80 border border-[#FFD700]/30 flex items-center gap-2.5 shadow-md">
                 <Truck className="text-[#FFD700] shrink-0" size={18} />
                 <span className="text-xs text-white font-semibold">Free Express Shipping</span>
               </div>
-              <div className="p-3 rounded-xl bg-[#580816]/70 border border-[#FFD700]/20 flex items-center gap-2.5">
+              <div className="p-3 rounded-xl bg-[#580816]/80 border border-[#FFD700]/30 flex items-center gap-2.5 shadow-md">
                 <ShieldCheck className="text-[#FFD700] shrink-0" size={18} />
                 <span className="text-xs text-white font-semibold">Verified Sibling Coupons</span>
               </div>
@@ -532,17 +734,17 @@ export default function EventPage() {
           <div className="lg:col-span-7 flex flex-col items-center justify-center relative">
             
             {/* Pointer / Arrow Indicator at Top */}
-            <div className="relative z-30 mb-[-26px] filter drop-shadow-[0_6px_10px_rgba(0,0,0,0.8)]">
+            <div className="relative z-30 mb-[-26px] filter drop-shadow-[0_6px_12px_rgba(0,0,0,0.9)]">
               <div className="w-10 h-12 bg-gradient-to-b from-[#FFF0BB] via-[#FFD700] to-[#D4AF37] clip-path-pointer flex items-center justify-center border-2 border-[#580816]">
                 <span className="text-xl">👇</span>
               </div>
             </div>
 
             {/* Wheel Outer Gold LED Frame */}
-            <div className="relative w-[340px] h-[340px] sm:w-[460px] sm:h-[460px] rounded-full p-4 bg-gradient-to-tr from-[#FFD700] via-[#800A20] to-[#FF8C00] shadow-[0_0_80px_rgba(255,215,0,0.4)] border-4 border-[#FFD700]/80 flex items-center justify-center">
+            <div className="relative w-[340px] h-[340px] sm:w-[460px] sm:h-[460px] rounded-full p-4 bg-gradient-to-tr from-[#FFD700] via-[#800A20] to-[#FF8C00] shadow-[0_0_90px_rgba(255,215,0,0.5)] border-4 border-[#FFD700]/90 flex items-center justify-center">
               
               {/* Decorative Perimeter Lights */}
-              <div className="absolute inset-2 rounded-full border-2 border-dashed border-[#FFD700]/60 pointer-events-none animate-spin-slow" />
+              <div className="absolute inset-2 rounded-full border-2 border-dashed border-[#FFD700]/70 pointer-events-none animate-spin-slow" />
 
               {/* Wheel SVG Canvas Container */}
               <div className="w-full h-full rounded-full overflow-hidden relative shadow-inner">
@@ -557,7 +759,6 @@ export default function EventPage() {
                     const startAngle = i * angle;
                     const endAngle = (i + 1) * angle;
 
-                    // Convert polar to cartesian for SVG path
                     const startRad = (startAngle * Math.PI) / 180;
                     const endRad = (endAngle * Math.PI) / 180;
 
@@ -568,7 +769,6 @@ export default function EventPage() {
 
                     const pathData = `M 250 250 L ${x1} ${y1} A 250 250 0 0 1 ${x2} ${y2} Z`;
 
-                    // Text rotation & position
                     const textAngle = startAngle + angle / 2;
                     const textRad = (textAngle * Math.PI) / 180;
                     const textX = 250 + 160 * Math.cos(textRad);
@@ -580,7 +780,7 @@ export default function EventPage() {
                           d={pathData}
                           fill={seg.color}
                           stroke="#FFD700"
-                          strokeWidth="2"
+                          strokeWidth="2.5"
                         />
                         <g transform={`translate(${textX}, ${textY}) rotate(${textAngle + 90})`}>
                           <text
@@ -613,7 +813,7 @@ export default function EventPage() {
                 <button
                   onClick={handleSpin}
                   disabled={isSpinning || spinsLeft <= 0}
-                  className="absolute inset-0 m-auto w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-gradient-to-tr from-[#FFD700] via-[#FFA500] to-[#FFF0BB] border-4 border-[#400611] text-[#2D040A] font-black text-sm sm:text-base tracking-wider flex flex-col items-center justify-center shadow-[0_0_30px_rgba(0,0,0,0.8)] hover:scale-105 active:scale-95 disabled:opacity-75 disabled:cursor-not-allowed transition-transform z-30 group"
+                  className="absolute inset-0 m-auto w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-gradient-to-tr from-[#FFD700] via-[#FFA500] to-[#FFF0BB] border-4 border-[#400611] text-[#2D040A] font-black text-sm sm:text-base tracking-wider flex flex-col items-center justify-center shadow-[0_0_35px_rgba(0,0,0,0.9)] hover:scale-105 active:scale-95 disabled:opacity-75 disabled:cursor-not-allowed transition-transform z-30 group"
                 >
                   <span className="text-2xl group-hover:rotate-45 transition-transform">🪔</span>
                   <span className="font-extrabold uppercase text-center leading-tight">
@@ -631,9 +831,9 @@ export default function EventPage() {
               <button
                 onClick={handleSpin}
                 disabled={isSpinning || spinsLeft <= 0}
-                className="px-8 py-3.5 rounded-full bg-gradient-to-r from-[#FFD700] via-[#FF8C00] to-[#E63946] text-[#2D040A] font-black text-base tracking-wide uppercase shadow-[0_10px_30px_rgba(255,215,0,0.4)] hover:shadow-[0_15px_40px_rgba(255,215,0,0.6)] hover:scale-105 active:scale-95 transition-all flex items-center gap-3 mx-auto disabled:opacity-50"
+                className="px-8 py-4 rounded-full bg-gradient-to-r from-[#FFD700] via-[#FF8C00] to-[#E63946] text-[#2D040A] font-black text-base sm:text-lg tracking-wide uppercase shadow-[0_10px_35px_rgba(255,215,0,0.5)] hover:shadow-[0_15px_45px_rgba(255,215,0,0.7)] hover:scale-105 active:scale-95 transition-all flex items-center gap-3 mx-auto disabled:opacity-50 border-2 border-[#FFD700]"
               >
-                <Zap size={20} className="fill-[#2D040A]" />
+                <Zap size={22} className="fill-[#2D040A]" />
                 {isSpinning ? "LUCKY WHEEL IS SPINNING..." : "SPIN THE LUCKY WHEEL NOW / पहिया घुमाएं"}
               </button>
             </div>
@@ -641,9 +841,54 @@ export default function EventPage() {
         </div>
       </section>
 
+      {/* Mystery Rakhi Surprise Box Section */}
+      <section className="max-w-4xl mx-auto px-4 py-8 relative z-10">
+        <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-[#580816] via-[#400611] to-[#580816] border-2 border-[#FFD700]/50 shadow-2xl text-center space-y-4">
+          <span className="px-3 py-1 rounded-full bg-[#FFD700]/20 border border-[#FFD700]/50 text-[#FFD700] text-xs font-extrabold uppercase">
+            🎁 BONUS SURPRISE
+          </span>
+          <h3 className="text-2xl sm:text-3xl font-black text-white">
+            Unbox The Mystery Rakhi Surprise Box!
+          </h3>
+          <p className="text-xs sm:text-sm text-[#FFC482] max-w-xl mx-auto">
+            Tap the gift box below to reveal an instant surprise extra cashback code for your Rakhi shopping!
+          </p>
+
+          <div className="pt-4 flex flex-col items-center justify-center">
+            <button
+              onClick={handleOpenMysteryBox}
+              disabled={boxOpened}
+              className={`w-32 h-32 sm:w-36 sm:h-36 rounded-3xl bg-gradient-to-tr from-[#FFD700] via-[#FF8C00] to-[#E63946] border-4 border-[#2D040A] shadow-2xl flex flex-col items-center justify-center text-5xl transition-all duration-500 transform ${
+                boxOpened ? "scale-105 rotate-3 border-[#A3E635]" : "hover:scale-110 animate-bounce cursor-pointer"
+              }`}
+            >
+              {boxOpened ? "🎉" : "🎁"}
+              <small className="text-[10px] font-black text-[#2D040A] uppercase mt-2">
+                {boxOpened ? "UNBOXED!" : "TAP TO UNBOX"}
+              </small>
+            </button>
+
+            {boxOpened && mysteryCoupon && (
+              <div className="mt-6 p-4 rounded-2xl bg-[#2D040A] border border-[#FFD700] max-w-md w-full animate-scale-up text-center space-y-2">
+                <span className="text-xs font-extrabold text-[#A3E635] block">🎉 SURPRISE UNLOCKED!</span>
+                <strong className="text-xl font-mono font-black text-[#FFD700]">{mysteryCoupon}</strong>
+                <p className="text-xs text-[#FFC482]">Extra Cashback Voucher Added To Your Wallet!</p>
+                <button
+                  onClick={() => handleCopy(mysteryCoupon)}
+                  className="px-4 py-1.5 rounded-lg bg-[#FFD700] text-[#2D040A] text-xs font-extrabold inline-flex items-center gap-1.5 hover:bg-white transition-colors mt-2"
+                >
+                  {copiedCode === mysteryCoupon ? <Check size={14} /> : <Copy size={14} />}
+                  {copiedCode === mysteryCoupon ? "COPIED!" : "COPY MYSTERY CODE"}
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
       {/* Claimed Coupons Wallet Bar */}
       {claimedCoupons.length > 0 && (
-        <section className="max-w-6xl mx-auto px-4 py-6">
+        <section className="max-w-6xl mx-auto px-4 py-6 relative z-10">
           <div className="p-6 rounded-3xl bg-gradient-to-r from-[#400611] to-[#580816] border border-[#FFD700]/40 shadow-2xl">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-xl font-extrabold text-[#FFD700] flex items-center gap-2">
@@ -656,7 +901,7 @@ export default function EventPage() {
               {claimedCoupons.map((c, idx) => (
                 <div
                   key={idx}
-                  className="p-4 rounded-2xl bg-[#2D040A] border border-[#FFD700]/30 relative flex flex-col justify-between hover:border-[#FFD700] transition-colors"
+                  className="p-4 rounded-2xl bg-[#2D040A] border border-[#FFD700]/30 relative flex flex-col justify-between hover:border-[#FFD700] transition-colors shadow-md"
                 >
                   <div>
                     <span className="text-[10px] uppercase font-bold text-[#FFD700] block">OFFER VOUCHER</span>
@@ -686,7 +931,7 @@ export default function EventPage() {
       )}
 
       {/* Sibling Rakhi Wish Card Generator (Earn Bonus Spin!) */}
-      <section id="rakhi-card-generator" className="max-w-5xl mx-auto px-4 py-12">
+      <section id="rakhi-card-generator" className="max-w-5xl mx-auto px-4 py-12 relative z-10">
         <div className="p-8 rounded-3xl bg-gradient-to-br from-[#400611] via-[#580816] to-[#2D040A] border-2 border-[#FFD700]/50 shadow-2xl relative overflow-hidden">
           
           <div className="max-w-2xl mx-auto text-center space-y-4 mb-8">
@@ -740,7 +985,7 @@ export default function EventPage() {
 
             <button
               type="submit"
-              className="w-full py-3 rounded-xl bg-gradient-to-r from-[#FFD700] to-[#FF8C00] text-[#2D040A] font-extrabold text-sm uppercase tracking-wide hover:opacity-95 shadow-lg transition-all flex items-center justify-center gap-2"
+              className="w-full py-3.5 rounded-xl bg-gradient-to-r from-[#FFD700] to-[#FF8C00] text-[#2D040A] font-extrabold text-sm uppercase tracking-wide hover:opacity-95 shadow-lg transition-all flex items-center justify-center gap-2 border border-[#FFD700]"
             >
               <Send size={16} /> Create Sibling Greeting Card & Get +1 Free Spin
             </button>
@@ -748,19 +993,19 @@ export default function EventPage() {
 
           {/* Generated Wish Card Preview */}
           {cardGenerated && (
-            <div className="mt-8 max-w-lg mx-auto p-6 rounded-2xl bg-gradient-to-tr from-[#FFF0BB] to-[#FFD700] text-[#2D040A] border-4 border-[#800A20] shadow-2xl relative">
+            <div className="mt-8 max-w-lg mx-auto p-6 rounded-3xl bg-gradient-to-tr from-[#FFF0BB] via-[#FFD700] to-[#FFA500] text-[#2D040A] border-4 border-[#800A20] shadow-2xl relative">
               <div className="text-center space-y-3">
-                <span className="text-3xl">🪔📿🎁</span>
-                <h4 className="text-xl font-black uppercase text-[#800A20]">
+                <span className="text-4xl">🪔📿🎁</span>
+                <h4 className="text-2xl font-black uppercase text-[#800A20]">
                   Happy Raksha Bandhan {siblingName}!
                 </h4>
                 <p className="text-xs font-semibold text-[#400611] italic leading-relaxed">
                   &quot;{customWish}&quot;
                 </p>
 
-                <div className="p-3 rounded-xl bg-[#800A20] text-white my-3">
+                <div className="p-4 rounded-2xl bg-[#800A20] text-white my-3 border border-[#FFD700]">
                   <small className="text-[10px] text-[#FFD700] uppercase font-bold block">FESTIVE DISCOUNT VOUCHER GIFT</small>
-                  <strong className="text-lg font-mono font-black text-[#FFD700]">
+                  <strong className="text-xl font-mono font-black text-[#FFD700]">
                     CODE: {wonSegment ? wonSegment.code : "RAKHI75"}
                   </strong>
                   <p className="text-[11px] opacity-90">Use at checkout on VPANSAK Shopping</p>
@@ -768,7 +1013,7 @@ export default function EventPage() {
 
                 <button
                   onClick={handleCopyCardText}
-                  className="px-6 py-2 rounded-full bg-[#800A20] text-[#FFD700] font-black text-xs uppercase flex items-center gap-2 mx-auto hover:bg-[#400611] transition-colors"
+                  className="px-6 py-2.5 rounded-full bg-[#800A20] text-[#FFD700] font-black text-xs uppercase flex items-center gap-2 mx-auto hover:bg-[#400611] transition-colors border border-[#FFD700]"
                 >
                   {cardCopied ? <Check size={14} /> : <Share2 size={14} />}
                   {cardCopied ? "GREETING COPIED!" : "COPY & SHARE ON WHATSAPP"}
@@ -779,27 +1024,73 @@ export default function EventPage() {
         </div>
       </section>
 
-      {/* Featured Rakhi Best Deals Product Showcase */}
-      <section className="max-w-7xl mx-auto px-4 py-12">
-        <div className="text-center space-y-3 mb-10">
+      {/* Sibling Gift Finder Quiz & Curated Grid */}
+      <section className="max-w-7xl mx-auto px-4 py-12 relative z-10">
+        <div className="text-center space-y-3 mb-8">
           <span className="px-3 py-1 rounded-full bg-[#FFD700]/20 border border-[#FFD700]/50 text-[#FFD700] text-xs font-extrabold uppercase">
-            BEST RAKHI GIFTS
+            SMART SIBLING GIFT FINDER
           </span>
-          <h3 className="text-3xl font-black text-white">
-            Use Your Lucky Wheel Coupons On These Top Deals!
+          <h3 className="text-3xl sm:text-4xl font-black text-white">
+            Find The Perfect Gift For Your Brother / Sister!
           </h3>
           <p className="text-sm text-[#FFC482]">
-            Handpicked electronic gadgets, fashion, smartwatches & beauty hampers for your loved ones.
+            Select preferences below to discover ideal gifts and apply your Lucky Wheel discount code!
           </p>
         </div>
 
+        {/* Quiz Controls */}
+        <div className="p-6 rounded-2xl bg-[#400611]/80 border border-[#FFD700]/30 max-w-3xl mx-auto mb-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label className="block text-xs font-bold text-[#FFD700] mb-1">Shopping For</label>
+            <select
+              value={giftTarget}
+              onChange={(e) => setGiftTarget(e.target.value as "Sister" | "Brother" | "All")}
+              className="w-full px-3 py-2 rounded-xl bg-[#2D040A] border border-[#FFD700]/30 text-white text-xs"
+            >
+              <option value="All">All Siblings</option>
+              <option value="Sister">Sister (बहन)</option>
+              <option value="Brother">Brother (भाई)</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-[#FFD700] mb-1">Category Vibe</label>
+            <select
+              value={giftVibe}
+              onChange={(e) => setGiftVibe(e.target.value)}
+              className="w-full px-3 py-2 rounded-xl bg-[#2D040A] border border-[#FFD700]/30 text-white text-xs"
+            >
+              <option value="All">All Categories</option>
+              <option value="Tech">Tech & Gadgets 🎧</option>
+              <option value="Fashion">Festive Fashion 👕</option>
+              <option value="Beauty">Beauty & Glow 💄</option>
+              <option value="Home">Home & Decor 🏠</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-[#FFD700] mb-1">Max Budget</label>
+            <select
+              value={giftBudget}
+              onChange={(e) => setGiftBudget(Number(e.target.value))}
+              className="w-full px-3 py-2 rounded-xl bg-[#2D040A] border border-[#FFD700]/30 text-white text-xs"
+            >
+              <option value={1000}>Under ₹1,000</option>
+              <option value={3000}>Under ₹3,000</option>
+              <option value={15000}>Under ₹15,000</option>
+              <option value={50000}>All Budgets</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Product Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {catalogProducts.slice(0, 8).map((product: CatalogProduct) => {
+          {filteredQuizProducts.slice(0, 8).map((product: CatalogProduct) => {
             const discount = Math.round((1 - product.price / product.mrp) * 100);
             return (
               <div
                 key={product.id}
-                className="rounded-2xl bg-[#400611]/80 border border-[#FFD700]/30 overflow-hidden flex flex-col justify-between hover:border-[#FFD700] transition-all hover:-translate-y-1 shadow-xl group"
+                className="rounded-2xl bg-[#400611]/90 border border-[#FFD700]/30 overflow-hidden flex flex-col justify-between hover:border-[#FFD700] transition-all hover:-translate-y-1 shadow-xl group"
               >
                 <div className="relative aspect-square overflow-hidden bg-white/5">
                   <img
@@ -845,7 +1136,7 @@ export default function EventPage() {
 
       {/* Grand Victory Winner Popup Modal */}
       {showWinModal && wonSegment && (
-        <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
+        <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in">
           <div className="w-full max-w-md p-8 rounded-3xl bg-gradient-to-br from-[#FFF0BB] via-[#FFD700] to-[#FFA500] text-[#2D040A] border-4 border-[#800A20] shadow-[0_0_100px_rgba(255,215,0,0.8)] relative text-center space-y-5 animate-scale-up">
             
             <div className="w-20 h-20 rounded-full bg-[#800A20] text-white flex items-center justify-center text-4xl mx-auto shadow-2xl border-4 border-[#FFD700]">
@@ -876,7 +1167,7 @@ export default function EventPage() {
             <div className="flex flex-col gap-2 pt-2">
               <button
                 onClick={() => handleCopy(wonSegment.code)}
-                className="w-full py-3 rounded-xl bg-[#800A20] text-[#FFD700] font-extrabold text-sm uppercase flex items-center justify-center gap-2 hover:bg-[#580816] transition-colors"
+                className="w-full py-3 rounded-xl bg-[#800A20] text-[#FFD700] font-extrabold text-sm uppercase flex items-center justify-center gap-2 hover:bg-[#580816] transition-colors border border-[#FFD700]"
               >
                 {copiedCode === wonSegment.code ? <Check size={16} /> : <Copy size={16} />}
                 {copiedCode === wonSegment.code ? "CODE COPIED TO CLIPBOARD!" : "COPY DISCOUNT CODE"}
@@ -902,7 +1193,7 @@ export default function EventPage() {
       )}
 
       {/* Footer */}
-      <footer className="border-t border-[#FFD700]/20 bg-[#230206] py-8 text-center text-xs text-[#FFC482]">
+      <footer className="border-t border-[#FFD700]/20 bg-[#230206] py-8 text-center text-xs text-[#FFC482] relative z-10">
         <div className="max-w-7xl mx-auto px-4 space-y-2">
           <p className="font-bold">🪔 VPANSAK Shopping Raksha Bandhan Festive Celebration 📿</p>
           <p>© 2026 VPANSAK Inc. All Raksha Bandhan offers & discounts subject to terms.</p>
