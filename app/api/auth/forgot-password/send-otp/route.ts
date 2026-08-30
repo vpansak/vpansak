@@ -15,11 +15,14 @@ function hashOtp(otp: string): string {
   return crypto.pbkdf2Sync(otp, salt, 10000, 32, "sha256").toString("hex");
 }
 
-async function sendEmailJsOtp(toEmail: string, userName: string, otpCode: string): Promise<boolean> {
+async function sendEmailJsOtp(toEmail: string, userName: string, otpCode: string, baseUrl?: string): Promise<boolean> {
   const serviceId = process.env.EMAILJS_SERVICE_ID || "service_15li5i6";
   const templateId = process.env.EMAILJS_TEMPLATE_ID || "template_yv895a7";
   const publicKey = process.env.EMAILJS_PUBLIC_KEY || "K2hOwDJVfSGpJ3nih";
   const privateKey = process.env.EMAILJS_PRIVATE_KEY || "30mafPjRgPPn5im53Idzh";
+
+  const appOrigin = baseUrl || process.env.APP_URL || "https://vpansak.vercel.app";
+  const resetLink = `${appOrigin.replace(/\/+$/, "")}/forgot-password?email=${encodeURIComponent(toEmail)}&code=${otpCode}`;
 
   try {
     const response = await fetch("https://api.emailjs.com/api/v1.0/email/send", {
@@ -44,6 +47,7 @@ async function sendEmailJsOtp(toEmail: string, userName: string, otpCode: string
           passcode: otpCode,
           code: otpCode,
           verification_code: otpCode,
+          verification_link: resetLink,
           subject: "VPANSAK Password Reset Verification Code",
           title: "Password Reset Verification Code",
           message: `Your 6-digit OTP code to reset your VPANSAK account password is: ${otpCode}. Valid for 10 minutes. Do not share this OTP with anyone.`,
@@ -180,8 +184,18 @@ export async function POST(request: Request) {
       used: false,
     });
 
+    let baseUrl = process.env.APP_URL;
+    if (!baseUrl) {
+      const origin = request.headers.get("origin") || request.headers.get("host");
+      if (origin) {
+        baseUrl = origin.startsWith("http") ? origin : `https://${origin}`;
+      } else {
+        baseUrl = "https://vpansak.vercel.app";
+      }
+    }
+
     // Send email via EmailJS server call
-    const emailSent = await sendEmailJsOtp(user.email, user.fullName, otpCode);
+    const emailSent = await sendEmailJsOtp(user.email, user.fullName, otpCode, baseUrl);
     if (!emailSent) {
       return Response.json(
         { error: "We couldn’t send the verification code right now. Please try again shortly." },

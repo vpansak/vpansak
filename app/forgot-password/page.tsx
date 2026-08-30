@@ -11,6 +11,7 @@ function ForgotPasswordContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialEmail = searchParams.get("email") || "";
+  const initialCode = searchParams.get("code") || searchParams.get("otp") || searchParams.get("token") || "";
 
   const [step, setStep] = useState<Step>("EMAIL");
   const [email, setEmail] = useState(initialEmail);
@@ -23,6 +24,19 @@ function ForgotPasswordContent() {
   const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
   const [resendTimer, setResendTimer] = useState(60);
   const [canResend, setCanResend] = useState(false);
+
+  useEffect(() => {
+    if (initialCode && initialCode.length === 6 && /^\d+$/.test(initialCode)) {
+      const parts = initialCode.split("");
+      setOtp(parts);
+      setStep("OTP");
+      if (initialEmail) {
+        const p = initialEmail.split("@");
+        const masked = p[0].length <= 2 ? p[0] + "***" : p[0].slice(0, 2) + "***";
+        setMaskedEmail(`${masked}@${p[1] || ""}`);
+      }
+    }
+  }, [initialCode, initialEmail]);
 
   // New password state
   const [newPassword, setNewPassword] = useState("");
