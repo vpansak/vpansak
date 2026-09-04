@@ -102,16 +102,12 @@ const categories = [
 ];
 
 const heroSlides = [
-  { eyebrow: "🪔 RAKSHABANDHAN SPECIAL GIFT SALE", title: "Premium tech.\nSmarter prices.", copy: "Upgrade your everyday with verified electronics, mobiles and Rakhi gift picks at launch prices.", offer: "Up to 60% OFF + Sibling Coupons", button: "Explore Rakhi Deals", category: "Electronics", image: "https://images.unsplash.com/photo-1526738549149-8e07eca6c147?auto=format&fit=crop&w=1800&q=88", theme: "blue" },
-  { eyebrow: "📿 RAKHI FESTIVE FASHION EDIT", title: "Everyday style,\nmade effortless.", copy: "Fresh festive fashion picks, traditional wear and easy Rakhi coupon savings for brothers & sisters.", offer: "Rakhi Specials From ₹399", button: "Shop Festive Fashion", category: "Fashion", image: "https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=1800&q=88", theme: "rose" },
-  { eyebrow: "🎁 SIBLING CELEBRATION HOME UPGRADE", title: "Small upgrades.\nA better home.", copy: "Thoughtful decor, sweet kitchenware and home essentials for warm festive celebrations.", offer: "Minimum 40% OFF", button: "Refresh your home", category: "Home", image: "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=1800&q=88", theme: "gold" },
-  { eyebrow: "📱 RAKSHABANDHAN MOBILE SURPRISE", title: "Faster phones.\nBetter everyday.", copy: "Gift dependable 5G smartphones, wireless audio and mobile accessories to your sibling.", offer: "From ₹9,999 + Rakhi Discounts", button: "Shop Rakhi Mobiles", category: "Mobile", image: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=1800&q=88", theme: "blue" },
-  { eyebrow: "🍲 FESTIVE SWEETS & KITCHEN BESTSELLERS", title: "Cook festive feasts.\nShare sweet moments.", copy: "Useful cookware, festive dessert makers and kitchen tools selected for modern homes.", offer: "Up to 55% OFF", button: "Explore kitchen", category: "Kitchen", image: "https://images.unsplash.com/photo-1556911220-bff31c812dba?auto=format&fit=crop&w=1800&q=88", theme: "gold" },
-  { eyebrow: "✨ RAKHI BEAUTY & GLOW GIFT HAMPERS", title: "Skincare hampers.\nEveryday glow.", copy: "Discover luxury skincare and beauty hampers perfect for Rakhi gifting.", offer: "Starting ₹299", button: "Shop beauty hampers", category: "Beauty", image: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1800&q=88", theme: "rose" },
-  { eyebrow: "🎮 RAKSHABANDHAN GAMING & GADGETS", title: "Surprise gifts.\nPlay your way.", copy: "Next-gen controllers, immersive audio and gaming accessories for brothers.", offer: "Up to 45% OFF", button: "Enter gaming", category: "Gaming", image: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=1800&q=88", theme: "blue" },
-  { eyebrow: "🏋️ HEALTH & FITNESS RAKHI GIFTS", title: "Move better.\nFeel stronger.", copy: "Practical sports, smartwatch and fitness gear for active brothers and sisters.", offer: "From ₹499", button: "Shop sports", category: "Sports", image: "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=1800&q=88", theme: "gold" },
-  { eyebrow: "💻 WORK & STUDY RAKHI GIFTS", title: "Focus more.\nAchieve better.", copy: "Laptops, smart backpacks and desk essentials for your sibling's work and study.", offer: "Up to 35% OFF", button: "Explore laptops", category: "Computer", image: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&w=1800&q=88", theme: "blue" },
-  { eyebrow: "🧸 RAKSHABANDHAN TOYS & KIDS GIFTS", title: "Big smiles.\nHappy play.", copy: "Creative building sets, toys and fun gifts for younger brothers and sisters.", offer: "From ₹349", button: "Shop toys", category: "Toys", image: "https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?auto=format&fit=crop&w=1800&q=88", theme: "rose" },
+  { eyebrow: "OFFICIAL VPANSAK DIRECT STORE", title: "Premium quality.\nSmarter prices.", copy: "Discover 100% genuine VPANSAK products directly from our in-house manufacturing and fulfillment hubs.", offer: "Direct Brand Guarantee", button: "Explore Catalog", category: "Electronics", image: "https://images.unsplash.com/photo-1526738549149-8e07eca6c147?auto=format&fit=crop&w=1800&q=88", theme: "blue" },
+  { eyebrow: "VPANSAK ESSENTIAL FASHION", title: "Everyday style,\nmade effortless.", copy: "Quality everyday apparel, footwear and accessories crafted with comfort, versatility and durability.", offer: "Everyday Fits From ₹399", button: "Shop Fashion", category: "Fashion", image: "https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=1800&q=88", theme: "rose" },
+  { eyebrow: "HOME & LIFESTYLE ESSENTIALS", title: "Small upgrades.\nA better home.", copy: "Thoughtful decor, kitchenware and home essentials designed for modern living and long-term utility.", offer: "Home Essentials From ₹549", button: "Refresh your home", category: "Home", image: "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=1800&q=88", theme: "gold" },
+  { eyebrow: "VPANSAK MOBILE & TECH", title: "Faster devices.\nBetter everyday.", copy: "Dependable 5G smartphones, wireless audio and mobile accessories with direct brand warranty.", offer: "Direct Brand Pricing", button: "Explore Mobiles", category: "Mobile", image: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=1800&q=88", theme: "blue" },
+  { eyebrow: "VPANSAK KITCHEN & HOME", title: "Cook with ease.\nShare great moments.", copy: "Useful cookware, kitchen tools and home appliances built for daily performance.", offer: "Direct-From-Brand", button: "Explore kitchen", category: "Kitchen", image: "https://images.unsplash.com/photo-1556911220-bff31c812dba?auto=format&fit=crop&w=1800&q=88", theme: "gold" },
+  { eyebrow: "VPANSAK CARE & BEAUTY", title: "Gentle daily care.\nEveryday glow.", copy: "Pure daily care routines with dermatologist-inspired formulas and clean ingredients.", offer: "Starting ₹299", button: "Shop daily care", category: "Beauty", image: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1800&q=88", theme: "rose" },
 ];
 
 function ProductCard({ product, wished, onWish, onAdd, authUser }: { product: CatalogProduct; wished: boolean; onWish: () => void; onAdd: () => void; authUser: unknown }) {
@@ -381,11 +377,11 @@ export default function HomePage() {
 
       <header className={`vp-header-shell ${isCollapsed ? "is-collapsed" : ""}`} id="top">
         <div className="mobile-header-collapsible">
-          <Link href="/event" className="rakhi-banner-bar">
-            <span>🪔 RAKSHABANDHAN LUCKY WHEEL</span>
-            <strong>Spin & Win Up to 90% OFF Discount Vouchers & Free Rakhi Hampers!</strong>
-            <b>SPIN & WIN →</b>
-          </Link>
+          <div className="rakhi-banner-bar" style={{ background: "#07162a" }}>
+            <span>VPANSAK DIRECT STORE</span>
+            <strong>100% Original In-House Manufactured Products • Direct Delivery Across India</strong>
+            <b onClick={() => window.location.href = "/seller"} style={{ cursor: "pointer" }}>LEARN MORE →</b>
+          </div>
 
           <div className="vp-brand-row">
             <Link className="vp-brand" href="/" aria-label="VPANSAK Shopping home"><img src="/vpansak-logo.png" alt="VPANSAK" /><span><strong>VPANSAK</strong><small>SHOPPING</small></span></Link>
@@ -418,7 +414,6 @@ export default function HomePage() {
 
       <nav className={menuOpen ? "vp-main-nav open" : "vp-main-nav"} aria-label="Main navigation">
         <Link href="/categories"><Menu /> All Categories</Link>
-        <Link href="/event" style={{ color: "#be123c", fontWeight: "bold" }}><Sparkles size={14} /> 🪔 Lucky Wheel Event</Link>
         {categories.slice(0, 6).map((item) => <button type="button" key={item.name} onClick={() => chooseCategory(item.value)}>{item.name}</button>)}
         <Link href="/seller"><ShieldCheck size={14} /> VPANSAK Direct Store</Link>
       </nav>
@@ -691,11 +686,7 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* Floating Raksha Bandhan Lucky Wheel Shortcut Button */}
-      <Link href="/event" className="rakhi-floating-event-btn" title="Raksha Bandhan Lucky Wheel">
-        <span className="text-lg animate-bounce">🪔</span>
-        <span className="font-extrabold text-xs">Lucky Wheel</span>
-      </Link>
+
     </main>
   );
 }
