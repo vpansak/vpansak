@@ -420,7 +420,7 @@ export default function HomePage() {
         <Link href="/categories"><Menu /> All Categories</Link>
         <Link href="/event" style={{ color: "#be123c", fontWeight: "bold" }}><Sparkles size={14} /> 🪔 Lucky Wheel Event</Link>
         {categories.slice(0, 6).map((item) => <button type="button" key={item.name} onClick={() => chooseCategory(item.value)}>{item.name}</button>)}
-        <Link href="/seller"><Store /> Become a Seller</Link>
+        <Link href="/seller"><ShieldCheck size={14} /> VPANSAK Direct Store</Link>
       </nav>
 
       <section className="vp-category-strip" aria-label="Popular departments">
@@ -454,7 +454,7 @@ export default function HomePage() {
       <section className="vp-banner-grid">
         <button type="button" className="vp-banner-fashion" onClick={() => chooseCategory("Fashion")}><span><small>STYLE STORE</small><strong>New looks.<br />Everyday prices.</strong><b>Min. 45% off</b><i>Shop now <ArrowRight /></i></span></button>
         <button type="button" className="vp-banner-home" onClick={() => chooseCategory("Home")}><span><small>HOME UPGRADE</small><strong>Make every corner<br />work better.</strong><b>From ₹549</b><i>Explore home <ArrowRight /></i></span></button>
-        <button type="button" className="vp-banner-seller" onClick={() => { window.location.href = "/seller"; }}><Store /><span><small>SELL ON VPANSAK</small><strong>Take your business online.</strong><b>Start seller registration</b></span><ArrowRight /></button>
+        <button type="button" className="vp-banner-seller" onClick={() => { window.location.href = "/seller"; }}><ShieldCheck /><span><small>VPANSAK DIRECT</small><strong>100% Genuine Brand Products.</strong><b>Explore our direct store</b></span><ArrowRight /></button>
       </section>
 
       <section className="vp-shelf">
@@ -483,12 +483,12 @@ export default function HomePage() {
 
       <section className="vp-service-grid">
         <a href="https://vpansaksupporthub.lovable.app/" target="_blank" rel="noreferrer"><Headphones /><span><small>24×7 SUPPORT HUB</small><strong>Create &amp; track a ticket</strong><p>Get structured help for orders, payments, delivery and technical issues.</p></span><ArrowRight /></a>
-        <Link href="/seller"><Store /><span><small>MERCHANT PLATFORM</small><strong>Grow with VPANSAK</strong><p>Register, complete verification and manage your product business.</p></span><ArrowRight /></Link>
+        <Link href="/seller"><ShieldCheck /><span><small>VPANSAK DIRECT BRAND</small><strong>Direct Brand Guarantee</strong><p>100% genuine products, zero third-party sellers &amp; direct quality care.</p></span><ArrowRight /></Link>
         <Link href="/info/about"><CircleHelp /><span><small>VPANSAK ECOSYSTEM</small><strong>Explore our headquarters</strong><p>Shopping, support, foundation and business tools in one place.</p></span><ArrowRight /></Link>
       </section>
 
       <footer className="vp-footer">
-        <div className="vp-footer-main"><div className="vp-footer-brand"><Link className="vp-brand" href="/"><img src="/vpansak-logo.png" alt="VPANSAK" /><span><strong>VPANSAK</strong><small>SHOPPING</small></span></Link><p>A secure, useful and customer-focused digital marketplace by A&amp;A Group.</p><span><ShieldCheck /> Secure shopping experience</span></div><div><strong>SHOP</strong><Link href="/categories">All categories</Link><a href="#catalog">Top offers</a><Link href="/account">Wishlist</Link><Link href="/track">Track order</Link></div><div><strong>HELP</strong><a href="https://vpansaksupporthub.lovable.app/" target="_blank" rel="noreferrer">Support hub</a><Link href="/info/faq">FAQs</Link><Link href="/policies/refund-policy">Refund policy</Link><Link href="/policies/shipping-policy">Shipping policy</Link><Link href="/info/useful-links" onClick={(e) => { e.preventDefault(); setUsefulLinksOpen(true); }}>Useful links</Link></div><div><strong>BUSINESS</strong><Link href="/seller">Become a seller</Link><Link href="/seller/dashboard">Seller dashboard</Link><Link href="/policies/merchant-guidelines">Merchant guidelines</Link><Link href="/foundation">Support Foundation</Link></div><div><strong>COMPANY</strong><Link href="/info/about">About VPANSAK</Link><Link href="/info/careers">Careers</Link><Link href="/info/contact">Contact us</Link></div></div>
+        <div className="vp-footer-main"><div className="vp-footer-brand"><Link className="vp-brand" href="/"><img src="/vpansak-logo.png" alt="VPANSAK" /><span><strong>VPANSAK</strong><small>SHOPPING</small></span></Link><p>An exclusive Direct-to-Consumer (D2C) brand store by A&amp;A Group.</p><span><ShieldCheck /> Secure shopping experience</span></div><div><strong>SHOP</strong><Link href="/categories">All categories</Link><a href="#catalog">Top offers</a><Link href="/account">Wishlist</Link><Link href="/track">Track order</Link></div><div><strong>HELP</strong><a href="https://vpansaksupporthub.lovable.app/" target="_blank" rel="noreferrer">Support hub</a><Link href="/info/faq">FAQs</Link><Link href="/policies/refund-policy">Refund policy</Link><Link href="/policies/shipping-policy">Shipping policy</Link><Link href="/info/useful-links" onClick={(e) => { e.preventDefault(); setUsefulLinksOpen(true); }}>Useful links</Link></div><div><strong>BRAND &amp; COMMUNITY</strong><Link href="/seller">Direct Store Policy</Link><Link href="/policies/merchant-guidelines">Quality SLA</Link><Link href="/foundation">Support Foundation</Link></div><div><strong>COMPANY</strong><Link href="/info/about">About VPANSAK</Link><Link href="/info/careers">Careers</Link><Link href="/info/contact">Contact us</Link></div></div>
         <div className="vp-footer-bottom"><span>© 2026 VPANSAK • Powered by A&amp;A Group</span><div><Link href="/policies/privacy-policy">Privacy</Link><Link href="/policies/terms-and-conditions">Terms</Link><div className="vp-social-icons"><a href="mailto:support.vpansak@gmail.com" title="support.vpansak@gmail.com" aria-label="Email support"><Mail size={16} /></a><a href="https://instagram.com/VPANSAK" target="_blank" rel="noreferrer" title="Instagram @VPANSAK" aria-label="Instagram"><InstagramIcon size={16} /></a><a href="https://x.com/vpansak_" target="_blank" rel="noreferrer" title="X @vpansak_" aria-label="X @vpansak_"><XIcon size={15} /></a></div></div></div>
       </footer>
 
@@ -640,16 +640,10 @@ export default function HomePage() {
                   <span className="card-action-link">Track Order <ArrowRight size={14} /></span>
                 </Link>
                 <Link href="/seller" onClick={() => setUsefulLinksOpen(false)} className="useful-btn-card">
-                  <div className="btn-card-top"><span className="card-badge merchant-badge">3% COMMISSION</span><Store size={20} className="card-icon" /></div>
-                  <h4>Become a Seller</h4>
-                  <p>Register store & start selling nationwide.</p>
-                  <span className="card-action-link">Register Store <ArrowRight size={14} /></span>
-                </Link>
-                <Link href="/seller/dashboard" onClick={() => setUsefulLinksOpen(false)} className="useful-btn-card">
-                  <div className="btn-card-top"><span className="card-badge portal-badge">PORTAL</span><Store size={20} className="card-icon" /></div>
-                  <h4>Seller Dashboard</h4>
-                  <p>Manage product listings & payouts.</p>
-                  <span className="card-action-link">Open Portal <ArrowRight size={14} /></span>
+                  <div className="btn-card-top"><span className="card-badge merchant-badge">DIRECT D2C</span><ShieldCheck size={20} className="card-icon" /></div>
+                  <h4>VPANSAK Direct Policy</h4>
+                  <p>Read about our 100% direct brand store commitment.</p>
+                  <span className="card-action-link">Read Policy <ArrowRight size={14} /></span>
                 </Link>
               </div>
 
@@ -684,11 +678,10 @@ export default function HomePage() {
                   </ul>
                 </div>
                 <div className="useful-link-col">
-                  <div className="col-title"><Store size={16} /><span>Business & Seller</span></div>
+                  <div className="col-title"><ShieldCheck size={16} /><span>Direct Store &amp; Community</span></div>
                   <ul>
-                    <li><Link href="/seller" onClick={() => setUsefulLinksOpen(false)}>Become a Seller (3% Fee)</Link></li>
-                    <li><Link href="/seller/dashboard" onClick={() => setUsefulLinksOpen(false)}>Seller Dashboard</Link></li>
-                    <li><Link href="/policies/merchant-guidelines" onClick={() => setUsefulLinksOpen(false)}>Merchant Guidelines</Link></li>
+                    <li><Link href="/seller" onClick={() => setUsefulLinksOpen(false)}>VPANSAK Direct Store Policy</Link></li>
+                    <li><Link href="/policies/merchant-guidelines" onClick={() => setUsefulLinksOpen(false)}>Direct Quality SLA</Link></li>
                     <li><Link href="/foundation" onClick={() => setUsefulLinksOpen(false)}>VPANSAK Support Foundation</Link></li>
                   </ul>
                 </div>

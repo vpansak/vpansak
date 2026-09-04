@@ -7,7 +7,7 @@ import { FormEvent, useEffect, useState } from "react";
 type Ticket={ticketId:string;customerName:string;category:string;subject:string;status:string;priority:string;createdAt:string;updatedAt:string};
 type Reply={authorType:string;authorName:string;message:string;createdAt:string};
 const categories=["Order","Payment","Refund","Return","Delivery","Login","Technical","Seller","Merchant","Website","Other"];
-const quick=["Where is my order?","How do I request a return?","My payment failed","How can I become a seller?"];
+const quick=["Where is my order?","How do I request a return?","My payment failed","What is VPANSAK Direct Store?"];
 
 function smartAnswer(text:string){
   const q=text.toLowerCase();
@@ -18,7 +18,7 @@ function smartAnswer(text:string){
   if(q.includes("payment")||q.includes("upi"))
     return "If money was deducted for a failed payment, please submit a ticket under Payment category at https://vpansaksupporthub.lovable.app/submit with your payment reference. Never share OTP or UPI PIN.";
   if(q.includes("seller")||q.includes("merchant"))
-    return "To become a seller, register at https://vpansak.vercel.app/seller. Manage your products from https://vpansak.vercel.app/seller/dashboard or get seller support at https://vpansaksupporthub.lovable.app/.";
+    return "VPANSAK is an exclusive Direct-to-Consumer (D2C) brand store. We do not host third-party sellers (unlike Flipkart, Amazon, or Meesho). All products are manufactured, quality-inspected, and shipped directly by VPANSAK. Learn more at https://vpansak.vercel.app/seller.";
   
   return "I am the VPANSAK Smart Support Assistant. If I am unable to resolve your question, please access our official Support Portals:\n\n• Support Hub: https://vpansaksupporthub.lovable.app/\n• Create Ticket: https://vpansaksupporthub.lovable.app/submit\n• Track Ticket Status: https://vpansaksupporthub.lovable.app/track\n• Smart AI Chat: https://vpansaksupporthub.lovable.app/chat";
 }
@@ -27,12 +27,13 @@ export default function SupportPage(){
   const [tab,setTab]=useState("assistant");
   const [question,setQuestion]=useState("");
   const [chat,setChat]=useState<Array<{role:string;text:string}>>([
-    {role:"bot",text:"Namaste! I’m the VPANSAK Smart Support Assistant. How can I help with your order, payment, return or seller account? If I cannot solve your issue, I will provide instant access to our Support Hub (https://vpansaksupporthub.lovable.app/)."}
+    {role:"bot",text:"Namaste! I’m the VPANSAK Smart Support Assistant. How can I help with your order, payment, return or product query? If I cannot solve your issue, I will provide instant access to our Support Hub (https://vpansaksupporthub.lovable.app/)."}
   ]);
   const [created,setCreated]=useState("");
   const [trackId,setTrackId]=useState("");
   const [linkedOrder,setLinkedOrder]=useState("");
   const [supportSubject,setSupportSubject]=useState("");
+
   const [replyEmail,setReplyEmail]=useState("");
   const [ticket,setTicket]=useState<Ticket|null>(null);
   const [replies,setReplies]=useState<Reply[]>([]);
@@ -298,11 +299,11 @@ export default function SupportPage(){
 
           {tab==="merchant"&&(
             <div className="merchant-help">
-              <small>SELLER &amp; MERCHANT SUPPORT</small>
-              <h2>Start selling with confidence.</h2>
-              <p>VPANSAK seller onboarding includes registration, document review, KYC verification and approval before products can go live.</p>
+              <small>VPANSAK DIRECT BRAND ASSURANCE</small>
+              <h2>100% Genuine Direct Brand Products.</h2>
+              <p>VPANSAK operates as an exclusive D2C brand store. We do not allow third-party sellers to list products, ensuring zero fake products and strict quality standards.</p>
               <div>
-                {[{n:"01",t:"Register",d:"Submit business, bank and pickup details."},{n:"02",t:"Upload KYC",d:"Aadhaar, PAN, photo and signature are stored securely."},{n:"03",t:"Verification",d:"The admin team reviews submitted information."},{n:"04",t:"Start selling",d:"Approved sellers can manage products and inventory."}].map((s)=>(
+                {[{n:"01",t:"In-House Manufacturing",d:"Every product is designed and manufactured with strict quality standards."},{n:"02",t:"Quality Inspection",d:"Strict multi-stage testing before packaging and fulfillment."},{n:"03",t:"Direct Shipping",d:"Dispatched directly from VPANSAK hubs without third-party delay."},{n:"04",t:"Direct Brand Support",d:"Dedicated internal customer care team for fast resolution."}].map((s)=>(
                   <article key={s.n}>
                     <b>{s.n}</b>
                     <h3>{s.t}</h3>
@@ -310,8 +311,7 @@ export default function SupportPage(){
                   </article>
                 ))}
               </div>
-              <Link href="/seller">Become a Seller <ChevronRight/></Link>
-              <Link className="merchant-dashboard-link" href="/seller/dashboard">Open Seller Dashboard</Link>
+              <Link href="/seller">Read Direct Brand Policy <ChevronRight/></Link>
               <p className="merchant-contact">
                 <CircleHelp/>Need help? Email <a href="mailto:support.vpansak@gmail.com">support.vpansak@gmail.com</a> or visit <a href="https://vpansaksupporthub.lovable.app/" target="_blank" rel="noreferrer">Support Hub</a>.
               </p>

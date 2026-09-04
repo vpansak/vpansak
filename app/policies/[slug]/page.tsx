@@ -131,24 +131,24 @@ const policyDatabase: Record<string, PolicyContent> = {
   },
 
   "seller-policy": {
-    title: "Seller Policy & Guidelines",
-    intro: "Rules, verification requirements, 3% platform fee, and merchant performance standards.",
+    title: "VPANSAK Direct Brand Policy & Quality Standard",
+    intro: "Operating policy, quality guarantees, and direct-to-consumer fulfillment rules.",
     sections: [
       {
-        h: "1. Seller Application & Verification",
-        p: "All sellers must submit valid business details, identity documents (Aadhaar, PAN, Bank Details), and pass review before listing products.",
+        h: "1. Exclusive Direct-to-Consumer Model",
+        p: "VPANSAK is an exclusive D2C brand store. Unlike third-party marketplaces (such as Flipkart, Amazon, or Meesho), we do not allow external vendors or third-party sellers.",
       },
       {
-        h: "2. Transparent 3% Platform Fee",
-        p: "VPANSAK applies a 3% platform fee on completed seller orders, subject to seller agreement terms, category rules, and applicable taxes.",
+        h: "2. 100% Original Brand Guarantee",
+        p: "Every product sold on VPANSAK is manufactured, quality-inspected, and packaged directly by VPANSAK to ensure zero counterfeits and maximum authenticity.",
       },
       {
-        h: "3. Product Approval Standards",
-        p: "All product listings undergo quality, image, pricing, and category compliance review before public display. Counterfeit or illegal items are strictly banned.",
+        h: "3. Transparent Pricing (No Middleman Markup)",
+        p: "By eliminating 3rd-party marketplace commissions and seller fees, VPANSAK offers fair, direct-from-brand pricing on all items.",
       },
       {
-        h: "4. Fulfillment & Order Dispatch",
-        p: "Approved sellers must dispatch orders within agreed SLA timelines and ensure secure packaging. High cancellation rates may lead to seller suspension.",
+        h: "4. Direct Fulfillment & Support",
+        p: "All orders are fulfilled directly from VPANSAK warehouses with real-time tracking, 7-day returns, and 5-minute refund processing.",
       },
     ],
   },

@@ -70,9 +70,9 @@ const tocSections = [
 ];
 
 const faqList = [
-  { q: "What is VPANSAK?", a: "VPANSAK Shopping is an emerging digital commerce platform created under A & A Group to connect customers with products, verified sellers, secure payment options, delivery tracking and responsive support." },
+  { q: "What is VPANSAK?", a: "VPANSAK Shopping is an exclusive Direct-to-Consumer (D2C) brand store created under A & A Group to deliver high quality VPANSAK products directly to customers." },
   { q: "When was VPANSAK launched?", a: "VPANSAK was officially launched on 12 August 2026." },
-  { q: "Who founded VPANSAK?", a: "VPANSAK was founded by Alok Singh with the vision of building a transparent, mobile-first marketplace for customers and sellers across India." },
+  { q: "Who founded VPANSAK?", a: "VPANSAK was founded by Alok Singh with the vision of building a transparent, direct brand store for Indian consumers." },
   { q: "Where is VPANSAK based?", a: "VPANSAK is headquartered and developed from Gorakhpur, Uttar Pradesh, India." },
   { q: "How do I create an account?", a: "You can create an account using your email address through the Login / Signup page. Your registered email address acts as your primary account identity." },
   { q: "What should I do if I forget my password?", a: "Click on 'Forgot Password' on the login screen. You can reset your password securely via OTP sent to your registered email address." },
@@ -90,10 +90,10 @@ const faqList = [
   { q: "When will the refund reach my bank account?", a: "Refund initiation occurs within 5 minutes of pickup verification. Final credit timing depends on your bank, UPI provider, or payment gateway (typically 1 to 5 business days)." },
   { q: "How do I contact VPANSAK customer support?", a: "You can reach support via Email (support.vpansak@gmail.com), WhatsApp (+66 94 203 3973), or the official Support Portal (https://vpansaksupporthub.lovable.app)." },
   { q: "How do I raise a support ticket?", a: "Visit the Support Centre in your account dashboard or open the official VPANSAK Support Hub to submit a tracked support ticket." },
-  { q: "How do I become a seller on VPANSAK?", a: "Visit /seller, fill in your business and contact details, submit identity verification documents, and await verification." },
-  { q: "Which seller documents are required?", a: "Required documents may include Aadhaar, PAN, Bank account details, and GSTIN where applicable under law." },
-  { q: "What is the seller platform fee?", a: "VPANSAK applies a transparent platform fee of 3%, subject to applicable seller terms, category rules, and taxes." },
-  { q: "How are seller products approved?", a: "Seller product submissions undergo quality, image, pricing, and category review before being published on the marketplace." },
+  { q: "Does VPANSAK allow third-party sellers?", a: "No. VPANSAK is an exclusive D2C brand store. Unlike marketplaces like Flipkart, Amazon, or Meesho, we do not host third-party sellers." },
+  { q: "Why doesn't VPANSAK allow third-party sellers?", a: "Selling directly allows VPANSAK to ensure 100% authentic quality, zero middleman commission markups, and fast direct customer support." },
+  { q: "Are VPANSAK products original?", a: "Yes, 100%. Every product sold on VPANSAK is manufactured, inspected, and shipped directly by VPANSAK." },
+  { q: "How are products quality-tested?", a: "Every batch undergoes multi-stage in-house quality testing prior to packaging and fulfillment." },
   { q: "What is a VPANSAK Gift Card?", a: "VPANSAK Gift Cards are 12-digit prepaid codes that can be redeemed during checkout for instant order discounts." },
   { q: "What is the Support Contribution program?", a: "The Support Contribution program allows voluntary platform supporters to contribute toward platform development and support initiatives." },
   { q: "When is a contribution certificate issued?", a: "A Certificate of Appreciation is generated after server verification of a contribution payment." },
@@ -336,7 +336,7 @@ export default function InfoPage() {
           <section id="story" className="info-card-block">
             <h2>Our Story</h2>
             <p>
-              VPANSAK began with the idea that an online marketplace should be easy to use, transparent and accountable.
+              VPANSAK began with the idea that an online brand store should be easy to use, transparent and accountable.
               Customers should understand what they are buying, how they are paying, where their order is, and how to get
               assistance when a problem occurs.
             </p>
@@ -611,35 +611,33 @@ export default function InfoPage() {
             </p>
           </section>
 
-          {/* SELL WITH VPANSAK */}
+          {/* VPANSAK DIRECT BRAND MODEL */}
           <section id="seller-program" className="info-card-block">
-            <h2>Sell with VPANSAK (3% Platform Fee)</h2>
+            <h2>VPANSAK Direct Brand Policy (No 3rd Party Sellers)</h2>
             <p>
-              VPANSAK offers a structured marketplace program for verified sellers, merchants, and small businesses to list
-              their products and reach customers across India.
+              VPANSAK operates as an exclusive Direct-to-Consumer (D2C) brand. Unlike open multi-vendor marketplaces like Flipkart, Amazon, or Meesho, VPANSAK does not allow third-party sellers.
             </p>
 
             <div className="fee-highlight-card">
-              <Tag size={28} />
+              <ShieldCheck size={28} />
               <div>
-                <h3>Transparent 3% Platform Fee</h3>
+                <h3>100% Direct Brand Quality</h3>
                 <p>
-                  VPANSAK applies a 3% platform fee on successful seller orders, subject to seller agreement terms, category
-                  guidelines, taxes, and shipping arrangements.
+                  By controlling manufacturing, inspection, and dispatch directly, VPANSAK eliminates fake products, counterfeit listings, and 3rd-party commission markups.
                 </p>
               </div>
             </div>
 
-            <h3>Seller Verification Stages</h3>
+            <h3>VPANSAK Direct Assurance Pillars</h3>
             <ol>
-              <li>Seller application submission at <code>/seller</code></li>
-              <li>Identity &amp; document review (Aadhaar, PAN, Bank, GSTIN if applicable)</li>
-              <li>Business details verification</li>
-              <li>Approval &amp; Seller Dashboard activation</li>
+              <li>In-house design &amp; manufacturing with strict quality standards</li>
+              <li>Multi-stage quality inspection before packaging</li>
+              <li>Direct dispatch from VPANSAK fulfillment hubs</li>
+              <li>Internal customer support &amp; 5-minute refund initiation</li>
             </ol>
 
             <Link href="/seller" className="btn-inline-primary">
-              Apply to Become a Seller
+              Read Full Direct Brand Policy
             </Link>
           </section>
 

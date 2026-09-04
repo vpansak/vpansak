@@ -456,7 +456,7 @@ export default function SecretAdminPage() {
     { k: "dashboard", I: LayoutDashboard, l: "Dashboard" },
     { k: "users", I: UserCheck, l: "Users & Accounts" },
     { k: "orders", I: PackageCheck, l: "Orders" },
-    { k: "sellers", I: Store, l: "Sellers" },
+    { k: "sellers", I: ShieldCheck, l: "Direct Store Policy" },
     { k: "products", I: Boxes, l: "Products" },
     { k: "tickets", I: TicketCheck, l: "Support Tickets" },
     { k: "reviews", I: Star, l: "Reviews" },
@@ -604,29 +604,12 @@ export default function SecretAdminPage() {
         )}
 
         {tab === "sellers" && (
-          <AdminSection title="Seller KYC Approval Applications">
-            <div className="manage-rows">
-              {filterList(data.sellers).map((r) => (
-                <article key={r.applicationId}>
-                  <span>
-                    <strong>{r.businessName}</strong>
-                    <small>
-                      {r.applicationId} • Email: {r.email} • Mobile: {r.mobile || "N/A"}
-                    </small>
-                  </span>
-                  <select
-                    value={r.status}
-                    onChange={(e) =>
-                      action({ action: "sellerStatus", applicationId: r.applicationId, status: e.target.value })
-                    }
-                  >
-                    <option>Pending Review</option>
-                    <option>Approved</option>
-                    <option>Rejected</option>
-                    <option>More Information Required</option>
-                  </select>
-                </article>
-              ))}
+          <AdminSection title="VPANSAK Direct Brand Policy Notice">
+            <div style={{ padding: "24px", background: "white", borderRadius: "8px", border: "1px solid #dce4ee" }}>
+              <h3 style={{ margin: "0 0 8px 0" }}>Exclusive D2C Store Active</h3>
+              <p style={{ color: "#64748b", margin: 0, lineHeight: 1.6 }}>
+                VPANSAK operates as an exclusive direct-to-consumer store. Third-party seller applications are disabled as VPANSAK exclusively manufactures, quality-checks, and sells its own brand products directly to consumers without multi-seller marketplace fees.
+              </p>
             </div>
           </AdminSection>
         )}
