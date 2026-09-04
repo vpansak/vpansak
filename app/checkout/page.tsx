@@ -49,7 +49,7 @@ async function loadRazorpay() {
 
 function CheckoutContent() {
   const query = useSearchParams();
-  const product = catalogProducts.find((p) => p.id === query.get("product")) || catalogProducts[0];
+  const product = catalogProducts.find((p) => p.id === query.get("product")) || { id: "custom", name: "VPANSAK Product", price: 0, mrp: 0, imageUrl: "", category: "General", brand: "VPANSAK", stock: 1, sku: "VPO-001" };
   const qty = Math.max(1, Math.min(10, Number(query.get("qty")) || 1));
   const subtotal = product.price * qty;
 

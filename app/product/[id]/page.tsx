@@ -11,13 +11,14 @@ const money = (n: number) =>
 
 export default function ProductPage() {
   const { id } = useParams<{ id: string }>();
-  const product = catalogProducts.find((item) => item.id === id) ?? catalogProducts[0];
+  const product = catalogProducts.find((item) => item.id === id);
   const related = useMemo(
-    () => catalogProducts.filter((item) => item.category === product.category && item.id !== product.id).slice(0, 4),
+    () => product ? catalogProducts.filter((item) => item.category === product.category && item.id !== product.id).slice(0, 4) : [],
     [product]
   );
 
   const images = useMemo(() => {
+    if (!product) return [];
     if (product.images && product.images.length) return product.images;
     return [product.imageUrl];
   }, [product]);
@@ -42,12 +43,28 @@ export default function ProductPage() {
 
   // Reset selected image index when product changes
   useEffect(() => {
+    if (!product) return;
     setActiveImgIndex(0);
     fetch(`/api/reviews?product=${encodeURIComponent(product.id)}`)
       .then((r) => r.json())
       .then((d) => setReviews(d.reviews || []))
       .catch(() => {});
-  }, [product.id]);
+  }, [product?.id]);
+
+  if (!product) {
+    return (
+      <main className="product-page" style={{ minHeight: "70vh", display: "grid", placeItems: "center" }}>
+        <div style={{ textAlign: "center", padding: "40px 20px" }}>
+          <ShieldCheck size={48} style={{ color: "#1766ef", margin: "0 auto 16px" }} />
+          <h2 style={{ fontSize: "24px", margin: "8px 0" }}>Product Not Found</h2>
+          <p style={{ color: "#64748b", margin: "8px 0 24px" }}>The requested VPANSAK product is currently unavailable or being updated.</p>
+          <Link href="/" style={{ padding: "12px 24px", background: "#1766ef", color: "white", borderRadius: "8px", fontWeight: "bold", textDecoration: "none" }}>
+            Return to Storefront
+          </Link>
+        </div>
+      </main>
+    );
+  }
 
   const activeImage = images[activeImgIndex] || product.imageUrl;
 

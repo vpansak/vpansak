@@ -436,7 +436,7 @@ export default function HomePage() {
           <button className="vp-hero-arrow right" type="button" onClick={() => setHero((hero + 1) % heroSlides.length)} aria-label="Next offer"><ChevronRight /></button>
           <div className="vp-hero-dots">{heroSlides.map((slide, index) => <button type="button" className={index === hero ? "active" : ""} key={slide.title} onClick={() => setHero(index)} aria-label={`Offer ${index + 1}`} />)}</div>
         </article>
-        <aside className="vp-side-deals"><Link href="/product/nova-5g-phone"><span><small>NEW LAUNCH</small><strong>Nova X1 5G</strong><b>From ₹12,999</b></span><img src={catalogProducts[8].imageUrl} alt="Nova smartphone" /></Link><Link href="/product/airbook-laptop"><span><small>WORK &amp; STUDY</small><strong>Thin laptops</strong><b>Up to 26% off</b></span><img src={catalogProducts[9].imageUrl} alt="Laptop" /></Link></aside>
+        <aside className="vp-side-deals">{catalogProducts[0] ? <Link href={`/product/${catalogProducts[0].id}`}><span><small>NEW LAUNCH</small><strong>{catalogProducts[0].name}</strong><b>From {money(catalogProducts[0].price)}</b></span><img src={catalogProducts[0].imageUrl} alt="" /></Link> : null}{catalogProducts[1] ? <Link href={`/product/${catalogProducts[1].id}`}><span><small>WORK &amp; STUDY</small><strong>{catalogProducts[1].name}</strong><b>From {money(catalogProducts[1].price)}</b></span><img src={catalogProducts[1].imageUrl} alt="" /></Link> : null}</aside>
       </section>
 
       <section className="vp-trust-row">
@@ -468,12 +468,12 @@ export default function HomePage() {
       </section>
 
       <section className="vp-catalog" id="catalog">
-        <header><div><small>COMPLETE MARKETPLACE</small><h2>Explore all products</h2><p>Search, filter and compare value across the catalog.</p></div><span>{filteredProducts.length} products</span></header>
+        <header><div><small>VPANSAK DIRECT STORE</small><h2>Official Product Catalog</h2><p>100% genuine in-house VPANSAK products.</p></div><span>{filteredProducts.length} products</span></header>
         <div className="vp-catalog-toolbar">
           <div><SlidersHorizontal />{["All", "Mobile", "Electronics", "Fashion", "Home", "Kitchen", "Computer", "Gaming"].map((item) => <button type="button" key={item} className={category === item ? "active" : ""} onClick={() => setCategory(item)}>{item}</button>)}</div>
           <label>Sort by<select value={sort} onChange={(event) => setSort(event.target.value)}><option value="featured">Popularity</option><option value="rating">Customer rating</option><option value="price-low">Price: Low to high</option><option value="price-high">Price: High to low</option></select></label>
         </div>
-        {filteredProducts.length ? <div className="vp-catalog-grid">{filteredProducts.map((product) => <ProductCard key={product.id} product={product} wished={wishlist.includes(product.id)} onWish={() => toggleWishlist(product.id)} onAdd={() => addToCart(product.id)} authUser={authUser} />)}</div> : <div className="vp-empty"><Search /><h3>No matching products found</h3><p>Try a broader search or clear the selected department.</p><button type="button" onClick={() => { setSearch(""); setCategory("All"); }}>Clear all filters</button></div>}
+        {filteredProducts.length ? <div className="vp-catalog-grid">{filteredProducts.map((product) => <ProductCard key={product.id} product={product} wished={wishlist.includes(product.id)} onWish={() => toggleWishlist(product.id)} onAdd={() => addToCart(product.id)} authUser={authUser} />)}</div> : <div className="vp-empty"><Search /><h3>VPANSAK Direct Catalog Coming Soon</h3><p>Our official brand products are currently being updated. Check back soon for new arrivals!</p><button type="button" onClick={() => { setSearch(""); setCategory("All"); }}>Clear all filters</button></div>}
       </section>
 
       <section className="vp-track-band">
