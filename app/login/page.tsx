@@ -93,8 +93,7 @@ function LoginForm() {
       if (returnTo && returnTo.startsWith("/") && !returnTo.startsWith("//")) {
         target = returnTo;
       }
-      router.push(target);
-      router.refresh();
+      window.location.href = target;
     } catch {
       setError("We couldn’t complete your request right now. Please try again.");
     } finally {

@@ -238,76 +238,48 @@ export async function getOrderFromSupabase(orderId: string) {
 
 export async function saveUserToSupabase(userData: Record<string, unknown>) {
   if (!supabase) return null;
-  try {
-    const email = String(userData.email || userData.owner_email || "").toLowerCase().trim();
-    if (!email) return null;
+  const email = String(userData.email || userData.owner_email || "").toLowerCase().trim();
+  if (!email) return null;
 
-    const now = new Date().toISOString();
-    let passHash = String(userData.password_hash || userData.passwordHash || "");
-    let secQ = userData.security_question_id || userData.securityQuestionId || null;
-    let secAns = userData.security_answer_hash || userData.securityAnswerHash || null;
-    let role = String(userData.role || userData.role || "customer");
+  const savePromise = (async () => {
+    try {
+      const now = new Date().toISOString();
+      let passHash = String(userData.password_hash || userData.passwordHash || "");
+      let secQ = userData.security_question_id || userData.securityQuestionId || null;
+      let secAns = userData.security_answer_hash || userData.securityAnswerHash || null;
+      let role = String(userData.role || userData.role || "customer");
 
-    if (!passHash || passHash === "NO_HASH" || !secQ) {
-      try {
-        const { data: existing } = await supabase.from("users").select("password_hash, security_question_id, security_answer_hash, role").eq("email", email).maybeSingle();
-        if (existing) {
-          if ((!passHash || passHash === "NO_HASH") && existing.password_hash && existing.password_hash !== "NO_HASH") {
-            passHash = existing.password_hash;
-          }
-          if (!secQ && existing.security_question_id) {
-            secQ = existing.security_question_id;
-          }
-          if (!secAns && existing.security_answer_hash) {
-            secAns = existing.security_answer_hash;
-          }
-          if (existing.role && role === "customer") {
-            role = existing.role;
-          }
-        }
-      } catch {
-        // Ignore select check error
-      }
+      const fullPayload: Record<string, unknown> = {
+        email,
+        password_hash: passHash || "NO_HASH",
+        full_name: String(userData.full_name || userData.fullName || email.split("@")[0]),
+        mobile: String(userData.mobile || ""),
+        role,
+        profile_image: userData.profile_image ?? userData.profileImage ?? null,
+        auth_provider: String(userData.auth_provider || userData.authProvider || "email"),
+        email_verified: userData.email_verified ?? userData.emailVerified ? 1 : 0,
+        account_status: String(userData.account_status || userData.accountStatus || "active"),
+        security_question_id: secQ,
+        security_answer_hash: secAns,
+        created_at: String(userData.created_at || userData.createdAt || now),
+        updated_at: String(userData.updated_at || userData.updatedAt || now),
+      };
+
+      const { data, error } = await supabase.from("users").upsert(fullPayload, { onConflict: "email" }).select();
+      if (!error && data) return data;
+
+      const { error: errorNoSelect } = await supabase.from("users").upsert(fullPayload, { onConflict: "email" });
+      if (!errorNoSelect) return [fullPayload];
+
+      return null;
+    } catch (err) {
+      console.error("Supabase user upsert notice:", err);
+      return null;
     }
+  })();
 
-    const fullPayload: Record<string, unknown> = {
-      email,
-      password_hash: passHash || "NO_HASH",
-      full_name: String(userData.full_name || userData.fullName || email.split("@")[0]),
-      mobile: String(userData.mobile || ""),
-      role,
-      profile_image: userData.profile_image ?? userData.profileImage ?? null,
-      auth_provider: String(userData.auth_provider || userData.authProvider || "email"),
-      email_verified: userData.email_verified ?? userData.emailVerified ? 1 : 0,
-      account_status: String(userData.account_status || userData.accountStatus || "active"),
-      security_question_id: secQ,
-      security_answer_hash: secAns,
-      created_at: String(userData.created_at || userData.createdAt || now),
-      updated_at: String(userData.updated_at || userData.updatedAt || now),
-    };
-
-    // 1. Try full upsert with select
-    const { data, error } = await supabase.from("users").upsert(fullPayload, { onConflict: "email" }).select();
-    if (!error && data) return data;
-
-    // 2. Try full upsert without select (in case select permissions differ)
-    const { error: errorNoSelect } = await supabase.from("users").upsert(fullPayload, { onConflict: "email" });
-    if (!errorNoSelect) return [fullPayload];
-
-    // 3. Fallback: try core essential payload if Supabase table lacks optional columns
-    const corePayload = {
-      email,
-      password_hash: passHash || "NO_HASH",
-      full_name: String(userData.full_name || userData.fullName || email.split("@")[0]),
-      mobile: String(userData.mobile || ""),
-      role,
-    };
-    const { data: fallbackData } = await supabase.from("users").upsert(corePayload, { onConflict: "email" }).select();
-    return fallbackData || [corePayload];
-  } catch (err) {
-    console.error("Supabase user upsert notice:", err);
-    return null;
-  }
+  const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 2000));
+  return Promise.race([savePromise, timeoutPromise]);
 }
 
 export async function getUserFromSupabase(email: string) {
