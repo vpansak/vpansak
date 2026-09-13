@@ -6,6 +6,7 @@ import {
   Banknote,
   BookOpen,
   Box,
+  Briefcase,
   Check,
   ChevronDown,
   ChevronLeft,
@@ -827,11 +828,11 @@ export default function HomePage() {
                   <p>Track order progress with VPO ID.</p>
                   <span className="card-action-link">Track Order <ArrowRight size={14} /></span>
                 </Link>
-                <Link href="/seller" onClick={() => setUsefulLinksOpen(false)} className="useful-btn-card">
-                  <div className="btn-card-top"><span className="card-badge merchant-badge">DIRECT D2C</span><ShieldCheck size={20} className="card-icon" /></div>
-                  <h4>VPANSAK Direct Policy</h4>
-                  <p>Read about our 100% direct brand store commitment.</p>
-                  <span className="card-action-link">Read Policy <ArrowRight size={14} /></span>
+                <Link href="/careers" onClick={() => setUsefulLinksOpen(false)} className="useful-btn-card">
+                  <div className="btn-card-top"><span className="card-badge hiring-badge">HIRING</span><Briefcase size={20} className="card-icon" /></div>
+                  <h4>Careers at VPANSAK</h4>
+                  <p>Explore opportunities and submit candidate profile.</p>
+                  <span className="card-action-link">Explore Careers <ArrowRight size={14} /></span>
                 </Link>
               </div>
 
@@ -842,7 +843,7 @@ export default function HomePage() {
                     <li><Link href="/founder" onClick={() => setUsefulLinksOpen(false)}><strong>Founder Alok Singh Profile</strong><small>Founder & Visionary of VPANSAK</small></Link></li>
                     <li><Link href="/cofounder" onClick={() => setUsefulLinksOpen(false)}><strong>Co-Founder Ayushi Tripathi Profile</strong><small>Co-Founder & Director of VPANSAK</small></Link></li>
                     <li><Link href="/info/about" onClick={() => setUsefulLinksOpen(false)}>About VPANSAK HQ</Link></li>
-                    <li><Link href="/info/careers" onClick={() => setUsefulLinksOpen(false)}>Careers & Hiring</Link></li>
+                    <li><Link href="/careers" onClick={() => setUsefulLinksOpen(false)}>Careers at VPANSAK</Link></li>
                     <li><Link href="/info/contact" onClick={() => setUsefulLinksOpen(false)}>Contact Us</Link></li>
                   </ul>
                 </div>

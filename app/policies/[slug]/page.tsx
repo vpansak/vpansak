@@ -496,7 +496,7 @@ export default function PolicyPage() {
           <strong className="sidebar-group-title">QUICK UTILITIES</strong>
           <Link href="/track"><PackageCheck size={13} style={{ marginRight: 6 }} /> Track Order Status</Link>
           <a href="https://vpansaksupporthub.lovable.app/" target="_blank" rel="noreferrer"><Headphones size={13} style={{ marginRight: 6 }} /> Support Hub</a>
-          <Link href="/seller"><Store size={13} style={{ marginRight: 6 }} /> Become a Seller</Link>
+          <Link href="/careers"><Briefcase size={13} style={{ marginRight: 6 }} /> Careers</Link>
           <Link href="/foundation"><HeartHandshake size={13} style={{ marginRight: 6 }} /> Support Foundation</Link>
         </aside>
 
@@ -519,7 +519,7 @@ export default function PolicyPage() {
               <Sparkles className="header-icon" size={20} />
               <div>
                 <h2>Useful Quick Action Buttons (उपयोगी बटन्स)</h2>
-                <p>Instant navigation to founder profiles, order tracking, support, seller portal, and key platform features.</p>
+                <p>Instant navigation to founder profiles, order tracking, support, careers portal, and key platform features.</p>
               </div>
             </div>
 
@@ -564,24 +564,14 @@ export default function PolicyPage() {
                 <span className="card-action-link">Get Support <ArrowRight size={14} /></span>
               </a>
 
-              <Link href="/seller" className="useful-btn-card">
+              <Link href="/careers" className="useful-btn-card">
                 <div className="btn-card-top">
-                  <span className="card-badge merchant-badge">3% COMMISSION</span>
-                  <Store size={22} className="card-icon" />
+                  <span className="card-badge hiring-badge">HIRING</span>
+                  <Briefcase size={22} className="card-icon" />
                 </div>
-                <h4>Become a Seller</h4>
-                <p>Register as a merchant, complete KYC, and start selling products.</p>
-                <span className="card-action-link">Register Store <ArrowRight size={14} /></span>
-              </Link>
-
-              <Link href="/seller/dashboard" className="useful-btn-card">
-                <div className="btn-card-top">
-                  <span className="card-badge portal-badge">PORTAL</span>
-                  <LayoutDashboard size={22} className="card-icon" />
-                </div>
-                <h4>Seller Dashboard</h4>
-                <p>Manage product listings, stock levels, orders, and payout status.</p>
-                <span className="card-action-link">Open Dashboard <ArrowRight size={14} /></span>
+                <h4>Careers at VPANSAK</h4>
+                <p>Explore open opportunities and submit your profile across tech, design & ops.</p>
+                <span className="card-action-link">Explore Careers <ArrowRight size={14} /></span>
               </Link>
 
               <Link href="/foundation" className="useful-btn-card">

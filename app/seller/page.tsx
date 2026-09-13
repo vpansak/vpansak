@@ -81,15 +81,15 @@ export default function SellerPage() {
       <section className="seller-application" id="apply" style={{ display: "block", textAlign: "center", padding: "80px 24px" }}>
         <div style={{ maxWidth: "680px", margin: "0 auto", background: "white", padding: "48px 36px", borderRadius: "16px", border: "1px solid #dce3ec", boxShadow: "0 20px 60px #233b5a0d" }}>
           <div style={{ width: "64px", height: "64px", margin: "0 auto 20px", display: "grid", placeItems: "center", borderRadius: "50%", background: "#e8f1ff", color: "#1766ef" }}>
-            <Store size={32} />
+            <Sparkles size={32} />
           </div>
-          <small style={{ color: "#1766ef", fontWeight: 900, letterSpacing: ".15em" }}>THIRD-PARTY SELLER NOTICE</small>
-          <h2 style={{ fontSize: "32px", margin: "10px 0 16px" }}>Looking to sell on VPANSAK?</h2>
+          <small style={{ color: "#1766ef", fontWeight: 900, letterSpacing: ".15em" }}>BUILD WITH VPANSAK</small>
+          <h2 style={{ fontSize: "32px", margin: "10px 0 16px" }}>Looking to build your career with VPANSAK?</h2>
           <p style={{ color: "#64748b", fontSize: "14px", lineHeight: 1.7, marginBottom: "28px" }}>
-            VPANSAK operates as an exclusive direct-to-consumer store for our own branded products. Third-party vendor registration is currently closed as we do not host third-party seller listings.
+            VPANSAK is an exclusive direct-to-consumer brand store. We do not host third-party sellers, but we are actively hiring passionate talent across software engineering, AI, design, marketing, operations, and support.
           </p>
-          <Link href="/" style={{ display: "inline-flex", alignItems: "center", gap: "10px", padding: "14px 28px", borderRadius: "8px", background: "#1766ef", color: "white", fontWeight: 900, textDecoration: "none" }}>
-            Return to VPANSAK Storefront <ArrowRight size={18} />
+          <Link href="/careers" style={{ display: "inline-flex", alignItems: "center", gap: "10px", padding: "14px 28px", borderRadius: "8px", background: "#1766ef", color: "white", fontWeight: 900, textDecoration: "none" }}>
+            Explore Careers & Submit Profile <ArrowRight size={18} />
           </Link>
         </div>
       </section>

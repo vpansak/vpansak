@@ -1,6 +1,6 @@
 import { desc, eq } from "drizzle-orm";
 import { getDb } from "../../../db";
-import { addresses, contributions, coupons, donations, notifications, officers, orders, products, profiles, reviews, sellerApplications, ticketReplies, tickets, users } from "../../../db/schema";
+import { addresses, careerApplications, contributions, coupons, donations, notifications, officers, orders, products, profiles, reviews, sellerApplications, ticketReplies, tickets, users } from "../../../db/schema";
 import { getAuthUserFromRequest, isAdminUser } from "../../lib/auth-session";
 import { getAllOrdersFromSupabase, saveContributionToSupabase, saveOrderToSupabase, saveUserToSupabase, supabase } from "../../lib/supabase";
 
@@ -49,7 +49,8 @@ export async function GET(request: Request) {
       officerRows,
       contributionRows,
       donationRows,
-      couponRows
+      couponRows,
+      careerRows
     ] = await Promise.all([
       db.select().from(users).orderBy(desc(users.createdAt)).limit(300).catch(() => []),
       db.select().from(profiles).limit(300).catch(() => []),
@@ -63,6 +64,7 @@ export async function GET(request: Request) {
       db.select().from(contributions).orderBy(desc(contributions.createdAt)).limit(300).catch(() => []),
       db.select().from(donations).orderBy(desc(donations.createdAt)).limit(300).catch(() => []),
       db.select().from(coupons).limit(100).catch(() => []),
+      db.select().from(careerApplications).orderBy(desc(careerApplications.createdAt)).limit(300).catch(() => []),
     ]);
 
     // Fetch from Supabase Cloud Database to ensure 100% full history sync
@@ -333,6 +335,7 @@ export async function GET(request: Request) {
       officers: officerRows,
       donations: mergedDonations,
       coupons: couponRows,
+      careers: careerRows || [],
     });
   } catch {
     return Response.json({ error: "Admin data is temporarily unavailable." }, { status: 503 });
@@ -346,6 +349,35 @@ export async function POST(request: Request) {
     const action = String(body.action || "");
 
     const db = await getDb();
+
+    if (action === "careerStatus" || action === "updateCareer") {
+      const applicationId = String(body.applicationId || "").trim();
+      const status = String(body.status || "New").slice(0, 50);
+      const adminNotes = body.adminNotes !== undefined ? String(body.adminNotes).slice(0, 500) : undefined;
+
+      if (applicationId) {
+        const updateData: Record<string, unknown> = {
+          status,
+          updatedAt: new Date().toISOString(),
+        };
+        if (adminNotes !== undefined) {
+          updateData.adminNotes = adminNotes;
+        }
+
+        await db.update(careerApplications).set(updateData).where(eq(careerApplications.applicationId, applicationId));
+
+        if (supabase) {
+          try {
+            await supabase.from("career_applications").update({
+              status,
+              ...(adminNotes !== undefined ? { admin_notes: adminNotes } : {}),
+              updated_at: new Date().toISOString(),
+            }).eq("application_id", applicationId);
+          } catch {}
+        }
+      }
+      return Response.json({ ok: true });
+    }
 
     if (action === "userRole" || action === "userStatus" || action === "accountStatus") {
       const email = String(body.email || "").trim().toLowerCase();

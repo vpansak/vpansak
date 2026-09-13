@@ -4,8 +4,11 @@ import {
   ArrowRight,
   BadgeIndianRupee,
   Boxes,
+  Briefcase,
   CircleDollarSign,
   Copy,
+  FileText,
+  GraduationCap,
   KeyRound,
   LayoutDashboard,
   LockKeyhole,
@@ -95,6 +98,7 @@ type AdminData = {
   officers: Row[];
   donations: Row[];
   coupons: Row[];
+  careers: Row[];
 };
 
 type EmailDraft = {
@@ -114,6 +118,7 @@ const empty: AdminData = {
   officers: [],
   donations: [],
   coupons: [],
+  careers: [],
 };
 
 const money = (n = 0) =>
@@ -156,6 +161,7 @@ export default function SecretAdminPage() {
           officers: value.officers || [],
           donations: value.donations || [],
           coupons: value.coupons || [],
+          careers: value.careers || [],
         });
         setDenied(false);
       } else {
@@ -464,6 +470,8 @@ export default function SecretAdminPage() {
         (r.businessName && r.businessName.toLowerCase().includes(q)) ||
         (r.name && r.name.toLowerCase().includes(q)) ||
         (r.code && r.code.toLowerCase().includes(q)) ||
+        ((r as any).interestedRole && String((r as any).interestedRole).toLowerCase().includes(q)) ||
+        ((r as any).qualification && String((r as any).qualification).toLowerCase().includes(q)) ||
         (r.mobile && r.mobile.includes(q))
     );
   };
@@ -472,6 +480,7 @@ export default function SecretAdminPage() {
     { k: "dashboard", I: LayoutDashboard, l: "Dashboard" },
     { k: "users", I: UserCheck, l: "Users & Accounts" },
     { k: "orders", I: PackageCheck, l: "Orders" },
+    { k: "careers", I: Briefcase, l: "Careers & Applications" },
     { k: "sellers", I: ShieldCheck, l: "Direct Store Policy" },
     { k: "products", I: Boxes, l: "Products" },
     { k: "tickets", I: TicketCheck, l: "Support Tickets" },
@@ -616,6 +625,12 @@ export default function SecretAdminPage() {
         {tab === "orders" && (
           <AdminSection title="Order Management Ledger">
             <OrderRows rows={filterList(data.orders)} action={action} />
+          </AdminSection>
+        )}
+
+        {tab === "careers" && (
+          <AdminSection title="Careers & Candidate Applications Ledger">
+            <CareerRows rows={filterList(data.careers)} action={action} />
           </AdminSection>
         )}
 
@@ -1668,6 +1683,161 @@ function AdminProductSection({
           })}
         </div>
       </AdminSection>
+    </div>
+  );
+}
+
+function CareerRows({ rows, action }: { rows: any[]; action: (b: Record<string, unknown>) => void }) {
+  const [selectedApp, setSelectedApp] = useState<any | null>(null);
+
+  const handleStatusUpdate = (r: any, newStatus: string) => {
+    action({ action: "careerStatus", applicationId: r.applicationId, status: newStatus });
+  };
+
+  const handleNotesUpdate = (r: any) => {
+    const notes = window.prompt(`Enter HR / Admin internal notes for ${r.applicationId} (${r.fullName}):`, r.adminNotes || "");
+    if (notes === null) return;
+    action({ action: "careerStatus", applicationId: r.applicationId, status: r.status || "New", adminNotes: notes.trim() });
+  };
+
+  return (
+    <div className="manage-rows">
+      {selectedApp && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "grid", placeItems: "center", zIndex: 999, padding: 20 }}>
+          <div style={{ background: "#0f172a", border: "1px solid #334155", borderRadius: 12, width: "min(700px, 100%)", maxHeight: "90vh", overflow: "auto", padding: 24, color: "white" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, borderBottom: "1px solid #334155", paddingBottom: 12 }}>
+              <div>
+                <span style={{ fontSize: 11, color: "#38bdf8", fontWeight: 800 }}>APPLICATION DETAILS</span>
+                <h2 style={{ fontSize: 20, margin: "2px 0 0", color: "white" }}>{selectedApp.fullName}</h2>
+                <small style={{ color: "#94a3b8" }}>ID: {selectedApp.applicationId} • Applied: {new Date(selectedApp.createdAt).toLocaleDateString()}</small>
+              </div>
+              <button type="button" onClick={() => setSelectedApp(null)} style={{ background: "#334155", border: 0, color: "white", padding: "6px 12px", borderRadius: 6, cursor: "pointer", fontWeight: 700 }}>Close</button>
+            </div>
+
+            <div style={{ display: "grid", gap: 16, fontSize: 13 }}>
+              <div style={{ background: "#1e293b", padding: 14, borderRadius: 8 }}>
+                <strong style={{ color: "#38bdf8", display: "block", marginBottom: 6 }}>1. Basic & Contact Info</strong>
+                <p style={{ margin: "2px 0" }}>📧 <strong>Email:</strong> {selectedApp.email}</p>
+                <p style={{ margin: "2px 0" }}>📱 <strong>Mobile:</strong> {selectedApp.mobile}</p>
+                <p style={{ margin: "2px 0" }}>📍 <strong>Location:</strong> {selectedApp.city}, {selectedApp.state}, {selectedApp.country || "India"}</p>
+              </div>
+
+              <div style={{ background: "#1e293b", padding: 14, borderRadius: 8 }}>
+                <strong style={{ color: "#38bdf8", display: "block", marginBottom: 6 }}>2. Role & Preferences</strong>
+                <p style={{ margin: "2px 0" }}>🎯 <strong>Interested Role:</strong> {selectedApp.interestedRole}</p>
+                <p style={{ margin: "2px 0" }}>💼 <strong>Preferred Title:</strong> {selectedApp.preferredPosition || "General"}</p>
+                <p style={{ margin: "2px 0" }}>💻 <strong>Work Mode:</strong> {selectedApp.workMode}</p>
+              </div>
+
+              <div style={{ background: "#1e293b", padding: 14, borderRadius: 8 }}>
+                <strong style={{ color: "#38bdf8", display: "block", marginBottom: 6 }}>3. Education & Qualification</strong>
+                <p style={{ margin: "2px 0" }}>🎓 <strong>Qualification:</strong> {selectedApp.qualification}</p>
+                <p style={{ margin: "2px 0" }}>📚 <strong>Degree / Field:</strong> {selectedApp.degreeCourse || "N/A"} ({selectedApp.fieldOfStudy || "General"})</p>
+                <p style={{ margin: "2px 0" }}>🏫 <strong>Institution:</strong> {selectedApp.institution || "N/A"} ({selectedApp.graduationYear || "N/A"})</p>
+              </div>
+
+              <div style={{ background: "#1e293b", padding: 14, borderRadius: 8 }}>
+                <strong style={{ color: "#38bdf8", display: "block", marginBottom: 6 }}>4. Skills & Experience</strong>
+                <p style={{ margin: "2px 0" }}>🛠️ <strong>Key Skills:</strong> {selectedApp.skills || "Not specified"}</p>
+                <p style={{ margin: "2px 0" }}>⏳ <strong>Experience Level:</strong> {selectedApp.experienceLevel}</p>
+                {selectedApp.experienceDetails && <p style={{ margin: "4px 0", color: "#cbd5e1" }}><strong>Details:</strong> {selectedApp.experienceDetails}</p>}
+                {selectedApp.projectDetails && <p style={{ margin: "4px 0", color: "#cbd5e1" }}><strong>Projects:</strong> {selectedApp.projectDetails}</p>}
+              </div>
+
+              <div style={{ background: "#1e293b", padding: 14, borderRadius: 8 }}>
+                <strong style={{ color: "#38bdf8", display: "block", marginBottom: 6 }}>5. Profiles & Resume</strong>
+                {selectedApp.linkedinUrl && <p style={{ margin: "2px 0" }}>🔗 <a href={selectedApp.linkedinUrl} target="_blank" rel="noreferrer" style={{ color: "#60a5fa" }}>LinkedIn Profile</a></p>}
+                {selectedApp.githubUrl && <p style={{ margin: "2px 0" }}>🐙 <a href={selectedApp.githubUrl} target="_blank" rel="noreferrer" style={{ color: "#60a5fa" }}>GitHub Profile</a></p>}
+                {selectedApp.portfolioUrl && <p style={{ margin: "2px 0" }}>🌐 <a href={selectedApp.portfolioUrl} target="_blank" rel="noreferrer" style={{ color: "#60a5fa" }}>Portfolio Link</a></p>}
+                {selectedApp.resumeFileRef && (
+                  <p style={{ margin: "4px 0" }}>
+                    📄 <strong>Resume Attachment:</strong>{" "}
+                    {selectedApp.resumeFileRef.startsWith("data:") ? (
+                      <a href={selectedApp.resumeFileRef} download={`${selectedApp.fullName}_Resume`} style={{ color: "#22c55e", fontWeight: 700 }}>Download Resume File</a>
+                    ) : (
+                      <span style={{ color: "#cbd5e1" }}>{selectedApp.resumeFileRef}</span>
+                    )}
+                  </p>
+                )}
+              </div>
+
+              <div style={{ background: "#1e293b", padding: 14, borderRadius: 8 }}>
+                <strong style={{ color: "#38bdf8", display: "block", marginBottom: 6 }}>6. Motivations & Availability</strong>
+                <p style={{ margin: "2px 0" }}>🚀 <strong>Availability:</strong> {selectedApp.availability} (Interview Ready: {selectedApp.interviewAvailability})</p>
+                <p style={{ margin: "2px 0" }}>📢 <strong>Found VPANSAK via:</strong> {selectedApp.source} {selectedApp.sourceOther ? `(${selectedApp.sourceOther})` : ""}</p>
+                {selectedApp.whyVpansak && <p style={{ margin: "4px 0", color: "#cbd5e1" }}><strong>Why VPANSAK:</strong> {selectedApp.whyVpansak}</p>}
+                {selectedApp.careerGoals && <p style={{ margin: "4px 0", color: "#cbd5e1" }}><strong>Career Goals:</strong> {selectedApp.careerGoals}</p>}
+              </div>
+
+              {selectedApp.adminNotes && (
+                <div style={{ background: "#0284c720", border: "1px solid #0284c750", padding: 14, borderRadius: 8 }}>
+                  <strong style={{ color: "#38bdf8", display: "block", marginBottom: 4 }}>📝 Internal HR Notes</strong>
+                  <p style={{ margin: 0, color: "#e0f2fe" }}>{selectedApp.adminNotes}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {rows.length ? (
+        rows.map((r) => (
+          <article key={r.applicationId} style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 10, padding: 16, background: "white", borderRadius: 8, border: "1px solid #dce4ee", marginBottom: 10 }}>
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                <strong style={{ fontSize: 14, color: "#0f172a" }}>{r.fullName}</strong>
+                <span style={{ fontSize: 10, fontWeight: 800, padding: "2px 8px", borderRadius: 10, background: r.status === "Selected" ? "#dcfce7" : r.status === "Shortlisted" ? "#dbeafe" : r.status === "Rejected" ? "#fee2e2" : "#f1f5f9", color: r.status === "Selected" ? "#15803d" : r.status === "Shortlisted" ? "#1e40af" : r.status === "Rejected" ? "#b91c1c" : "#475569" }}>
+                  {r.status || "New"}
+                </span>
+                <span style={{ fontSize: 11, color: "#64748b" }}>• ID: {r.applicationId}</span>
+              </div>
+              <small style={{ color: "#64748b", display: "block" }}>
+                Role: <strong>{r.interestedRole}</strong> ({r.preferredPosition || "General"}) • Mode: {r.workMode} • Exp: {r.experienceLevel} • Qualification: {r.qualification}
+              </small>
+              <small style={{ color: "#94a3b8", display: "block", marginTop: 2 }}>
+                Contact: {r.email} | {r.mobile} | {r.city}, {r.state}
+              </small>
+            </div>
+
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <button
+                type="button"
+                onClick={() => setSelectedApp(r)}
+                style={{ height: 32, padding: "0 10px", borderRadius: 6, background: "#0f172a", color: "white", border: 0, cursor: "pointer", fontSize: 11, fontWeight: 700 }}
+              >
+                View Full Details
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleNotesUpdate(r)}
+                style={{ height: 32, padding: "0 10px", borderRadius: 6, background: "#e0e7ff", color: "#3730a3", border: 0, cursor: "pointer", fontSize: 11, fontWeight: 700 }}
+              >
+                Notes
+              </button>
+
+              <select
+                value={r.status || "New"}
+                onChange={(e) => handleStatusUpdate(r, e.target.value)}
+                style={{ height: 32, padding: "0 8px", borderRadius: 6, background: "#f8fafc", border: "1px solid #cbd5e1", fontSize: 11, fontWeight: 700, cursor: "pointer" }}
+              >
+                <option value="New">New</option>
+                <option value="Under Review">Under Review</option>
+                <option value="Shortlisted">Shortlisted</option>
+                <option value="Interview">Interview</option>
+                <option value="Selected">Selected</option>
+                <option value="Rejected">Rejected</option>
+                <option value="On Hold">On Hold</option>
+                <option value="Archived">Archived</option>
+              </select>
+            </div>
+          </article>
+        ))
+      ) : (
+        <div style={{ padding: 24, textAlign: "center", background: "white", borderRadius: 8, border: "1px solid #dce4ee", color: "#64748b" }}>
+          No career applications found matching the search.
+        </div>
+      )}
     </div>
   );
 }

@@ -91,6 +91,47 @@ const SCHEMA_SQL = `
       created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
 
+    CREATE TABLE IF NOT EXISTS career_applications (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      application_id TEXT NOT NULL UNIQUE,
+      full_name TEXT NOT NULL,
+      email TEXT NOT NULL,
+      mobile TEXT NOT NULL,
+      city TEXT NOT NULL,
+      state TEXT NOT NULL,
+      country TEXT NOT NULL DEFAULT 'India',
+      interested_role TEXT NOT NULL,
+      preferred_position TEXT,
+      work_mode TEXT NOT NULL DEFAULT 'Remote',
+      qualification TEXT NOT NULL,
+      degree_course TEXT,
+      field_of_study TEXT,
+      institution TEXT,
+      graduation_year TEXT,
+      skills TEXT NOT NULL DEFAULT '',
+      experience_level TEXT NOT NULL,
+      experience_details TEXT,
+      project_details TEXT,
+      linkedin_url TEXT,
+      github_url TEXT,
+      portfolio_url TEXT,
+      resume_file_ref TEXT,
+      source TEXT NOT NULL DEFAULT 'VPANSAK Website',
+      source_other TEXT,
+      why_vpansak TEXT,
+      career_goals TEXT,
+      availability TEXT NOT NULL DEFAULT 'Immediately',
+      interview_availability TEXT NOT NULL DEFAULT 'Yes',
+      expected_compensation TEXT,
+      referral TEXT NOT NULL DEFAULT 'No',
+      referral_name TEXT,
+      consent INTEGER NOT NULL DEFAULT 1,
+      status TEXT NOT NULL DEFAULT 'New',
+      admin_notes TEXT,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+
     CREATE TABLE IF NOT EXISTS tickets (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       ticket_id TEXT NOT NULL UNIQUE,
