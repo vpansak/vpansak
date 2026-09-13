@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import {
+  AlertTriangle,
   ArrowLeft,
   ArrowRight,
   Award,
@@ -10,6 +11,7 @@ import {
   Briefcase,
   CheckCircle2,
   ChevronDown,
+  Clock,
   Code2,
   Compass,
   Copy,
@@ -20,6 +22,7 @@ import {
   Headphones,
   Heart,
   HelpCircle,
+  Info,
   Layers,
   Lightbulb,
   Lock,
@@ -28,8 +31,10 @@ import {
   Megaphone,
   PackageCheck,
   Phone,
+  RefreshCw,
   Rocket,
   Search,
+  ShieldAlert,
   ShieldCheck,
   Sparkles,
   Send,
@@ -86,6 +91,45 @@ export default function CareersPage() {
   const [errorMsg, setErrorMsg] = useState("");
   const [submittedId, setSubmittedId] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState(false);
+
+  // Active Application Status Check state
+  const [activeApp, setActiveApp] = useState<{
+    active: boolean;
+    applicationId?: string;
+    status?: string;
+    isRejected?: boolean;
+  } | null>(null);
+  const [checkingActive, setCheckingActive] = useState(false);
+
+  // Auto-check active application whenever email is entered
+  useEffect(() => {
+    const email = formData.email.trim().toLowerCase();
+    if (!email || !email.includes("@") || email.length < 5) {
+      setActiveApp(null);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      setCheckingActive(true);
+      try {
+        const res = await fetch(`/api/careers/apply?email=${encodeURIComponent(email)}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.active || data.isRejected) {
+            setActiveApp(data);
+          } else {
+            setActiveApp(null);
+          }
+        }
+      } catch {
+        // ignore check errors
+      } finally {
+        setCheckingActive(false);
+      }
+    }, 600);
+
+    return () => clearTimeout(timer);
+  }, [formData.email]);
 
   const roles = [
     {
@@ -214,33 +258,83 @@ export default function CareersPage() {
     e.preventDefault();
     setErrorMsg("");
 
-    // Form validations
+    // Prevent submission if active application exists and is not rejected
+    if (activeApp && activeApp.active && !activeApp.isRejected) {
+      setErrorMsg(`An active application (Tracking Code: ${activeApp.applicationId}) is currently under processing (Status: ${activeApp.status || "Under Review"}). You cannot submit a duplicate request while an active application is active.`);
+      return;
+    }
+
+    // STRICT MANDATORY FIELD VALIDATION ("sab fill kerna jaruri hai")
     if (!formData.fullName.trim()) {
-      setErrorMsg("Please enter your full name.");
+      setErrorMsg("1. Basic Info: Full Name is required. Please fill out your full name.");
       return;
     }
     if (!formData.email.trim() || !formData.email.includes("@")) {
-      setErrorMsg("Please enter a valid email address.");
+      setErrorMsg("1. Basic Info: Valid Email Address is required. Please fill out your email.");
       return;
     }
-    if (!formData.mobile.trim() || formData.mobile.trim().length < 8) {
-      setErrorMsg("Please enter a valid mobile number.");
+    if (!formData.mobile.trim() || formData.mobile.trim().length < 10) {
+      setErrorMsg("1. Basic Info: Valid 10-digit Mobile Number is required.");
       return;
     }
     if (!formData.city.trim()) {
-      setErrorMsg("Please enter your current city.");
+      setErrorMsg("1. Basic Info: Current City is required. Please fill out your city.");
+      return;
+    }
+    if (!formData.state.trim()) {
+      setErrorMsg("1. Basic Info: State / Region is required. Please fill out your state.");
       return;
     }
     if (!formData.interestedRole) {
-      setErrorMsg("Please select the role you are interested in.");
+      setErrorMsg("2. Role Preferences: Role Category selection is required.");
+      return;
+    }
+    if (!formData.preferredPosition.trim()) {
+      setErrorMsg("2. Role Preferences: Preferred Position / Job Title is required.");
       return;
     }
     if (!formData.qualification) {
-      setErrorMsg("Please select your highest qualification.");
+      setErrorMsg("3. Education: Highest Qualification selection is required.");
+      return;
+    }
+    if (!formData.degreeCourse.trim()) {
+      setErrorMsg("3. Education: Degree / Course name is required.");
+      return;
+    }
+    if (!formData.fieldOfStudy.trim()) {
+      setErrorMsg("3. Education: Field of Study / Specialization is required.");
+      return;
+    }
+    if (!formData.institution.trim()) {
+      setErrorMsg("3. Education: College / Institution name is required.");
+      return;
+    }
+    if (!formData.graduationYear.trim()) {
+      setErrorMsg("3. Education: Graduation Year is required.");
+      return;
+    }
+    if (!formData.skills.trim()) {
+      setErrorMsg("4. Key Skills: Please list your main skills separated by commas.");
+      return;
+    }
+    if (!formData.experienceLevel) {
+      setErrorMsg("5. Experience: Experience Level selection is required.");
+      return;
+    }
+    if (!formData.experienceDetails.trim()) {
+      setErrorMsg("5. Experience: Please provide details about your experience / background summary.");
+      return;
+    }
+    if (!formData.whyVpansak.trim()) {
+      setErrorMsg("8. Additional Details: Please answer 'Why do you want to join VPANSAK?'");
+      return;
+    }
+    if (!formData.careerGoals.trim()) {
+      setErrorMsg("8. Additional Details: Please answer 'What are you looking to learn/achieve in your next role?'");
       return;
     }
     if (!formData.consent) {
-      setErrorMsg("Please confirm that the information provided is accurate.");
+      setErrorMsg("9. Confirmation: You must check the declaration checkbox confirming all information is accurate.");
       return;
     }
 
@@ -267,8 +361,17 @@ export default function CareersPage() {
 
       if (res.ok && data.success) {
         setSubmittedId(data.applicationId);
+        setActiveApp(null);
       } else {
-        setErrorMsg(data.error || "Failed to submit application. Please try again.");
+        if (data.activeApplication) {
+          setActiveApp({
+            active: true,
+            applicationId: data.applicationId,
+            status: data.status,
+            isRejected: false,
+          });
+        }
+        setErrorMsg(data.error || "Failed to submit application. Please ensure all mandatory fields are filled correctly.");
       }
     } catch (err) {
       setErrorMsg("Network error occurred. Please check your connection and try again.");
@@ -610,7 +713,7 @@ export default function CareersPage() {
                   }}
                 >
                   <span style={{ fontSize: 12, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: 6, fontWeight: 800 }}>
-                    YOUR APPLICATION REFERENCE ID
+                    YOUR APPLICATION TRACKING CODE / REFERENCE ID
                   </span>
                   <div style={{ display: "flex", alignItems: "center", gap: 10, justifyContent: "center" }}>
                     <code style={{ fontSize: 20, fontWeight: 900, color: "#38bdf8", letterSpacing: "0.05em" }}>
@@ -634,7 +737,7 @@ export default function CareersPage() {
                       }}
                     >
                       {copiedId ? <CheckCircle2 size={14} /> : <Copy size={14} />}
-                      {copiedId ? "Copied" : "Copy ID"}
+                      {copiedId ? "Copied" : "Copy Tracking Code"}
                     </button>
                   </div>
                 </div>
@@ -656,7 +759,7 @@ export default function CareersPage() {
                       cursor: "pointer",
                     }}
                   >
-                    Submit Another Application
+                    Return to Careers Portal
                   </button>
                 </div>
               </div>
@@ -671,10 +774,11 @@ export default function CareersPage() {
                     Apply for a Role at VPANSAK
                   </h2>
                   <p style={{ fontSize: 13, color: "#94a3b8", margin: 0 }}>
-                    Please fill out the details accurately. Fields marked with an asterisk (*) are required.
+                    Every field is mandatory (*). Please fill out all information accurately to submit your candidate application.
                   </p>
                 </div>
 
+                {/* Error Banner */}
                 {errorMsg && (
                   <div
                     style={{
@@ -685,21 +789,75 @@ export default function CareersPage() {
                       color: "#fca5a5",
                       fontSize: 13,
                       marginBottom: 24,
+                      fontWeight: 700,
                     }}
                   >
                     ⚠️ {errorMsg}
                   </div>
                 )}
 
+                {/* Active Application Status Alert Card */}
+                {activeApp && activeApp.active && !activeApp.isRejected && (
+                  <div
+                    style={{
+                      padding: "20px 22px",
+                      borderRadius: 12,
+                      background: "rgba(234, 179, 8, 0.12)",
+                      border: "1px solid rgba(234, 179, 8, 0.4)",
+                      color: "#fef08a",
+                      marginBottom: 28,
+                    }}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+                      <Clock size={22} style={{ color: "#eab308" }} />
+                      <strong style={{ fontSize: 16, color: "#ffffff" }}>
+                        APPLICATION IN PROCESSING (Status: {activeApp.status || "Under Review"})
+                      </strong>
+                    </div>
+                    <p style={{ fontSize: 13, margin: "0 0 10px", lineHeight: 1.6, color: "#fef08a" }}>
+                      An active career application is already under processing for <strong>{formData.email}</strong>. Multiple active submissions are locked until your active request is reviewed by VPANSAK HR.
+                    </p>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10, background: "rgba(0,0,0,0.3)", padding: "8px 14px", borderRadius: 6, width: "max-content" }}>
+                      <span style={{ fontSize: 11, color: "#94a3b8" }}>TRACKING CODE:</span>
+                      <code style={{ fontSize: 14, fontWeight: 900, color: "#38bdf8" }}>{activeApp.applicationId}</code>
+                    </div>
+                    <small style={{ display: "block", marginTop: 10, color: "#cbd5e1", fontSize: 12 }}>
+                      ℹ️ Re-application is automatically permitted if your previous application is rejected.
+                    </small>
+                  </div>
+                )}
+
+                {/* Re-Application Opportunity Banner */}
+                {activeApp && activeApp.isRejected && (
+                  <div
+                    style={{
+                      padding: "16px 20px",
+                      borderRadius: 10,
+                      background: "rgba(34, 197, 94, 0.12)",
+                      border: "1px solid rgba(34, 197, 94, 0.3)",
+                      color: "#86efac",
+                      marginBottom: 24,
+                    }}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <CheckCircle2 size={18} style={{ color: "#22c55e" }} />
+                      <strong>Re-Application Window Open</strong>
+                    </div>
+                    <p style={{ fontSize: 13, margin: "4px 0 0", color: "#cbd5e1" }}>
+                      Your previous application (Tracking Code: <strong>{activeApp.applicationId}</strong>) was reviewed. You are eligible to submit an updated application profile now.
+                    </p>
+                  </div>
+                )}
+
                 {/* SECTION 1: BASIC INFORMATION */}
                 <div style={{ marginBottom: 32 }}>
                   <h3 style={{ fontSize: 16, fontWeight: 800, color: "#38bdf8", borderBottom: "1px solid rgba(56, 189, 248, 0.2)", paddingBottom: 8, marginBottom: 18 }}>
-                    1. Basic Information
+                    1. Basic Information <span style={{ color: "#ef4444" }}>*</span>
                   </h3>
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 18 }}>
                     <div>
                       <label style={{ display: "block", fontSize: 13, fontWeight: 700, marginBottom: 6, color: "#cbd5e1" }}>
-                        Full Name *
+                        Full Name <span style={{ color: "#ef4444" }}>*</span>
                       </label>
                       <input
                         type="text"
@@ -714,7 +872,7 @@ export default function CareersPage() {
 
                     <div>
                       <label style={{ display: "block", fontSize: 13, fontWeight: 700, marginBottom: 6, color: "#cbd5e1" }}>
-                        Email Address *
+                        Email Address <span style={{ color: "#ef4444" }}>*</span>
                       </label>
                       <input
                         type="email"
@@ -725,18 +883,23 @@ export default function CareersPage() {
                         required
                         style={{ width: "100%", padding: "11px 14px", borderRadius: 8, background: "#1e293b", border: "1px solid #334155", color: "#ffffff", fontSize: 14 }}
                       />
+                      {checkingActive && (
+                        <small style={{ color: "#38bdf8", fontSize: 11, marginTop: 4, display: "block" }}>
+                          Checking application status for email...
+                        </small>
+                      )}
                     </div>
 
                     <div>
                       <label style={{ display: "block", fontSize: 13, fontWeight: 700, marginBottom: 6, color: "#cbd5e1" }}>
-                        Mobile Number *
+                        Mobile Number (10 digits) <span style={{ color: "#ef4444" }}>*</span>
                       </label>
                       <input
                         type="tel"
                         name="mobile"
                         value={formData.mobile}
                         onChange={handleInputChange}
-                        placeholder="e.g. +91 9876543210"
+                        placeholder="e.g. 9876543210"
                         required
                         style={{ width: "100%", padding: "11px 14px", borderRadius: 8, background: "#1e293b", border: "1px solid #334155", color: "#ffffff", fontSize: 14 }}
                       />
@@ -744,7 +907,7 @@ export default function CareersPage() {
 
                     <div>
                       <label style={{ display: "block", fontSize: 13, fontWeight: 700, marginBottom: 6, color: "#cbd5e1" }}>
-                        Current City *
+                        Current City <span style={{ color: "#ef4444" }}>*</span>
                       </label>
                       <input
                         type="text"
@@ -759,7 +922,7 @@ export default function CareersPage() {
 
                     <div>
                       <label style={{ display: "block", fontSize: 13, fontWeight: 700, marginBottom: 6, color: "#cbd5e1" }}>
-                        State / Region
+                        State / Region <span style={{ color: "#ef4444" }}>*</span>
                       </label>
                       <input
                         type="text"
@@ -767,13 +930,14 @@ export default function CareersPage() {
                         value={formData.state}
                         onChange={handleInputChange}
                         placeholder="e.g. Uttar Pradesh"
+                        required
                         style={{ width: "100%", padding: "11px 14px", borderRadius: 8, background: "#1e293b", border: "1px solid #334155", color: "#ffffff", fontSize: 14 }}
                       />
                     </div>
 
                     <div>
                       <label style={{ display: "block", fontSize: 13, fontWeight: 700, marginBottom: 6, color: "#cbd5e1" }}>
-                        Country
+                        Country <span style={{ color: "#ef4444" }}>*</span>
                       </label>
                       <input
                         type="text"
@@ -781,6 +945,7 @@ export default function CareersPage() {
                         value={formData.country}
                         onChange={handleInputChange}
                         placeholder="India"
+                        required
                         style={{ width: "100%", padding: "11px 14px", borderRadius: 8, background: "#1e293b", border: "1px solid #334155", color: "#ffffff", fontSize: 14 }}
                       />
                     </div>
@@ -790,12 +955,12 @@ export default function CareersPage() {
                 {/* SECTION 2: ROLE INFORMATION */}
                 <div style={{ marginBottom: 32 }}>
                   <h3 style={{ fontSize: 16, fontWeight: 800, color: "#38bdf8", borderBottom: "1px solid rgba(56, 189, 248, 0.2)", paddingBottom: 8, marginBottom: 18 }}>
-                    2. Role Preferences
+                    2. Role Preferences <span style={{ color: "#ef4444" }}>*</span>
                   </h3>
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 18 }}>
                     <div>
                       <label style={{ display: "block", fontSize: 13, fontWeight: 700, marginBottom: 6, color: "#cbd5e1" }}>
-                        Which role category interests you? *
+                        Which role category interests you? <span style={{ color: "#ef4444" }}>*</span>
                       </label>
                       <select
                         name="interestedRole"
@@ -819,7 +984,7 @@ export default function CareersPage() {
 
                     <div>
                       <label style={{ display: "block", fontSize: 13, fontWeight: 700, marginBottom: 6, color: "#cbd5e1" }}>
-                        Preferred Specific Title
+                        Preferred Specific Title / Position <span style={{ color: "#ef4444" }}>*</span>
                       </label>
                       <input
                         type="text"
@@ -827,18 +992,20 @@ export default function CareersPage() {
                         value={formData.preferredPosition}
                         onChange={handleInputChange}
                         placeholder="e.g. Frontend Developer / React Intern"
+                        required
                         style={{ width: "100%", padding: "11px 14px", borderRadius: 8, background: "#1e293b", border: "1px solid #334155", color: "#ffffff", fontSize: 14 }}
                       />
                     </div>
 
                     <div>
                       <label style={{ display: "block", fontSize: 13, fontWeight: 700, marginBottom: 6, color: "#cbd5e1" }}>
-                        Preferred Work Mode
+                        Preferred Work Mode <span style={{ color: "#ef4444" }}>*</span>
                       </label>
                       <select
                         name="workMode"
                         value={formData.workMode}
                         onChange={handleInputChange}
+                        required
                         style={{ width: "100%", padding: "11px 14px", borderRadius: 8, background: "#1e293b", border: "1px solid #334155", color: "#ffffff", fontSize: 14 }}
                       >
                         <option value="Remote">Remote</option>
@@ -853,12 +1020,12 @@ export default function CareersPage() {
                 {/* SECTION 3: EDUCATION */}
                 <div style={{ marginBottom: 32 }}>
                   <h3 style={{ fontSize: 16, fontWeight: 800, color: "#38bdf8", borderBottom: "1px solid rgba(56, 189, 248, 0.2)", paddingBottom: 8, marginBottom: 18 }}>
-                    3. Educational Background
+                    3. Educational Background <span style={{ color: "#ef4444" }}>*</span>
                   </h3>
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 18 }}>
                     <div>
                       <label style={{ display: "block", fontSize: 13, fontWeight: 700, marginBottom: 6, color: "#cbd5e1" }}>
-                        Highest Qualification *
+                        Highest Qualification <span style={{ color: "#ef4444" }}>*</span>
                       </label>
                       <select
                         name="qualification"
@@ -878,7 +1045,7 @@ export default function CareersPage() {
 
                     <div>
                       <label style={{ display: "block", fontSize: 13, fontWeight: 700, marginBottom: 6, color: "#cbd5e1" }}>
-                        Degree / Course
+                        Degree / Course <span style={{ color: "#ef4444" }}>*</span>
                       </label>
                       <input
                         type="text"
@@ -886,13 +1053,14 @@ export default function CareersPage() {
                         value={formData.degreeCourse}
                         onChange={handleInputChange}
                         placeholder="e.g. B.Tech / BCA / B.Sc"
+                        required
                         style={{ width: "100%", padding: "11px 14px", borderRadius: 8, background: "#1e293b", border: "1px solid #334155", color: "#ffffff", fontSize: 14 }}
                       />
                     </div>
 
                     <div>
                       <label style={{ display: "block", fontSize: 13, fontWeight: 700, marginBottom: 6, color: "#cbd5e1" }}>
-                        Field of Study / Specialization
+                        Field of Study / Specialization <span style={{ color: "#ef4444" }}>*</span>
                       </label>
                       <input
                         type="text"
@@ -900,13 +1068,14 @@ export default function CareersPage() {
                         value={formData.fieldOfStudy}
                         onChange={handleInputChange}
                         placeholder="e.g. Computer Science / IT / Commerce"
+                        required
                         style={{ width: "100%", padding: "11px 14px", borderRadius: 8, background: "#1e293b", border: "1px solid #334155", color: "#ffffff", fontSize: 14 }}
                       />
                     </div>
 
                     <div>
                       <label style={{ display: "block", fontSize: 13, fontWeight: 700, marginBottom: 6, color: "#cbd5e1" }}>
-                        College / University / Institution
+                        College / University / Institution <span style={{ color: "#ef4444" }}>*</span>
                       </label>
                       <input
                         type="text"
@@ -914,13 +1083,14 @@ export default function CareersPage() {
                         value={formData.institution}
                         onChange={handleInputChange}
                         placeholder="e.g. AKTU / MJP Rohilkhand University"
+                        required
                         style={{ width: "100%", padding: "11px 14px", borderRadius: 8, background: "#1e293b", border: "1px solid #334155", color: "#ffffff", fontSize: 14 }}
                       />
                     </div>
 
                     <div>
                       <label style={{ display: "block", fontSize: 13, fontWeight: 700, marginBottom: 6, color: "#cbd5e1" }}>
-                        Graduation Year / Expected Year
+                        Graduation Year / Expected Year <span style={{ color: "#ef4444" }}>*</span>
                       </label>
                       <input
                         type="text"
@@ -928,6 +1098,7 @@ export default function CareersPage() {
                         value={formData.graduationYear}
                         onChange={handleInputChange}
                         placeholder="e.g. 2025 / 2026"
+                        required
                         style={{ width: "100%", padding: "11px 14px", borderRadius: 8, background: "#1e293b", border: "1px solid #334155", color: "#ffffff", fontSize: 14 }}
                       />
                     </div>
@@ -937,11 +1108,11 @@ export default function CareersPage() {
                 {/* SECTION 4: SKILLS */}
                 <div style={{ marginBottom: 32 }}>
                   <h3 style={{ fontSize: 16, fontWeight: 800, color: "#38bdf8", borderBottom: "1px solid rgba(56, 189, 248, 0.2)", paddingBottom: 8, marginBottom: 18 }}>
-                    4. Key Skills
+                    4. Key Skills <span style={{ color: "#ef4444" }}>*</span>
                   </h3>
                   <div>
                     <label style={{ display: "block", fontSize: 13, fontWeight: 700, marginBottom: 6, color: "#cbd5e1" }}>
-                      Your Key Skills (Separate with commas)
+                      Your Key Skills (Separate with commas) <span style={{ color: "#ef4444" }}>*</span>
                     </label>
                     <input
                       type="text"
@@ -949,23 +1120,21 @@ export default function CareersPage() {
                       value={formData.skills}
                       onChange={handleInputChange}
                       placeholder="e.g. HTML, CSS, JavaScript, React, Next.js, Node.js, Python, Git, Figma, SEO"
+                      required
                       style={{ width: "100%", padding: "11px 14px", borderRadius: 8, background: "#1e293b", border: "1px solid #334155", color: "#ffffff", fontSize: 14 }}
                     />
-                    <small style={{ display: "block", marginTop: 6, color: "#64748b", fontSize: 12 }}>
-                      Mention both technical and soft skills relevant to your interested role.
-                    </small>
                   </div>
                 </div>
 
                 {/* SECTION 5: EXPERIENCE & PROJECTS */}
                 <div style={{ marginBottom: 32 }}>
                   <h3 style={{ fontSize: 16, fontWeight: 800, color: "#38bdf8", borderBottom: "1px solid rgba(56, 189, 248, 0.2)", paddingBottom: 8, marginBottom: 18 }}>
-                    5. Experience & Projects
+                    5. Experience & Projects <span style={{ color: "#ef4444" }}>*</span>
                   </h3>
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 18, marginBottom: 18 }}>
                     <div>
                       <label style={{ display: "block", fontSize: 13, fontWeight: 700, marginBottom: 6, color: "#cbd5e1" }}>
-                        Experience Level *
+                        Experience Level <span style={{ color: "#ef4444" }}>*</span>
                       </label>
                       <select
                         name="experienceLevel"
@@ -1002,7 +1171,7 @@ export default function CareersPage() {
 
                   <div style={{ marginBottom: 18 }}>
                     <label style={{ display: "block", fontSize: 13, fontWeight: 700, marginBottom: 6, color: "#cbd5e1" }}>
-                      Tell us about your experience / background
+                      Tell us about your experience / background summary <span style={{ color: "#ef4444" }}>*</span>
                     </label>
                     <textarea
                       name="experienceDetails"
@@ -1010,6 +1179,7 @@ export default function CareersPage() {
                       value={formData.experienceDetails}
                       onChange={handleInputChange}
                       placeholder="Briefly describe your previous work, internship, college activities or relevant practice..."
+                      required
                       style={{ width: "100%", padding: "11px 14px", borderRadius: 8, background: "#1e293b", border: "1px solid #334155", color: "#ffffff", fontSize: 14, resize: "vertical" }}
                     />
                   </div>
@@ -1159,7 +1329,7 @@ export default function CareersPage() {
                 {/* SECTION 8: ADDITIONAL DETAILS */}
                 <div style={{ marginBottom: 32 }}>
                   <h3 style={{ fontSize: 16, fontWeight: 800, color: "#38bdf8", borderBottom: "1px solid rgba(56, 189, 248, 0.2)", paddingBottom: 8, marginBottom: 18 }}>
-                    8. Additional Details
+                    8. Additional Details <span style={{ color: "#ef4444" }}>*</span>
                   </h3>
 
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 18, marginBottom: 18 }}>
@@ -1268,7 +1438,7 @@ export default function CareersPage() {
 
                   <div style={{ marginBottom: 18 }}>
                     <label style={{ display: "block", fontSize: 13, fontWeight: 700, marginBottom: 6, color: "#cbd5e1" }}>
-                      Why do you want to join VPANSAK?
+                      Why do you want to join VPANSAK? <span style={{ color: "#ef4444" }}>*</span>
                     </label>
                     <textarea
                       name="whyVpansak"
@@ -1276,13 +1446,14 @@ export default function CareersPage() {
                       value={formData.whyVpansak}
                       onChange={handleInputChange}
                       placeholder="Tell us what interests you about VPANSAK and how you think you could contribute..."
+                      required
                       style={{ width: "100%", padding: "11px 14px", borderRadius: 8, background: "#1e293b", border: "1px solid #334155", color: "#ffffff", fontSize: 14, resize: "vertical" }}
                     />
                   </div>
 
                   <div>
                     <label style={{ display: "block", fontSize: 13, fontWeight: 700, marginBottom: 6, color: "#cbd5e1" }}>
-                      What are you looking to learn or achieve in your next role?
+                      What are you looking to learn or achieve in your next role? <span style={{ color: "#ef4444" }}>*</span>
                     </label>
                     <textarea
                       name="careerGoals"
@@ -1290,9 +1461,37 @@ export default function CareersPage() {
                       value={formData.careerGoals}
                       onChange={handleInputChange}
                       placeholder="Tell us about your learning goals and career aspirations..."
+                      required
                       style={{ width: "100%", padding: "11px 14px", borderRadius: 8, background: "#1e293b", border: "1px solid #334155", color: "#ffffff", fontSize: 14, resize: "vertical" }}
                     />
                   </div>
+                </div>
+
+                {/* SPAM & ANTI-FRAUD WARNING BOX */}
+                <div
+                  style={{
+                    padding: 20,
+                    borderRadius: 12,
+                    background: "rgba(225, 29, 72, 0.1)",
+                    border: "1px solid rgba(225, 29, 72, 0.35)",
+                    marginBottom: 24,
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8, color: "#f43f5e" }}>
+                    <ShieldAlert size={22} />
+                    <strong style={{ fontSize: 15, color: "#ffffff" }}>
+                      ANTI-SPAM & AUTHENTICITY NOTICE (सुरक्षा चेतावनी)
+                    </strong>
+                  </div>
+                  <p style={{ fontSize: 12, color: "#fda4af", margin: "0 0 8px", lineHeight: 1.6 }}>
+                    • Submitting fake credentials, false contact information, spam requests, or bot submissions is strictly prohibited.
+                  </p>
+                  <p style={{ fontSize: 12, color: "#fda4af", margin: "0 0 8px", lineHeight: 1.6 }}>
+                    • Your IP address, timestamp, and device browser signatures are logged automatically for security verification.
+                  </p>
+                  <p style={{ fontSize: 12, color: "#fda4af", margin: 0, lineHeight: 1.6 }}>
+                    • Fraudulent or spam requests will result in permanent blacklisting from all VPANSAK career and platform systems.
+                  </p>
                 </div>
 
                 {/* SECTION 9: DECLARATION & CONSENT */}
@@ -1303,10 +1502,11 @@ export default function CareersPage() {
                       name="consent"
                       checked={formData.consent}
                       onChange={handleInputChange}
+                      required
                       style={{ marginTop: 3, width: 16, height: 16, accentColor: "#2563eb" }}
                     />
                     <span style={{ fontSize: 13, color: "#cbd5e1", lineHeight: 1.5 }}>
-                      I confirm that the information provided by me is accurate to the best of my knowledge. I understand that application data will be processed solely by VPANSAK talent evaluation team for recruitment purposes.
+                      I confirm that all information provided by me is accurate and complete to the best of my knowledge. I understand that submitting fake details or multiple active spam requests will lead to rejection. <span style={{ color: "#ef4444" }}>*</span>
                     </span>
                   </label>
                 </div>
@@ -1315,16 +1515,16 @@ export default function CareersPage() {
                 <div style={{ textAlign: "right" }}>
                   <button
                     type="submit"
-                    disabled={submitting}
+                    disabled={submitting || Boolean(activeApp && activeApp.active && !activeApp.isRejected)}
                     style={{
                       padding: "14px 32px",
                       borderRadius: 8,
-                      background: submitting ? "#64748b" : "#2563eb",
+                      background: activeApp && activeApp.active && !activeApp.isRejected ? "#475569" : submitting ? "#64748b" : "#2563eb",
                       color: "#ffffff",
                       fontSize: 15,
                       fontWeight: 800,
                       border: 0,
-                      cursor: submitting ? "not-allowed" : "pointer",
+                      cursor: activeApp && activeApp.active && !activeApp.isRejected ? "not-allowed" : submitting ? "not-allowed" : "pointer",
                       display: "inline-flex",
                       alignItems: "center",
                       gap: 8,
@@ -1333,11 +1533,15 @@ export default function CareersPage() {
                   >
                     {submitting ? (
                       <>
-                        <Sparkles size={16} className="animate-spin" /> Submitting...
+                        <Sparkles size={16} className="animate-spin" /> Submitting Application...
+                      </>
+                    ) : activeApp && activeApp.active && !activeApp.isRejected ? (
+                      <>
+                        <Lock size={16} /> Application Currently In Processing
                       </>
                     ) : (
                       <>
-                        <Send size={16} /> Submit Application
+                        <Send size={16} /> Submit Candidate Application
                       </>
                     )}
                   </button>

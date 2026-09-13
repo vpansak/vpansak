@@ -1,8 +1,69 @@
+import { eq, desc } from "drizzle-orm";
 import { getDb } from "../../../../db";
 import { careerApplications } from "../../../../db/schema";
 import { supabase } from "../../../lib/supabase";
 
 export const runtime = "nodejs";
+
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const email = String(searchParams.get("email") || "").trim().toLowerCase();
+
+  if (!email || !email.includes("@")) {
+    return Response.json({ active: false });
+  }
+
+  try {
+    const db = await getDb();
+    const records = await db
+      .select()
+      .from(careerApplications)
+      .where(eq(careerApplications.email, email))
+      .orderBy(desc(careerApplications.createdAt))
+      .limit(1);
+
+    if (records && records.length > 0) {
+      const latest = records[0];
+      const isRejected = latest.status === "Rejected";
+
+      return Response.json({
+        active: !isRejected,
+        applicationId: latest.applicationId,
+        status: latest.status || "New",
+        isRejected,
+        createdAt: latest.createdAt,
+        interestedRole: latest.interestedRole,
+      });
+    }
+
+    // Also check Supabase if DB returns empty
+    if (supabase) {
+      const { data } = await supabase
+        .from("career_applications")
+        .select("*")
+        .eq("email", email)
+        .order("created_at", { ascending: false })
+        .limit(1);
+
+      if (data && data.length > 0) {
+        const latest = data[0];
+        const isRejected = latest.status === "Rejected";
+        return Response.json({
+          active: !isRejected,
+          applicationId: latest.application_id || latest.applicationId,
+          status: latest.status || "New",
+          isRejected,
+          createdAt: latest.created_at || latest.createdAt,
+          interestedRole: latest.interested_role || latest.interestedRole,
+        });
+      }
+    }
+
+    return Response.json({ active: false });
+  } catch (error) {
+    return Response.json({ active: false });
+  }
+}
 
 export async function POST(request: Request) {
   try {
@@ -50,30 +111,86 @@ export async function POST(request: Request) {
     const referralName = String(body.referralName || "").trim();
     const consent = Boolean(body.consent);
 
-    // Validation
+    // Strict Mandatory Fields Validation ("sab fill kerna jaruri hai")
     if (!fullName) {
-      return Response.json({ error: "Please enter your full name." }, { status: 400 });
+      return Response.json({ error: "Full Name is required. Please enter your full name." }, { status: 400 });
     }
     if (!email || !email.includes("@")) {
-      return Response.json({ error: "Please enter a valid email address." }, { status: 400 });
+      return Response.json({ error: "Valid Email Address is required. Please enter your email." }, { status: 400 });
     }
-    if (!mobile || mobile.length < 8) {
-      return Response.json({ error: "Please enter a valid mobile number." }, { status: 400 });
+    if (!mobile || mobile.length < 10) {
+      return Response.json({ error: "Valid 10-digit Mobile Number is required." }, { status: 400 });
     }
     if (!city) {
-      return Response.json({ error: "Please enter your current city." }, { status: 400 });
+      return Response.json({ error: "Current City is required. Please enter your city." }, { status: 400 });
+    }
+    if (!state) {
+      return Response.json({ error: "State / Region is required. Please enter your state." }, { status: 400 });
     }
     if (!interestedRole) {
-      return Response.json({ error: "Please select the role you are interested in." }, { status: 400 });
+      return Response.json({ error: "Role Category selection is required." }, { status: 400 });
+    }
+    if (!preferredPosition) {
+      return Response.json({ error: "Preferred Position / Job Title is required." }, { status: 400 });
     }
     if (!qualification) {
-      return Response.json({ error: "Please select your highest qualification." }, { status: 400 });
+      return Response.json({ error: "Highest Qualification selection is required." }, { status: 400 });
+    }
+    if (!degreeCourse) {
+      return Response.json({ error: "Degree / Course name is required." }, { status: 400 });
+    }
+    if (!fieldOfStudy) {
+      return Response.json({ error: "Field of Study / Specialization is required." }, { status: 400 });
+    }
+    if (!institution) {
+      return Response.json({ error: "College / Institution name is required." }, { status: 400 });
+    }
+    if (!graduationYear) {
+      return Response.json({ error: "Graduation Year is required." }, { status: 400 });
+    }
+    if (!skills) {
+      return Response.json({ error: "Key Skills are required. Please list your main skills." }, { status: 400 });
     }
     if (!experienceLevel) {
-      return Response.json({ error: "Please select your experience level." }, { status: 400 });
+      return Response.json({ error: "Experience Level selection is required." }, { status: 400 });
+    }
+    if (!experienceDetails) {
+      return Response.json({ error: "Experience / Background summary details are required." }, { status: 400 });
+    }
+    if (!whyVpansak) {
+      return Response.json({ error: "Please answer: 'Why do you want to join VPANSAK?'" }, { status: 400 });
+    }
+    if (!careerGoals) {
+      return Response.json({ error: "Please answer: 'What are you looking to learn/achieve in your next role?'" }, { status: 400 });
     }
     if (!consent) {
-      return Response.json({ error: "Please confirm that the provided information is accurate." }, { status: 400 });
+      return Response.json({ error: "You must confirm that the information provided is true and accurate." }, { status: 400 });
+    }
+
+    const db = await getDb();
+
+    // Check for existing active application for this email
+    const existingRecords = await db
+      .select()
+      .from(careerApplications)
+      .where(eq(careerApplications.email, email))
+      .orderBy(desc(careerApplications.createdAt))
+      .limit(1);
+
+    if (existingRecords && existingRecords.length > 0) {
+      const activeApp = existingRecords[0];
+      // If status is NOT "Rejected", prevent duplicate submission
+      if (activeApp.status !== "Rejected") {
+        return Response.json(
+          {
+            activeApplication: true,
+            status: activeApp.status || "Under Review",
+            applicationId: activeApp.applicationId,
+            error: `An active career application (Tracking Code: ${activeApp.applicationId}) is currently in processing (Status: ${activeApp.status || "Under Review"}). You cannot submit a new application while an active request exists. Re-application is allowed only if a previous application was rejected.`,
+          },
+          { status: 400 }
+        );
+      }
     }
 
     const applicationId = `VPC-CAREER-${Math.floor(100000 + Math.random() * 900000)}`;
@@ -118,7 +235,6 @@ export async function POST(request: Request) {
       updatedAt: new Date().toISOString(),
     };
 
-    const db = await getDb();
     await db.insert(careerApplications).values(newRecord);
 
     // Sync to Supabase cloud database if configured
@@ -176,7 +292,7 @@ export async function POST(request: Request) {
   } catch (error: any) {
     console.error("Error submitting career application:", error);
     return Response.json(
-      { error: "Failed to submit career application. Please try again." },
+      { error: "Failed to submit career application. Please ensure all fields are filled out correctly." },
       { status: 500 }
     );
   }
