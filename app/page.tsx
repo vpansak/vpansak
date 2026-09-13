@@ -86,44 +86,28 @@ const categories = [
 
 const heroSlides = [
   {
-    eyebrow: "MADE FOR THE MODERN LIFE",
-    title: "The VPANSAK Bottle.\nPure Hydration.",
-    copy: "Double-wall vacuum insulated premium reusable water bottles. Keeps drinks icy cold for 24 hours or hot for 12 hours.",
-    offer: "Official VPANSAK Own Brand Launch",
-    button: "Shop The Collection",
-    category: "All",
-    image: "/shop/vpansak-bottle-black.jpg",
-    theme: "blue"
+    id: "vpansak-core-750",
+    productId: "vpansak-core-750",
+    title: "VPANSAK Water Bottle Collection",
+    image: "/hero/vpansak-poster-bottles.png",
+    alt: "VPANSAK COLLECTION — Premium Bottles for Every Journey",
+    linkUrl: "/product/vpansak-core-750"
   },
   {
-    eyebrow: "VPANSAK STEEL COLLECTION",
-    title: "100% Leakproof.\nZero Sweating.",
-    copy: "Crafted from food-grade 304 stainless steel with durable matte powder coating and ergonomic carry handle.",
-    offer: "Starting at ₹799 + Free Shipping",
-    button: "Explore Steel Series",
-    category: "Steel Series",
-    image: "/shop/vpansak-bottle-blue.jpg",
-    theme: "blue"
+    id: "vpansak-desk-mat",
+    productId: "vpansak-desk-mat",
+    title: "VPANSAK Desk Essentials — Desk Mat",
+    image: "/hero/vpansak-poster-desk.png",
+    alt: "DESK ESSENTIALS — A Cleaner Desk. A Calmer Mind.",
+    linkUrl: "/product/vpansak-desk-mat"
   },
   {
-    eyebrow: "VPANSAK TRAVEL SERIES",
-    title: "Compact 600ml.\nReady for Action.",
-    copy: "Lightweight, cup-holder friendly design engineered for gym, travel, workouts, and daily commutes.",
-    offer: "Special Launch Price ₹699",
-    button: "Explore Travel Bottle",
-    category: "Travel Series",
-    image: "/shop/vpansak-bottle-olive.jpg",
-    theme: "gold"
-  },
-  {
-    eyebrow: "VPANSAK CORE COLLECTION",
-    title: "Minimalist Design.\nMaximum Performance.",
-    copy: "Available in 750ml and 1000ml capacities across Matte Black, Navy Blue, White/Cream, and Olive colors.",
-    offer: "1-Year Official Brand Warranty",
-    button: "Shop Core Bottles",
-    category: "Core Series",
-    image: "/shop/vpansak-bottle-white.jpg",
-    theme: "rose"
+    id: "vpansak-laptop-sleeve",
+    productId: "vpansak-laptop-sleeve",
+    title: "VPANSAK Laptop Sleeve Collection",
+    image: "/hero/vpansak-poster-sleeve.png",
+    alt: "LAPTOP SLEEVE COLLECTION — Protect Your Tech. Carry Your Style.",
+    linkUrl: "/product/vpansak-laptop-sleeve"
   }
 ];
 
@@ -173,8 +157,12 @@ export default function HomePage() {
   const [coupon, setCoupon] = useState("");
   const [discount, setDiscount] = useState(0);
   const [hero, setHero] = useState(0);
+  const [isHoverPaused, setIsHoverPaused] = useState(false);
   const [hydrated, setHydrated] = useState(false);
   const [authUser, setAuthUser] = useState<{ email: string; fullName: string } | null>(null);
+
+  // Mobile Touch Swipe state for Hero Carousel
+  const touchStartX = useMemo(() => ({ current: null as number | null }), []);
 
   useEffect(() => {
     fetch("/api/auth/me")
@@ -182,7 +170,6 @@ export default function HomePage() {
       .then(async (data) => {
         if (data && data.user) {
           setAuthUser(data.user);
-          // Fetch authenticated user's isolated DB cart & wishlist
           const accRes = await fetch("/api/account");
           if (accRes.ok) {
             const accData = await accRes.json();
@@ -215,7 +202,21 @@ export default function HomePage() {
       });
   }, []);
 
-  useEffect(() => { const timer = window.setInterval(() => setHero((value) => (value + 1) % heroSlides.length), 6500); return () => window.clearInterval(timer); }, []);
+  // Smooth Auto-slide timer for Hero Carousel
+  useEffect(() => {
+    if (isHoverPaused) return;
+    const timer = window.setInterval(() => {
+      setHero((value) => (value + 1) % heroSlides.length);
+    }, 6000);
+    return () => window.clearInterval(timer);
+  }, [isHoverPaused]);
+
+  const sideProducts = useMemo(() => {
+    const p1 = catalogProducts.find(p => p.id === "vpansak-core-750") || catalogProducts[0];
+    const p2 = catalogProducts.find(p => p.id === "vpansak-desk-mat") || catalogProducts[1];
+    const p3 = catalogProducts.find(p => p.id === "vpansak-laptop-sleeve") || catalogProducts[2];
+    return [p1, p2, p3];
+  }, []);
 
   const filteredProducts = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -238,7 +239,7 @@ export default function HomePage() {
   const subtotal = cartItems.reduce((sum, product) => sum + product.price * cart[product.id], 0);
   const finalTotal = Math.max(0, subtotal - discount);
   const topOffers = catalogProducts.slice(0, 6);
-  const trending = catalogProducts.slice(8, 14);
+  const trending = catalogProducts.slice(0, 6);
   const budget = catalogProducts.filter((product) => product.price < 1000).slice(0, 6);
 
   const notify = (message: string) => { setToast(message); window.setTimeout(() => setToast(""), 2200); };
@@ -386,28 +387,32 @@ export default function HomePage() {
 
   const currentHero = heroSlides[hero];
 
-  const isFestiveTheme = true;
-
   return (
-    <main className="vp-store festive-theme-active">
+    <main className="vp-store">
       {toast && <div className="vp-toast"><Sparkles /><span>{toast}</span></div>}
 
       <header className={`vp-header-shell ${isCollapsed ? "is-collapsed" : ""}`} id="top">
         <div className="mobile-header-collapsible">
-          <div className="rakhi-banner-bar" style={{ background: "#07162a" }}>
-            <span>VPANSAK DIRECT STORE</span>
-            <strong>100% Original In-House Manufactured Products • Direct Delivery Across India</strong>
-            <b onClick={() => window.location.href = "/seller"} style={{ cursor: "pointer" }}>LEARN MORE →</b>
+          <div className="rakhi-banner-bar" style={{ background: "#081221" }}>
+            <span>VPANSAK OFFICIAL STORE</span>
+            <strong>Made for the Modern Life • 100% Genuine In-House Brand Products</strong>
+            <b onClick={() => window.location.href = "/collections"} style={{ cursor: "pointer" }}>EXPLORE STORE →</b>
           </div>
 
           <div className="vp-brand-row">
-            <Link className="vp-brand" href="/" aria-label="VPANSAK Shopping home"><img src="/vpansak-logo.png" alt="VPANSAK" /><span><strong>VPANSAK</strong><small>SHOPPING</small></span></Link>
-            <button className="vp-location" type="button" onClick={() => notify("Add your delivery PIN at checkout")}><MapPin /><span><small>Delivering across</small>India</span><ChevronDown /></button>
+            <Link className="vp-brand" href="/" aria-label="VPANSAK Official home">
+              <img src="/vpansak-logo.png" alt="VPANSAK" />
+              <span>
+                <strong>VPANSAK</strong>
+                <small>OFFICIAL STORE</small>
+              </span>
+            </Link>
+            <button className="vp-location" type="button" onClick={() => notify("Express delivery across India")}><MapPin /><span><small>Delivering across</small>India</span><ChevronDown /></button>
             
             <div className="desktop-search-wrap">
               <div className="vp-search-wrap">
-                <form className="vp-search" onSubmit={(event) => { event.preventDefault(); document.getElementById("catalog")?.scrollIntoView({ behavior: "smooth" }); }}><Search /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search for products, brands and categories" aria-label="Search products" /><button>Search</button></form>
-                {(suggestions.length > 0 || isInfoQuery) && <div className="vp-suggestions"><small>SEARCH SUGGESTIONS</small>{isInfoQuery && <Link href="/info" style={{ background: "#edf4ff", borderLeft: "3px solid #1766ef" }}><Search /><span>About VPANSAK Shopping<small>Company Info, Founders, Refunds, Sellers &amp; Policies</small></span><strong>View Info</strong></Link>}{suggestions.map((product) => <Link key={product.id} href={`/product/${product.id}`}><Search /><span>{product.name}<small>{product.category}</small></span><strong>{money(product.price)}</strong></Link>)}</div>}
+                <form className="vp-search" onSubmit={(event) => { event.preventDefault(); document.getElementById("catalog")?.scrollIntoView({ behavior: "smooth" }); }}><Search /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search VPANSAK products & collections..." aria-label="Search products" /><button>Search</button></form>
+                {(suggestions.length > 0 || isInfoQuery) && <div className="vp-suggestions"><small>SEARCH SUGGESTIONS</small>{isInfoQuery && <Link href="/info" style={{ background: "#edf4ff", borderLeft: "3px solid #1E4DFF" }}><Search /><span>About VPANSAK Official<small>Brand Info, Guarantees &amp; Support</small></span><strong>View Info</strong></Link>}{suggestions.map((product) => <Link key={product.id} href={`/product/${product.id}`}><Search /><span>{product.name}<small>{product.category}</small></span><strong>{money(product.price)}</strong></Link>)}</div>}
               </div>
             </div>
 
@@ -423,32 +428,203 @@ export default function HomePage() {
 
         <div className="mobile-search-sticky">
           <div className="vp-search-wrap">
-            <form className="vp-search" onSubmit={(event) => { event.preventDefault(); document.getElementById("catalog")?.scrollIntoView({ behavior: "smooth" }); }}><Search /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search for products, brands and categories" aria-label="Search products" /><button>Search</button></form>
-            {(suggestions.length > 0 || isInfoQuery) && <div className="vp-suggestions"><small>SEARCH SUGGESTIONS</small>{isInfoQuery && <Link href="/info" style={{ background: "#edf4ff", borderLeft: "3px solid #1766ef" }}><Search /><span>About VPANSAK Shopping<small>Company Info, Founders, Refunds, Sellers &amp; Policies</small></span><strong>View Info</strong></Link>}{suggestions.map((product) => <Link key={product.id} href={`/product/${product.id}`}><Search /><span>{product.name}<small>{product.category}</small></span><strong>{money(product.price)}</strong></Link>)}</div>}
+            <form className="vp-search" onSubmit={(event) => { event.preventDefault(); document.getElementById("catalog")?.scrollIntoView({ behavior: "smooth" }); }}><Search /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search VPANSAK products..." aria-label="Search products" /><button>Search</button></form>
+            {(suggestions.length > 0 || isInfoQuery) && <div className="vp-suggestions"><small>SEARCH SUGGESTIONS</small>{isInfoQuery && <Link href="/info" style={{ background: "#edf4ff", borderLeft: "3px solid #1E4DFF" }}><Search /><span>About VPANSAK<small>Brand Info &amp; Guarantees</small></span><strong>View Info</strong></Link>}{suggestions.map((product) => <Link key={product.id} href={`/product/${product.id}`}><Search /><span>{product.name}<small>{product.category}</small></span><strong>{money(product.price)}</strong></Link>)}</div>}
           </div>
         </div>
       </header>
 
-      <nav className={menuOpen ? "vp-main-nav open" : "vp-main-nav"} aria-label="Main navigation">
-        <Link href="/categories"><Menu /> All Categories</Link>
-        {categories.slice(0, 6).map((item) => <button type="button" key={item.name} onClick={() => chooseCategory(item.value)}>{item.name}</button>)}
-        <Link href="/seller"><ShieldCheck size={14} /> VPANSAK Direct Store</Link>
+      <nav className={menuOpen ? "vp-main-nav open" : "vp-main-nav"} aria-label="Main navigation" style={{ background: "#081221", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+        <Link href="/collections" style={{ color: "#FFB020", fontWeight: 700 }}><Menu /> All Collections</Link>
+        {categories.map((item) => (
+          <button
+            type="button"
+            key={item.name}
+            onClick={() => chooseCategory(item.value)}
+            style={{
+              color: category === item.value ? "#FFB020" : "#cbd5e1",
+              fontWeight: category === item.value ? 700 : 500
+            }}
+          >
+            {item.name}
+          </button>
+        ))}
+        <Link href="/collections" style={{ marginLeft: "auto", color: "#FFB020", fontWeight: 700 }}><ShieldCheck size={14} style={{ display: "inline-block", marginRight: "4px" }} /> VPANSAK Official Store</Link>
       </nav>
 
-      <section className="vp-category-strip" aria-label="Popular departments">
-        {categories.slice(0, 8).map(({ name, value, icon: Icon, color }) => <button type="button" key={name} onClick={() => chooseCategory(value)}><span style={{ background: color }}><Icon /></span><strong>{name}</strong><small>{name === "All" ? `${categories.length - 1}+ categories` : "Top offers"}</small></button>)}
+      <section className="vp-category-strip" aria-label="Popular departments" style={{ background: "#0F1D35", borderColor: "rgba(255,255,255,0.08)" }}>
+        {categories.map(({ name, value, icon: Icon }) => (
+          <button
+            type="button"
+            key={name}
+            onClick={() => chooseCategory(value)}
+            style={{ color: category === value ? "#FFB020" : "#e2e8f0" }}
+          >
+            <span style={{ background: category === value ? "rgba(255,176,32,0.15)" : "rgba(255,255,255,0.05)", color: category === value ? "#FFB020" : "#94a3b8" }}><Icon /></span>
+            <strong style={{ color: category === value ? "#FFB020" : "#f8fafc" }}>{name}</strong>
+            <small style={{ color: "#94a3b8" }}>{name === "All Bottles" ? "VPANSAK Collection" : "Official Series"}</small>
+          </button>
+        ))}
       </section>
 
+      {/* Main Hero Slider Section (Using Official Uploaded Poster Creatives) */}
       <section className="vp-hero-shell">
-        <article className={`vp-hero vp-hero-${currentHero.theme}`}>
-          <img className="vp-hero-image" src={currentHero.image} alt="" aria-hidden="true" />
-          <div className="vp-hero-shade" aria-hidden="true" />
-          <div className="vp-hero-copy"><span>{currentHero.eyebrow}</span><h1>{currentHero.title.split("\n").map((line) => <span key={line}>{line}</span>)}</h1><p>{currentHero.copy}</p><strong>{currentHero.offer}</strong><button type="button" onClick={() => chooseCategory(currentHero.category)}>{currentHero.button} <ArrowRight /></button></div>
-          <button className="vp-hero-arrow left" type="button" onClick={() => setHero((hero - 1 + heroSlides.length) % heroSlides.length)} aria-label="Previous offer"><ChevronLeft /></button>
-          <button className="vp-hero-arrow right" type="button" onClick={() => setHero((hero + 1) % heroSlides.length)} aria-label="Next offer"><ChevronRight /></button>
-          <div className="vp-hero-dots">{heroSlides.map((slide, index) => <button type="button" className={index === hero ? "active" : ""} key={slide.title} onClick={() => setHero(index)} aria-label={`Offer ${index + 1}`} />)}</div>
+        <article
+          className="vp-hero"
+          style={{ background: "#081221", borderRadius: "12px", overflow: "hidden", position: "relative" }}
+          onMouseEnter={() => setIsHoverPaused(true)}
+          onMouseLeave={() => setIsHoverPaused(false)}
+          onTouchStart={(e) => { touchStartX.current = e.touches[0].clientX; }}
+          onTouchEnd={(e) => {
+            if (touchStartX.current === null) return;
+            const diffX = touchStartX.current - e.changedTouches[0].clientX;
+            if (Math.abs(diffX) > 40) {
+              if (diffX > 0) setHero((prev) => (prev + 1) % heroSlides.length);
+              else setHero((prev) => (prev - 1 + heroSlides.length) % heroSlides.length);
+            }
+            touchStartX.current = null;
+          }}
+        >
+          <Link href={currentHero.linkUrl} style={{ display: "block", width: "100%", height: "100%", position: "relative" }}>
+            <img
+              className="vp-hero-image"
+              src={currentHero.image}
+              alt={currentHero.alt}
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "contain",
+                objectPosition: "center",
+                background: "#081221",
+                transition: "opacity 0.4s ease-in-out"
+              }}
+            />
+            {/* Subtle UI Badge */}
+            <span
+              style={{
+                position: "absolute",
+                top: "16px",
+                left: "20px",
+                background: "rgba(15, 29, 53, 0.85)",
+                color: "#FFB020",
+                border: "1px solid rgba(255, 176, 32, 0.4)",
+                padding: "4px 12px",
+                borderRadius: "20px",
+                fontSize: "11px",
+                fontWeight: 700,
+                letterSpacing: "0.08em",
+                backdropFilter: "blur(4px)"
+              }}
+            >
+              VPANSAK OFFICIAL
+            </span>
+          </Link>
+
+          {/* Navigation Controls */}
+          <button
+            className="vp-hero-arrow left"
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setHero((prev) => (prev - 1 + heroSlides.length) % heroSlides.length);
+            }}
+            aria-label="Previous slide"
+            style={{
+              background: "#0F1D35",
+              color: "#FFB020",
+              border: "1px solid rgba(255, 255, 255, 0.12)",
+              width: "40px",
+              height: "44px"
+            }}
+          >
+            <ChevronLeft size={22} />
+          </button>
+          <button
+            className="vp-hero-arrow right"
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setHero((prev) => (prev + 1) % heroSlides.length);
+            }}
+            aria-label="Next slide"
+            style={{
+              background: "#0F1D35",
+              color: "#FFB020",
+              border: "1px solid rgba(255, 255, 255, 0.12)",
+              width: "40px",
+              height: "44px"
+            }}
+          >
+            <ChevronRight size={22} />
+          </button>
+
+          {/* Slider Indicators */}
+          <div className="vp-hero-dots">
+            {heroSlides.map((_, index) => (
+              <button
+                type="button"
+                className={index === hero ? "active" : ""}
+                key={index}
+                onClick={() => setHero(index)}
+                aria-label={`Go to slide ${index + 1}`}
+                style={{
+                  background: index === hero ? "#FFB020" : "rgba(255, 255, 255, 0.3)",
+                  width: index === hero ? "24px" : "8px",
+                  height: "8px",
+                  borderRadius: "4px"
+                }}
+              />
+            ))}
+          </div>
         </article>
-        <aside className="vp-side-deals">{catalogProducts[0] ? <Link href={`/product/${catalogProducts[0].id}`}><span><small>NEW LAUNCH</small><strong>{catalogProducts[0].name}</strong><b>From {money(catalogProducts[0].price)}</b></span><img src={catalogProducts[0].imageUrl} alt="" /></Link> : null}{catalogProducts[1] ? <Link href={`/product/${catalogProducts[1].id}`}><span><small>WORK &amp; STUDY</small><strong>{catalogProducts[1].name}</strong><b>From {money(catalogProducts[1].price)}</b></span><img src={catalogProducts[1].imageUrl} alt="" /></Link> : null}</aside>
+
+        {/* Right Side Product Showcase Cards (Data from Database) */}
+        <aside className="vp-side-deals" style={{ background: "#081221", borderRadius: "12px", gap: "10px" }}>
+          {sideProducts.map((p, idx) => {
+            if (!p) return null;
+            const labels = ["NEW LAUNCH", "DESK ESSENTIALS", "TECH ACCESSORIES"];
+            return (
+              <Link
+                key={p.id}
+                href={`/product/${p.id}`}
+                style={{
+                  background: "#0F1D35",
+                  border: "1px solid rgba(255, 255, 255, 0.08)",
+                  borderRadius: "10px",
+                  padding: "14px 16px",
+                  display: "grid",
+                  gridTemplateColumns: "1fr 85px",
+                  alignItems: "center",
+                  textDecoration: "none",
+                  transition: "all 0.2s ease"
+                }}
+              >
+                <span>
+                  <small style={{ color: "#FFB020", fontWeight: 800, fontSize: "10px", letterSpacing: "0.05em" }}>
+                    {labels[idx] || "VPANSAK OFFICIAL"}
+                  </small>
+                  <strong style={{ color: "#ffffff", fontSize: "13px", margin: "4px 0 2px", display: "block" }}>
+                    {p.name.split("—")[0].trim()}
+                  </strong>
+                  <b style={{ color: "#FFB020", fontSize: "13px", fontWeight: 700 }}>
+                    From {money(p.price)}
+                  </b>
+                </span>
+                <img
+                  src={p.imageUrl}
+                  alt={p.name}
+                  style={{
+                    width: "75px",
+                    height: "75px",
+                    objectFit: "contain",
+                    borderRadius: "6px",
+                    background: "rgba(255,255,255,0.03)"
+                  }}
+                />
+              </Link>
+            );
+          })}
+        </aside>
       </section>
 
       <section className="vp-trust-row">

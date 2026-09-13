@@ -233,5 +233,69 @@ export const catalogProducts: CatalogProduct[] = [
       "Weight": "280 g",
       "Warranty": "1 Year Official VPANSAK Warranty"
     }
+  },
+  {
+    id: "vpansak-desk-mat",
+    name: "VPANSAK Desk Mat — Desk Essentials",
+    brand: "VPANSAK Official",
+    category: "Desk Essentials",
+    capacity: "Standard 900x400mm",
+    description: "A cleaner desk. A calmer mind. Premium vegan leather desk mat designed for focus, comfort, and everyday productivity. Water-resistant, smooth tracking surface, and stitched anti-fray edges.",
+    imageUrl: "/hero/vpansak-poster-desk.png",
+    images: ["/hero/vpansak-poster-desk.png"],
+    colors: ["Matte Black"],
+    variants: [
+      { color: "Matte Black", hex: "#1c1917", imageUrl: "/hero/vpansak-poster-desk.png" }
+    ],
+    price: 899,
+    mrp: 1699,
+    productCost: 410,
+    packagingCost: 40,
+    otherCost: 30,
+    stock: 100,
+    sku: "VP-DSK-MAT-900",
+    rating: 49,
+    reviewCount: 312,
+    badge: "VPANSAK Official",
+    specifications: {
+      "Dimensions": "900 mm x 400 mm x 2 mm",
+      "Material": "Premium Vegan PU Leather",
+      "Surface": "Ultra-Smooth Mouse Tracking",
+      "Base": "Non-Slip Suede Base",
+      "Features": "Waterproof & Easy to Clean",
+      "Warranty": "1 Year Official VPANSAK Warranty"
+    }
+  },
+  {
+    id: "vpansak-laptop-sleeve",
+    name: "VPANSAK Laptop Sleeve Collection",
+    brand: "VPANSAK Official",
+    category: "Tech Accessories",
+    capacity: "Fits up to 15.6 Inch",
+    description: "Protect your tech. Carry your style. Premium water-resistant laptop sleeve with shockproof plush lining, YKK zippers, and accessory storage pocket. Minimal. Durable. VPANSAK.",
+    imageUrl: "/hero/vpansak-poster-sleeve.png",
+    images: ["/hero/vpansak-poster-sleeve.png"],
+    colors: ["Matte Black"],
+    variants: [
+      { color: "Matte Black", hex: "#1c1917", imageUrl: "/hero/vpansak-poster-sleeve.png" }
+    ],
+    price: 999,
+    mrp: 1899,
+    productCost: 450,
+    packagingCost: 45,
+    otherCost: 35,
+    stock: 120,
+    sku: "VP-SLV-TECH-15",
+    rating: 48,
+    reviewCount: 240,
+    badge: "VPANSAK Official",
+    specifications: {
+      "Compatibility": "Fits Laptops 13.3 to 15.6 Inch",
+      "Material": "High-Density Water-Resistant Fabric",
+      "Lining": "Shock-Absorbing Soft Velvet Interior",
+      "Closure": "Heavy-Duty Dual YKK Zippers",
+      "Pocket": "Front Accessories Storage Zip",
+      "Warranty": "1 Year Official VPANSAK Warranty"
+    }
   }
 ];

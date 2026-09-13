@@ -3735,180 +3735,74 @@
 /* ==========================================================================
    RAKSHABANDHAN SPECIAL FESTIVE THEME (RAKHI & SIBLING CELEBRATION)
    ========================================================================== */
-.festive-theme-active {
-  --rakhi-crimson: #be123c;
-  --rakhi-gold: #f59e0b;
-  --rakhi-yellow: #fbbf24;
-  --rakhi-magenta: #e11d48;
-  --rakhi-purple: #7e22ce;
-  --rakhi-bg-dark: #1e1b4b;
+/* Official VPANSAK Brand Palette Overrides */
+.vp-store {
+  --vp-navy: #081221;
+  --vp-navy-2: #0F1D35;
+  --vp-blue: #1E4DFF;
+  --vp-blue-dark: #0f3ad1;
+  --vp-orange: #FFB020;
+  --vp-green: #10b981;
+  --vp-text: #f8fafc;
+  --vp-muted: #94a3b8;
+  --vp-line: rgba(255, 255, 255, 0.08);
 }
 
-/* Top Announcement Banner */
-.festive-theme-active .rakhi-banner-bar,
-.festive-theme-active .independence-banner-bar {
-  background: linear-gradient(110deg, #991b1b 0%, #be123c 25%, #f59e0b 50%, #e11d48 75%, #7e22ce 100%) !important;
-  background-size: 200% 100% !important;
-  animation: rakhiShimmer 7s ease infinite !important;
-  color: #ffffff !important;
-  border-bottom: 2px solid #fef08a !important;
-  box-shadow: 0 4px 20px rgba(190, 18, 60, 0.5) !important;
-  padding: 7px 16px;
+.rakhi-banner-bar,
+.independence-banner-bar {
+  background: #081221 !important;
+  color: #f8fafc !important;
+  border-bottom: 1px solid rgba(255, 176, 32, 0.25) !important;
+  padding: 8px 16px;
   text-align: center;
-  font-size: 13px;
+  font-size: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 12px;
-  flex-wrap: wrap;
 }
 
-@keyframes rakhiShimmer {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
-.festive-theme-active .rakhi-banner-bar span,
-.festive-theme-active .independence-banner-bar span {
-  color: #881337 !important;
-  background: #fef08a;
+.rakhi-banner-bar span {
+  background: #FFB020;
+  color: #081221;
   padding: 3px 10px;
   border-radius: 20px;
-  font-weight: 900 !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-  letter-spacing: 0.04em;
+  font-weight: 800;
+  font-size: 11px;
 }
 
-.festive-theme-active .rakhi-banner-bar strong,
-.festive-theme-active .independence-banner-bar strong {
-  color: #ffffff !important;
-  font-weight: 800 !important;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+.rakhi-banner-bar strong {
+  color: #f8fafc;
+  font-weight: 600;
 }
 
-.festive-theme-active .rakhi-banner-bar b,
-.festive-theme-active .independence-banner-bar b {
-  background: #ffffff;
-  color: #881337;
-  padding: 3px 9px;
+.rakhi-banner-bar b {
+  color: #FFB020;
+  border: 1px solid rgba(255, 176, 32, 0.4);
+  padding: 3px 10px;
   border-radius: 6px;
-  font-weight: 900;
-  border: 1.5px solid #f59e0b;
-  letter-spacing: 0.05em;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-}
-
-/* Header & Navigation Bar */
-.festive-theme-active .vp-brand-row {
-  background: linear-gradient(135deg, #1e1b4b 0%, #4c0519 50%, #831843 100%) !important;
-  border-bottom: 3px solid transparent !important;
-  border-image: linear-gradient(to right, #f59e0b 0%, #fef08a 50%, #e11d48 100%) 1 !important;
-}
-
-.festive-theme-active .vp-brand span strong {
-  background: linear-gradient(135deg, #fef08a, #f59e0b, #fda4af);
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.festive-theme-active .vp-search button {
-  background: linear-gradient(135deg, #e11d48, #991b1b) !important;
-  color: #ffffff !important;
-  font-weight: 900 !important;
-  box-shadow: 0 3px 12px rgba(225, 29, 72, 0.5) !important;
-  border: 1px solid #fef08a !important;
-}
-
-.festive-theme-active .vp-search button:hover {
-  background: linear-gradient(135deg, #be123c, #881337) !important;
-}
-
-/* Product Cards & Badges */
-.festive-theme-active .vp-product-badge {
-  background: linear-gradient(135deg, #dc2626 0%, #f59e0b 50%, #e11d48 100%) !important;
-  color: #ffffff !important;
-  border: 1px solid #fef08a !important;
-  font-weight: 900 !important;
-  box-shadow: 0 3px 10px rgba(225, 29, 72, 0.4) !important;
-  letter-spacing: 0.03em;
-}
-
-.festive-theme-active .vp-product-card:hover {
-  border-color: #f59e0b !important;
-  box-shadow: 0 10px 30px rgba(245, 158, 11, 0.25), 0 0 15px rgba(225, 29, 72, 0.2) !important;
-}
-
-/* Hero Banner Styling */
-.festive-theme-active .vp-hero-shade {
-  background: linear-gradient(90deg, rgba(30, 27, 75, 0.96) 0%, rgba(131, 24, 67, 0.85) 60%, rgba(0, 0, 0, 0.35) 100%) !important;
-}
-
-.festive-theme-active .vp-hero-copy > span {
-  background: linear-gradient(135deg, #fef08a 0%, #f59e0b 50%, #fda4af 100%) !important;
-  background-clip: text !important;
-  -webkit-background-clip: text !important;
-  -webkit-text-fill-color: transparent !important;
-  font-weight: 900 !important;
-  letter-spacing: 0.1em !important;
-}
-
-.festive-theme-active .vp-hero-copy > button {
-  background: linear-gradient(135deg, #e11d48 0%, #991b1b 100%) !important;
-  color: #ffffff !important;
-  font-weight: 900 !important;
-  box-shadow: 0 4px 20px rgba(225, 29, 72, 0.5) !important;
-  border: 1px solid #fef08a !important;
-}
-
-.festive-theme-active .vp-hero-copy > button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 25px rgba(245, 158, 11, 0.6) !important;
-}
-
-.festive-theme-active .vp-price > span {
-  background: linear-gradient(135deg, #fff1f2, #ffe4e6) !important;
-  color: #be123c !important;
-  border: 1px solid #fda4af !important;
-  font-weight: 800 !important;
-}
-
-/* Site-Wide Festive Overrides Across All Tabs & Pages */
-.festive-theme-active .vp-main-nav {
-  background: linear-gradient(135deg, #1e1b4b 0%, #31103f 100%) !important;
-  border-bottom: 2px solid #f59e0b !important;
-}
-
-.festive-theme-active .vp-main-nav a,
-.festive-theme-active .vp-main-nav button {
-  color: #fef08a !important;
   font-weight: 700;
 }
 
-.festive-theme-active .vp-main-nav a:hover,
-.festive-theme-active .vp-main-nav button:hover {
-  background: rgba(245, 158, 11, 0.2) !important;
+.vp-brand-row {
+  background: #081221 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.vp-brand span strong {
   color: #ffffff !important;
 }
 
-.festive-theme-active .vp-category-strip button:hover {
-  border-color: #f59e0b !important;
-  box-shadow: 0 4px 15px rgba(245, 158, 11, 0.25) !important;
+.vp-search button {
+  background: #FFB020 !important;
+  color: #081221 !important;
+  font-weight: 800 !important;
+  box-shadow: none !important;
+  border: 0 !important;
 }
 
-.festive-theme-active .btn-account-primary,
-.festive-theme-active .checkout-btn-primary,
-.festive-theme-active .btn-use-coupon {
-  background: linear-gradient(135deg, #e11d48, #991b1b) !important;
-  color: #ffffff !important;
-  border: 1px solid #fef08a !important;
-}
-
-.festive-theme-active .btn-account-primary:hover,
-.festive-theme-active .checkout-btn-primary:hover {
-  background: linear-gradient(135deg, #be123c, #881337) !important;
-  box-shadow: 0 4px 18px rgba(225, 29, 72, 0.4) !important;
+.vp-search button:hover {
+  background: #e69d12 !important;
 }
 
 /* ==========================================================================
