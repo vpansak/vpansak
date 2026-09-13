@@ -508,8 +508,8 @@ export default function PolicyPage() {
 
           {policy.sections.map((s) => (
             <section key={s.h} className="legal-section-block">
-              <h2>{s.h}</h2>
-              <p>{s.p}</p>
+              <h2 className="legal-section-title">{s.h}</h2>
+              <p className="legal-section-desc">{s.p}</p>
             </section>
           ))}
 
