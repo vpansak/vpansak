@@ -4805,17 +4805,26 @@ select,
   border: 1px solid rgba(255, 255, 255, 0.12) !important;
   color: #ffffff !important;
 }
-.useful-btn-card {
+.vp-useful-modal .useful-btn-card {
   background: rgba(15, 23, 42, 0.7) !important;
   border: 1px solid rgba(255, 255, 255, 0.08) !important;
   color: #ffffff !important;
   border-radius: 14px !important;
   transition: all 0.25s ease !important;
 }
-.useful-btn-card:hover {
+.vp-useful-modal .useful-btn-card:hover {
   border-color: rgba(99, 102, 241, 0.4) !important;
   transform: translateY(-3px) !important;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
+}
+.vp-useful-modal .useful-btn-card h4 {
+  color: #ffffff !important;
+}
+.vp-useful-modal .useful-btn-card p {
+  color: #94a3b8 !important;
+}
+.vp-useful-modal .useful-btn-card .card-action-link {
+  color: #60a5fa !important;
 }
 .useful-search-box {
   background: rgba(255, 255, 255, 0.05) !important;
