@@ -125,9 +125,9 @@ export async function POST(request: Request) {
     const portfolioUrl = String(body.portfolioUrl || "").trim();
     let resumeFileRef = String(body.resumeFileRef || "").trim();
 
-    // Cap resume base64 payload to 500KB to prevent payload overflow
-    if (resumeFileRef.length > 500000) {
-      resumeFileRef = resumeFileRef.slice(0, 500000);
+    // Cap resume base64 payload to 1MB to prevent database payload overflow
+    if (resumeFileRef.length > 1000000) {
+      resumeFileRef = resumeFileRef.slice(0, 1000000);
     }
 
     const source = String(body.source || "VPANSAK Website").trim();

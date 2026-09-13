@@ -224,8 +224,8 @@ export default function CareersPage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 5 * 1024 * 1024) {
-      setErrorMsg("Resume file size must be under 5 MB.");
+    if (file.size > 10 * 1024 * 1024) {
+      setErrorMsg("Resume file size must be under 10 MB.");
       return;
     }
 
@@ -245,9 +245,16 @@ export default function CareersPage() {
 
     const reader = new FileReader();
     reader.onload = () => {
+      const dataUrl = String(reader.result || file.name);
+      // For files under 1.5MB store base64 DataURL; for larger files up to 10MB store structured reference
+      const fileRef =
+        file.size <= 1.5 * 1024 * 1024
+          ? dataUrl
+          : `[Attached Resume File: ${file.name} (${(file.size / (1024 * 1024)).toFixed(2)} MB)]`;
+
       setFormData((prev) => ({
         ...prev,
-        resumeFileRef: String(reader.result || file.name),
+        resumeFileRef: fileRef,
       }));
     };
     reader.readAsDataURL(file);
