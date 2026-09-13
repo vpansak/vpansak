@@ -18,7 +18,7 @@ export default function ProductPage() {
   );
 
   const [selectedColor, setSelectedColor] = useState<string>(
-    product?.colors?.[0]?.name || "Matte Black"
+    product?.colors?.[0] || "Matte Black"
   );
 
   const images = useMemo(() => {
@@ -50,7 +50,7 @@ export default function ProductPage() {
     if (!product) return;
     setActiveImgIndex(0);
     if (product.colors && product.colors.length > 0) {
-      setSelectedColor(product.colors[0].name);
+      setSelectedColor(product.colors[0]);
     }
     fetch(`/api/reviews?product=${encodeURIComponent(product.id)}`)
       .then((r) => r.json())
@@ -383,12 +383,13 @@ export default function ProductPage() {
               </label>
               <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", alignItems: "center" }}>
                 {product.colors.map((c, idx) => {
-                  const isSelected = selectedColor === c.name;
+                  const variant = product.variants?.find((v) => v.color === c);
+                  const isSelected = selectedColor === c;
                   return (
                     <button
-                      key={c.name}
+                      key={c}
                       type="button"
-                      onClick={() => handleColorSelect(c.name, idx % images.length)}
+                      onClick={() => handleColorSelect(c, idx % images.length)}
                       style={{
                         display: "flex",
                         alignItems: "center",
@@ -409,12 +410,12 @@ export default function ProductPage() {
                           width: "16px",
                           height: "16px",
                           borderRadius: "50%",
-                          backgroundColor: c.hex,
+                          backgroundColor: variant?.hex || "#1c1917",
                           border: "1px solid rgba(0,0,0,0.15)",
                           display: "inline-block",
                         }}
                       />
-                      {c.name}
+                      {c}
                     </button>
                   );
                 })}
