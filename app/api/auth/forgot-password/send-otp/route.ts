@@ -83,10 +83,10 @@ async function sendEmailJsOtp(toEmail: string, userName: string, otpCode: string
         "User-Agent": "Mozilla/5.0 (VPANSAK Backend Email Service)",
       },
       body: JSON.stringify({
-        service_id: process.env.EMAILJS_SERVICE_ID || "vpansak",
-        template_id: process.env.EMAILJS_TEMPLATE_ID || "template_di6hvjm",
-        user_id: process.env.EMAILJS_PUBLIC_KEY || "jjG3XUesW7Yt8McRJ",
-        accessToken: process.env.EMAILJS_PRIVATE_KEY || "G-re211vGlwHrNVCniNgz",
+        service_id: process.env.EMAILJS_WELCOME_SERVICE_ID || "service_15li5i6",
+        template_id: process.env.EMAILJS_WELCOME_TEMPLATE_ID || "template_yv895a7",
+        user_id: process.env.EMAILJS_WELCOME_PUBLIC_KEY || "K2hOwDJVfSGpJ3nih",
+        accessToken: process.env.EMAILJS_WELCOME_PRIVATE_KEY || "30mafPjRgPPn5im53Idzh",
         template_params: templateParams,
       }),
     });
