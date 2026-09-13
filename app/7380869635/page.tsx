@@ -1693,6 +1693,7 @@ function AdminProductSection({
 
 function CareerRows({ rows, action }: { rows: any[]; action: (b: Record<string, unknown>) => void }) {
   const [selectedApp, setSelectedApp] = useState<any | null>(null);
+  const [previewResume, setPreviewResume] = useState<{ url: string; title: string } | null>(null);
   const [emailQuery, setEmailQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
 
@@ -1737,6 +1738,41 @@ function CareerRows({ rows, action }: { rows: any[]; action: (b: Record<string, 
     const notes = window.prompt(`Enter HR / Admin internal notes for ${r.applicationId} (${r.fullName}):`, r.adminNotes || "");
     if (notes === null) return;
     action({ action: "careerStatus", applicationId: r.applicationId, status: r.status || "New", adminNotes: notes.trim() });
+  };
+
+  const handleViewResume = (app: any) => {
+    const resumeRef = app.resumeFileRef;
+    if (!resumeRef) {
+      alert(`No resume file attached for candidate ${app.fullName}.`);
+      return;
+    }
+
+    if (resumeRef.startsWith("data:")) {
+      try {
+        const arr = resumeRef.split(",");
+        const mimeMatch = arr[0].match(/:(.*?);/);
+        const mime = mimeMatch ? mimeMatch[1] : "application/pdf";
+        const bstr = atob(arr[1]);
+        let n = bstr.length;
+        const u8arr = new Uint8Array(n);
+        while (n--) {
+          u8arr[n] = bstr.charCodeAt(n);
+        }
+        const blob = new Blob([u8arr], { type: mime });
+        const blobUrl = URL.createObjectURL(blob);
+
+        const newWin = window.open(blobUrl, "_blank");
+        if (!newWin || newWin.closed || typeof newWin.closed === "undefined") {
+          setPreviewResume({ url: blobUrl, title: `${app.fullName}'s Resume` });
+        }
+      } catch {
+        alert("Failed to parse attached resume file data.");
+      }
+    } else if (resumeRef.startsWith("http://") || resumeRef.startsWith("https://") || resumeRef.startsWith("/")) {
+      window.open(resumeRef, "_blank");
+    } else {
+      alert(`Resume Reference: ${resumeRef}`);
+    }
   };
 
   const handlePrintApplication = (app: any) => {
@@ -1933,15 +1969,30 @@ function CareerRows({ rows, action }: { rows: any[]; action: (b: Record<string, 
                 {selectedApp.linkedinUrl && <p style={{ margin: "2px 0" }}>🔗 <a href={selectedApp.linkedinUrl} target="_blank" rel="noreferrer" style={{ color: "#60a5fa" }}>LinkedIn Profile</a></p>}
                 {selectedApp.githubUrl && <p style={{ margin: "2px 0" }}>🐙 <a href={selectedApp.githubUrl} target="_blank" rel="noreferrer" style={{ color: "#60a5fa" }}>GitHub Profile</a></p>}
                 {selectedApp.portfolioUrl && <p style={{ margin: "2px 0" }}>🌐 <a href={selectedApp.portfolioUrl} target="_blank" rel="noreferrer" style={{ color: "#60a5fa" }}>Portfolio Link</a></p>}
-                {selectedApp.resumeFileRef && (
-                  <p style={{ margin: "4px 0" }}>
-                    📄 <strong>Resume Attachment:</strong>{" "}
-                    {selectedApp.resumeFileRef.startsWith("data:") ? (
-                      <a href={selectedApp.resumeFileRef} download={`${selectedApp.fullName}_Resume`} style={{ color: "#22c55e", fontWeight: 700 }}>Download Resume File</a>
-                    ) : (
-                      <span style={{ color: "#cbd5e1" }}>{selectedApp.resumeFileRef}</span>
-                    )}
-                  </p>
+                {selectedApp.resumeFileRef ? (
+                  <div style={{ marginTop: 8 }}>
+                    <p style={{ margin: "2px 0 8px", color: "#cbd5e1" }}>📄 <strong>Resume Attachment:</strong> Present</p>
+                    <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                      <button
+                        type="button"
+                        onClick={() => handleViewResume(selectedApp)}
+                        style={{ padding: "8px 16px", borderRadius: 6, background: "#0284c7", color: "white", border: 0, fontWeight: 800, fontSize: 12, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6 }}
+                      >
+                        👁️ View / Preview Resume
+                      </button>
+                      {selectedApp.resumeFileRef.startsWith("data:") && (
+                        <a
+                          href={selectedApp.resumeFileRef}
+                          download={`${selectedApp.fullName}_Resume`}
+                          style={{ padding: "8px 16px", borderRadius: 6, background: "#16a34a", color: "white", border: 0, fontWeight: 800, fontSize: 12, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 6 }}
+                        >
+                          ⬇️ Download Resume File
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <p style={{ margin: "4px 0", color: "#64748b" }}>No resume file attached.</p>
                 )}
               </div>
 
@@ -1989,6 +2040,16 @@ function CareerRows({ rows, action }: { rows: any[]; action: (b: Record<string, 
             </div>
 
             <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+              {r.resumeFileRef && (
+                <button
+                  type="button"
+                  onClick={() => handleViewResume(r)}
+                  style={{ height: 32, padding: "0 10px", borderRadius: 6, background: "#0284c7", color: "white", border: 0, cursor: "pointer", fontSize: 11, fontWeight: 800, display: "inline-flex", alignItems: "center", gap: 4 }}
+                >
+                  👁️ View Resume
+                </button>
+              )}
+
               <button
                 type="button"
                 onClick={() => setSelectedApp(r)}
@@ -2041,6 +2102,29 @@ function CareerRows({ rows, action }: { rows: any[]; action: (b: Record<string, 
       ) : (
         <div style={{ padding: 24, textAlign: "center", background: "white", borderRadius: 8, border: "1px solid #dce4ee", color: "#64748b" }}>
           No career applications found matching email / filter query.
+        </div>
+      )}
+
+      {previewResume && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", display: "grid", placeItems: "center", zIndex: 9999, padding: 16 }}>
+          <div style={{ background: "#0f172a", border: "1px solid #334155", borderRadius: 12, width: "min(950px, 98vw)", height: "90vh", display: "flex", flexDirection: "column", padding: 16, color: "white" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, borderBottom: "1px solid #334155", paddingBottom: 10 }}>
+              <h3 style={{ margin: 0, fontSize: 16, color: "#38bdf8", fontWeight: 800 }}>📄 {previewResume.title}</h3>
+              <div style={{ display: "flex", gap: 10 }}>
+                <a href={previewResume.url} target="_blank" rel="noreferrer" style={{ background: "#2563eb", color: "white", padding: "6px 14px", borderRadius: 6, fontSize: 12, fontWeight: 800, textDecoration: "none" }}>
+                  Open in New Tab ↗
+                </a>
+                <button type="button" onClick={() => setPreviewResume(null)} style={{ background: "#dc2626", color: "white", border: 0, padding: "6px 14px", borderRadius: 6, cursor: "pointer", fontWeight: 800, fontSize: 12 }}>
+                  Close Preview
+                </button>
+              </div>
+            </div>
+            <iframe
+              src={previewResume.url}
+              title={previewResume.title}
+              style={{ width: "100%", height: "100%", border: 0, borderRadius: 8, background: "white" }}
+            />
+          </div>
         </div>
       )}
     </div>
