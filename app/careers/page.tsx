@@ -357,7 +357,18 @@ export default function CareersPage() {
         body: JSON.stringify(payload),
       });
 
-      const data = await res.json();
+      let data: any = {};
+      const resText = await res.text();
+      try {
+        data = JSON.parse(resText);
+      } catch {
+        if (res.status === 413 || resText.includes("413") || resText.toLowerCase().includes("large")) {
+          setErrorMsg("Resume file size is too large. Please upload a smaller PDF/DOC file under 2 MB.");
+        } else {
+          setErrorMsg(resText || "Server error occurred. Please check your form and try again.");
+        }
+        return;
+      }
 
       if (res.ok && data.success) {
         setSubmittedId(data.applicationId);
@@ -373,8 +384,8 @@ export default function CareersPage() {
         }
         setErrorMsg(data.error || "Failed to submit application. Please ensure all mandatory fields are filled correctly.");
       }
-    } catch (err) {
-      setErrorMsg("Network error occurred. Please check your connection and try again.");
+    } catch (err: any) {
+      setErrorMsg(err?.message || "Network error occurred. Please check your connection and try again.");
     } finally {
       setSubmitting(false);
     }

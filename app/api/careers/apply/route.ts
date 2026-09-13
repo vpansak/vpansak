@@ -71,7 +71,9 @@ export async function POST(request: Request) {
 
     const fullName = String(body.fullName || "").trim();
     const email = String(body.email || "").trim().toLowerCase();
-    const mobile = String(body.mobile || "").trim();
+    const rawMobile = String(body.mobile || "").trim();
+    const mobile = rawMobile.replace(/\D/g, "").slice(-10);
+
     const city = String(body.city || "").trim();
     const state = String(body.state || "").trim();
     const country = String(body.country || "India").trim();
@@ -97,7 +99,12 @@ export async function POST(request: Request) {
     const linkedinUrl = String(body.linkedinUrl || "").trim();
     const githubUrl = String(body.githubUrl || "").trim();
     const portfolioUrl = String(body.portfolioUrl || "").trim();
-    const resumeFileRef = String(body.resumeFileRef || "").trim();
+    let resumeFileRef = String(body.resumeFileRef || "").trim();
+
+    // Cap resume base64 payload to 500KB to prevent payload overflow
+    if (resumeFileRef.length > 500000) {
+      resumeFileRef = resumeFileRef.slice(0, 500000);
+    }
 
     const source = String(body.source || "VPANSAK Website").trim();
     const sourceOther = String(body.sourceOther || "").trim();
@@ -111,14 +118,14 @@ export async function POST(request: Request) {
     const referralName = String(body.referralName || "").trim();
     const consent = Boolean(body.consent);
 
-    // Strict Mandatory Fields Validation ("sab fill kerna jaruri hai")
+    // Strict Mandatory Fields Validation
     if (!fullName) {
       return Response.json({ error: "Full Name is required. Please enter your full name." }, { status: 400 });
     }
     if (!email || !email.includes("@")) {
       return Response.json({ error: "Valid Email Address is required. Please enter your email." }, { status: 400 });
     }
-    if (!mobile || mobile.length < 10) {
+    if (!mobile || mobile.length !== 10) {
       return Response.json({ error: "Valid 10-digit Mobile Number is required." }, { status: 400 });
     }
     if (!city) {
@@ -186,7 +193,7 @@ export async function POST(request: Request) {
             activeApplication: true,
             status: activeApp.status || "Under Review",
             applicationId: activeApp.applicationId,
-            error: `An active career application (Tracking Code: ${activeApp.applicationId}) is currently in processing (Status: ${activeApp.status || "Under Review"}). You cannot submit a new application while an active request exists. Re-application is allowed only if a previous application was rejected.`,
+            error: `A application for this email (Tracking Code: ${activeApp.applicationId}) is already in processing (Status: ${activeApp.status || "New"}). Re-application is allowed only if your previous application is rejected.`,
           },
           { status: 400 }
         );
