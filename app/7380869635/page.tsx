@@ -29,7 +29,7 @@ import {
   Users,
 } from "lucide-react";
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 type Row = {
   id?: string | number;
@@ -470,8 +470,12 @@ export default function SecretAdminPage() {
         (r.businessName && r.businessName.toLowerCase().includes(q)) ||
         (r.name && r.name.toLowerCase().includes(q)) ||
         (r.code && r.code.toLowerCase().includes(q)) ||
+        ((r as any).applicationId && String((r as any).applicationId).toLowerCase().includes(q)) ||
+        ((r as any).verificationId && String((r as any).verificationId).toLowerCase().includes(q)) ||
+        ((r as any).status && String((r as any).status).toLowerCase().includes(q)) ||
         ((r as any).interestedRole && String((r as any).interestedRole).toLowerCase().includes(q)) ||
         ((r as any).qualification && String((r as any).qualification).toLowerCase().includes(q)) ||
+        ((r as any).adminNotes && String((r as any).adminNotes).toLowerCase().includes(q)) ||
         (r.mobile && r.mobile.includes(q))
     );
   };
@@ -1689,6 +1693,35 @@ function AdminProductSection({
 
 function CareerRows({ rows, action }: { rows: any[]; action: (b: Record<string, unknown>) => void }) {
   const [selectedApp, setSelectedApp] = useState<any | null>(null);
+  const [emailQuery, setEmailQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("ALL");
+
+  const filteredRows = useMemo(() => {
+    return rows.filter((r) => {
+      const q = emailQuery.toLowerCase().trim();
+      const matchesEmail =
+        !q ||
+        (r.email && r.email.toLowerCase().includes(q)) ||
+        (r.fullName && r.fullName.toLowerCase().includes(q)) ||
+        (r.applicationId && r.applicationId.toLowerCase().includes(q)) ||
+        (r.interestedRole && r.interestedRole.toLowerCase().includes(q)) ||
+        (r.city && r.city.toLowerCase().includes(q)) ||
+        (r.mobile && r.mobile.includes(q));
+
+      const matchesStatus =
+        statusFilter === "ALL" || (r.status || "New").toLowerCase() === statusFilter.toLowerCase();
+
+      return matchesEmail && matchesStatus;
+    });
+  }, [rows, emailQuery, statusFilter]);
+
+  const counts = useMemo(() => {
+    const total = rows.length;
+    const shortlisted = rows.filter((r) => r.status === "Shortlisted" || r.status === "Selected").length;
+    const rejected = rows.filter((r) => r.status === "Rejected").length;
+    const pending = rows.filter((r) => !r.status || r.status === "New" || r.status === "Under Review").length;
+    return { total, shortlisted, rejected, pending };
+  }, [rows]);
 
   const handleStatusUpdate = (r: any, newStatus: string) => {
     if (newStatus === "Rejected") {
@@ -1748,59 +1781,102 @@ function CareerRows({ rows, action }: { rows: any[]; action: (b: Record<string, 
             <div class="field"><strong>Full Name:</strong> ${app.fullName}</div>
             <div class="field"><strong>Email Address:</strong> ${app.email}</div>
             <div class="field"><strong>Mobile Number:</strong> ${app.mobile}</div>
-            <div class="field"><strong>Current Location:</strong> ${app.city}, ${app.state}, ${app.country || "India"}</div>
+            <div class="field"><strong>Location:</strong> ${app.city}, ${app.state}, ${app.country || "India"}</div>
           </div>
 
           <div class="section">
-            <div class="section-title">2. Role Preferences</div>
-            <div class="field"><strong>Interested Role Category:</strong> ${app.interestedRole}</div>
-            <div class="field"><strong>Preferred Position:</strong> ${app.preferredPosition || "General"}</div>
-            <div class="field"><strong>Work Mode:</strong> ${app.workMode}</div>
+            <div class="section-title">2. Applied Position & Work Preferences</div>
+            <div class="field"><strong>Interested Role:</strong> ${app.interestedRole}</div>
+            <div class="field"><strong>Preferred Position Title:</strong> ${app.preferredPosition || "General"}</div>
+            <div class="field"><strong>Work Mode Preference:</strong> ${app.workMode}</div>
+            <div class="field"><strong>Notice Period / Availability:</strong> ${app.availability}</div>
           </div>
 
           <div class="section">
-            <div class="section-title">3. Education & Qualification</div>
+            <div class="section-title">3. Education & Qualifications</div>
             <div class="field"><strong>Highest Qualification:</strong> ${app.qualification}</div>
-            <div class="field"><strong>Degree / Course:</strong> ${app.degreeCourse || "N/A"} (${app.fieldOfStudy || "General"})</div>
-            <div class="field"><strong>College / Institution:</strong> ${app.institution || "N/A"}</div>
+            <div class="field"><strong>Degree / Course:</strong> ${app.degreeCourse || "N/A"}</div>
+            <div class="field"><strong>Field of Study:</strong> ${app.fieldOfStudy || "General"}</div>
+            <div class="field"><strong>Institution / University:</strong> ${app.institution || "N/A"}</div>
             <div class="field"><strong>Graduation Year:</strong> ${app.graduationYear || "N/A"}</div>
           </div>
 
           <div class="section">
-            <div class="section-title">4. Skills & Work Experience</div>
-            <div class="field"><strong>Key Skills:</strong> ${app.skills}</div>
+            <div class="section-title">4. Skills, Experience & Projects</div>
             <div class="field"><strong>Experience Level:</strong> ${app.experienceLevel}</div>
-            <div class="field"><strong>Experience Details:</strong> ${app.experienceDetails || "N/A"}</div>
-            ${app.projectDetails ? `<div class="field"><strong>Project Details:</strong> ${app.projectDetails}</div>` : ""}
+            <div class="field"><strong>Key Skills:</strong> ${app.skills || "Not specified"}</div>
+            <div class="field"><strong>Experience Summary:</strong> ${app.experienceDetails || "N/A"}</div>
+            <div class="field"><strong>Key Projects:</strong> ${app.projectDetails || "N/A"}</div>
           </div>
 
           <div class="section">
-            <div class="section-title">5. Motivations & Availability</div>
-            ${app.linkedinUrl ? `<div class="field"><strong>LinkedIn:</strong> ${app.linkedinUrl}</div>` : ""}
-            ${app.githubUrl ? `<div class="field"><strong>GitHub:</strong> ${app.githubUrl}</div>` : ""}
-            ${app.portfolioUrl ? `<div class="field"><strong>Portfolio:</strong> ${app.portfolioUrl}</div>` : ""}
-            <div class="field"><strong>Why VPANSAK:</strong> ${app.whyVpansak || "N/A"}</div>
-            <div class="field"><strong>Career Goals:</strong> ${app.careerGoals || "N/A"}</div>
-            <div class="field"><strong>Availability:</strong> ${app.availability} (Interview Ready: ${app.interviewAvailability})</div>
+            <div class="section-title">5. Professional Links</div>
+            <div class="field"><strong>LinkedIn:</strong> ${app.linkedinUrl || "N/A"}</div>
+            <div class="field"><strong>GitHub:</strong> ${app.githubUrl || "N/A"}</div>
+            <div class="field"><strong>Portfolio:</strong> ${app.portfolioUrl || "N/A"}</div>
           </div>
 
-          ${app.adminNotes ? `<div class="section"><div class="section-title">6. HR / Admin Notes & Rejection Reason</div><div class="field"><strong>Notes / Reason:</strong> ${app.adminNotes}</div></div>` : ""}
-
-          <div style="margin-top: 30px; border-top: 1px solid #cbd5e1; padding-top: 10px; text-align: center; font-size: 11px; color: #64748b;">
-            Official VPANSAK Candidate Application Ledger • Confidential
+          <div class="section">
+            <div class="section-title">6. HR Review & Admin Notes</div>
+            <div class="field"><strong>HR Notes / Rejection Reason:</strong> ${app.adminNotes || "None"}</div>
           </div>
 
-          <script>
-            window.onload = function() { window.print(); }
-          </script>
+          <div style="margin-top: 30px; font-size: 10px; color: #94a3b8; text-align: center; border-top: 1px solid #e2e8f0; padding-top: 10px;">
+            Official VPANSAK Talent Acquisition Record • Printed on ${new Date().toLocaleString()}
+          </div>
         </body>
       </html>
     `);
     printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => {
+      printWindow.print();
+    }, 400);
   };
 
   return (
     <div className="manage-rows">
+      {/* Email & Status Filter Control Bar */}
+      <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 12, background: "#0f172a", padding: "14px 16px", borderRadius: 10, border: "1px solid #1e293b", marginBottom: 16, color: "white" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", flex: 1, minWidth: 280 }}>
+          <label style={{ display: "flex", alignItems: "center", gap: 8, background: "#1e293b", border: "1px solid #334155", borderRadius: 8, padding: "0 12px", height: 38, flex: 1, minWidth: 220 }}>
+            <Search size={15} color="#38bdf8" />
+            <input
+              type="text"
+              placeholder="Filter by Email address, Candidate Name, ID, Role..."
+              value={emailQuery}
+              onChange={(e) => setEmailQuery(e.target.value)}
+              style={{ background: "transparent", border: 0, color: "white", outline: 0, width: "100%", fontSize: 13 }}
+            />
+            {emailQuery && (
+              <button type="button" onClick={() => setEmailQuery("")} style={{ background: 0, border: 0, color: "#94a3b8", cursor: "pointer", fontSize: 12 }}>Clear</button>
+            )}
+          </label>
+
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            style={{ height: 38, padding: "0 12px", borderRadius: 8, background: "#1e293b", border: "1px solid #334155", color: "white", fontSize: 12, fontWeight: 700, cursor: "pointer" }}
+          >
+            <option value="ALL">All Statuses ({counts.total})</option>
+            <option value="New">New / Fresh ({counts.pending})</option>
+            <option value="Under Review">Under Review</option>
+            <option value="Shortlisted">Shortlisted / Accepted ({counts.shortlisted})</option>
+            <option value="Interview">Interview Stage</option>
+            <option value="Selected">Final Selected</option>
+            <option value="Rejected">Rejected ({counts.rejected})</option>
+            <option value="On Hold">On Hold</option>
+            <option value="Archived">Archived</option>
+          </select>
+        </div>
+
+        <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 11, fontWeight: 800 }}>
+          <span style={{ padding: "4px 10px", borderRadius: 12, background: "rgba(56, 189, 248, 0.15)", color: "#38bdf8", border: "1px solid rgba(56, 189, 248, 0.3)" }}>Total: {counts.total}</span>
+          <span style={{ padding: "4px 10px", borderRadius: 12, background: "rgba(34, 197, 94, 0.15)", color: "#4ade80", border: "1px solid rgba(34, 197, 94, 0.3)" }}>Accepted: {counts.shortlisted}</span>
+          <span style={{ padding: "4px 10px", borderRadius: 12, background: "rgba(239, 68, 68, 0.15)", color: "#f87171", border: "1px solid rgba(239, 68, 68, 0.3)" }}>Rejected: {counts.rejected}</span>
+        </div>
+      </div>
+
       {selectedApp && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "grid", placeItems: "center", zIndex: 999, padding: 20 }}>
           <div style={{ background: "#0f172a", border: "1px solid #334155", borderRadius: 12, width: "min(750px, 100%)", maxHeight: "90vh", overflow: "auto", padding: 24, color: "white" }}>
@@ -1888,8 +1964,8 @@ function CareerRows({ rows, action }: { rows: any[]; action: (b: Record<string, 
         </div>
       )}
 
-      {rows.length ? (
-        rows.map((r) => (
+      {filteredRows.length ? (
+        filteredRows.map((r) => (
           <article key={r.applicationId} style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 10, padding: 16, background: "white", borderRadius: 8, border: "1px solid #dce4ee", marginBottom: 10 }}>
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
@@ -1964,10 +2040,9 @@ function CareerRows({ rows, action }: { rows: any[]; action: (b: Record<string, 
         ))
       ) : (
         <div style={{ padding: 24, textAlign: "center", background: "white", borderRadius: 8, border: "1px solid #dce4ee", color: "#64748b" }}>
-          No career applications found matching the search.
+          No career applications found matching email / filter query.
         </div>
       )}
     </div>
   );
 }
-

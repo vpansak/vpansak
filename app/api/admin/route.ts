@@ -73,21 +73,24 @@ export async function GET(request: Request) {
     let cloudAddresses: any[] = [];
     let cloudOrders: any[] = [];
     let cloudTickets: any[] = [];
+    let cloudCareers: any[] = [];
 
     if (supabase) {
       try {
-        const [cRes, uRes, aRes, oRes, tRes] = await Promise.all([
+        const [cRes, uRes, aRes, oRes, tRes, carRes] = await Promise.all([
           Promise.resolve(supabase.from("contributions").select("*").limit(300)).catch(() => ({ data: null })),
           Promise.resolve(supabase.from("users").select("*").limit(300)).catch(() => ({ data: null })),
           Promise.resolve(supabase.from("addresses").select("*").limit(500)).catch(() => ({ data: null })),
           Promise.resolve(supabase.from("orders").select("*").order("created_at", { ascending: false }).limit(500)).catch(() => ({ data: null })),
           Promise.resolve(supabase.from("tickets").select("*").order("created_at", { ascending: false }).limit(300)).catch(() => ({ data: null })),
+          Promise.resolve(supabase.from("career_applications").select("*").order("created_at", { ascending: false }).limit(300)).catch(() => ({ data: null })),
         ]);
         if (cRes?.data) cloudContributions = cRes.data;
         if (uRes?.data) cloudUsers = uRes.data;
         if (aRes?.data) cloudAddresses = aRes.data;
         if (oRes?.data) cloudOrders = oRes.data;
         if (tRes?.data) cloudTickets = tRes.data;
+        if (carRes?.data) cloudCareers = carRes.data;
       } catch {
         // ignore cloud fetch error
       }
@@ -325,6 +328,61 @@ export async function GET(request: Request) {
       };
     });
 
+    // Merge career applications from SQLite and Supabase
+    const careerMap = new Map<string, any>();
+    for (const car of careerRows) {
+      if (car.applicationId) careerMap.set(String(car.applicationId).toUpperCase().trim(), car);
+    }
+    for (const ccar of cloudCareers) {
+      const appid = String(ccar.application_id || ccar.applicationId || "").toUpperCase().trim();
+      if (!appid) continue;
+      const normCareer = {
+        id: ccar.id,
+        applicationId: appid,
+        fullName: String(ccar.full_name || ccar.fullName || ""),
+        email: String(ccar.email || "").toLowerCase(),
+        mobile: String(ccar.mobile || ""),
+        city: String(ccar.city || ""),
+        state: String(ccar.state || ""),
+        country: String(ccar.country || "India"),
+        interestedRole: String(ccar.interested_role || ccar.interestedRole || ""),
+        preferredPosition: String(ccar.preferred_position || ccar.preferredPosition || ""),
+        workMode: String(ccar.work_mode || ccar.workMode || ""),
+        qualification: String(ccar.qualification || ""),
+        degreeCourse: String(ccar.degree_course || ccar.degreeCourse || ""),
+        fieldOfStudy: String(ccar.field_of_study || ccar.fieldOfStudy || ""),
+        institution: String(ccar.institution || ""),
+        graduationYear: String(ccar.graduation_year || ccar.graduationYear || ""),
+        skills: String(ccar.skills || ""),
+        experienceLevel: String(ccar.experience_level || ccar.experienceLevel || ""),
+        experienceDetails: String(ccar.experience_details || ccar.experienceDetails || ""),
+        projectDetails: String(ccar.project_details || ccar.projectDetails || ""),
+        linkedinUrl: String(ccar.linkedin_url || ccar.linkedinUrl || ""),
+        githubUrl: String(ccar.github_url || ccar.githubUrl || ""),
+        portfolioUrl: String(ccar.portfolio_url || ccar.portfolioUrl || ""),
+        resumeFileRef: String(ccar.resume_file_ref || ccar.resumeFileRef || ""),
+        availability: String(ccar.availability || ""),
+        interviewAvailability: String(ccar.interview_availability || ccar.interviewAvailability || ""),
+        whyVpansak: String(ccar.why_vpansak || ccar.whyVpansak || ""),
+        careerGoals: String(ccar.career_goals || ccar.careerGoals || ""),
+        source: String(ccar.source || ""),
+        sourceOther: String(ccar.source_other || ccar.sourceOther || ""),
+        status: String(ccar.status || "New"),
+        adminNotes: ccar.admin_notes || ccar.adminNotes || null,
+        createdAt: String(ccar.created_at || ccar.createdAt || new Date().toISOString()),
+        updatedAt: String(ccar.updated_at || ccar.updatedAt || new Date().toISOString()),
+      };
+      if (!careerMap.has(appid)) {
+        careerMap.set(appid, normCareer);
+      } else {
+        const existing = careerMap.get(appid);
+        careerMap.set(appid, { ...normCareer, ...existing });
+      }
+    }
+    const mergedCareers = Array.from(careerMap.values()).sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+
     return Response.json({
       users: enrichedUsers,
       orders: mergedOrders,
@@ -335,7 +393,7 @@ export async function GET(request: Request) {
       officers: officerRows,
       donations: mergedDonations,
       coupons: couponRows,
-      careers: careerRows || [],
+      careers: mergedCareers,
     });
   } catch {
     return Response.json({ error: "Admin data is temporarily unavailable." }, { status: 503 });
@@ -350,34 +408,6 @@ export async function POST(request: Request) {
 
     const db = await getDb();
 
-    if (action === "careerStatus" || action === "updateCareer") {
-      const applicationId = String(body.applicationId || "").trim();
-      const status = String(body.status || "New").slice(0, 50);
-      const adminNotes = body.adminNotes !== undefined ? String(body.adminNotes).slice(0, 500) : undefined;
-
-      if (applicationId) {
-        const updateData: Record<string, unknown> = {
-          status,
-          updatedAt: new Date().toISOString(),
-        };
-        if (adminNotes !== undefined) {
-          updateData.adminNotes = adminNotes;
-        }
-
-        await db.update(careerApplications).set(updateData).where(eq(careerApplications.applicationId, applicationId));
-
-        if (supabase) {
-          try {
-            await supabase.from("career_applications").update({
-              status,
-              ...(adminNotes !== undefined ? { admin_notes: adminNotes } : {}),
-              updated_at: new Date().toISOString(),
-            }).eq("application_id", applicationId);
-          } catch {}
-        }
-      }
-      return Response.json({ ok: true });
-    }
 
     if (action === "userRole" || action === "userStatus" || action === "accountStatus") {
       const email = String(body.email || "").trim().toLowerCase();
@@ -518,7 +548,7 @@ export async function POST(request: Request) {
       return Response.json({ ok: true });
     }
 
-    if (action === "careerStatus") {
+    if (action === "careerStatus" || action === "updateCareer") {
       const applicationId = String(body.applicationId || "").trim();
       const status = String(body.status || "New").trim();
       const adminNotes = body.adminNotes !== undefined ? String(body.adminNotes).trim() : undefined;
