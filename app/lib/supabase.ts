@@ -312,24 +312,18 @@ export async function saveUserToSupabase(userData: Record<string, unknown>) {
 
 export async function getUserFromSupabase(email: string) {
   if (!supabase || !email) return null;
-  try {
-    const cleanEmail = email.toLowerCase().trim();
+  const cleanEmail = email.toLowerCase().trim();
 
-    // 1. Try exact match in users table
-    let { data, error } = await supabase.from("users").select("*").eq("email", cleanEmail).limit(1);
-    let userRow = Array.isArray(data) && data.length > 0 ? data[0] : null;
+  const fetchPromise = (async () => {
+    try {
+      const [uRes, pRes] = await Promise.all([
+        supabase.from("users").select("*").ilike("email", cleanEmail).limit(1),
+        supabase.from("profiles").select("*").ilike("email", cleanEmail).limit(1),
+      ]);
 
-    // 2. Try ilike case-insensitive match in users table
-    if (!userRow) {
-      const { data: ilikeData } = await supabase.from("users").select("*").ilike("email", cleanEmail).limit(1);
-      userRow = Array.isArray(ilikeData) && ilikeData.length > 0 ? ilikeData[0] : null;
-    }
-
-    // 3. Ultra-deep fallback: Check profiles table if users table row wasn't found
-    if (!userRow) {
-      const { data: profData } = await supabase.from("profiles").select("*").ilike("email", cleanEmail).limit(1);
-      const profRow = Array.isArray(profData) && profData.length > 0 ? profData[0] : null;
-      if (profRow) {
+      let userRow = Array.isArray(uRes.data) && uRes.data.length > 0 ? uRes.data[0] : null;
+      if (!userRow && Array.isArray(pRes.data) && pRes.data.length > 0) {
+        const profRow = pRes.data[0];
         userRow = {
           email: String(profRow.email || cleanEmail),
           full_name: String(profRow.full_name || profRow.fullName || cleanEmail.split("@")[0]),
@@ -340,44 +334,29 @@ export async function getUserFromSupabase(email: string) {
           created_at: String(profRow.created_at || new Date().toISOString()),
         };
       }
+
+      if (!userRow) return null;
+
+      return {
+        email: String(userRow.email || cleanEmail).toLowerCase().trim(),
+        passwordHash: String(userRow.password_hash || userRow.passwordHash || ""),
+        fullName: String(userRow.full_name || userRow.fullName || cleanEmail.split("@")[0]),
+        mobile: String(userRow.mobile || ""),
+        role: String(userRow.role || "customer"),
+        profileImage: String(userRow.profile_image || userRow.profileImage || ""),
+        authProvider: String(userRow.auth_provider || userRow.authProvider || "email"),
+        securityQuestionId: String(userRow.security_question_id || userRow.securityQuestionId || ""),
+        securityAnswerHash: String(userRow.security_answer_hash || userRow.securityAnswerHash || ""),
+        accountStatus: String(userRow.account_status || userRow.accountStatus || "active"),
+        createdAt: String(userRow.created_at || userRow.createdAt || new Date().toISOString()),
+      };
+    } catch {
+      return null;
     }
+  })();
 
-    // 4. Ultra-deep fallback: Check orders table if profiles table row wasn't found
-    if (!userRow) {
-      const { data: ordData } = await supabase.from("orders").select("*").ilike("owner_email", cleanEmail).limit(1);
-      const ordRow = Array.isArray(ordData) && ordData.length > 0 ? ordData[0] : null;
-      if (ordRow) {
-        userRow = {
-          email: String(ordRow.owner_email || cleanEmail),
-          full_name: String(ordRow.customer_name || ordRow.customerName || cleanEmail.split("@")[0]),
-          mobile: String(ordRow.mobile || ""),
-          role: "customer",
-          password_hash: "NO_HASH",
-          account_status: "active",
-          created_at: String(ordRow.created_at || new Date().toISOString()),
-        };
-      }
-    }
-
-    if (error && !userRow) return null;
-    if (!userRow) return null;
-
-    return {
-      email: String(userRow.email || cleanEmail).toLowerCase().trim(),
-      passwordHash: String(userRow.password_hash || userRow.passwordHash || ""),
-      fullName: String(userRow.full_name || userRow.fullName || cleanEmail.split("@")[0]),
-      mobile: String(userRow.mobile || ""),
-      role: String(userRow.role || "customer"),
-      profileImage: String(userRow.profile_image || userRow.profileImage || ""),
-      authProvider: String(userRow.auth_provider || userRow.authProvider || "email"),
-      securityQuestionId: String(userRow.security_question_id || userRow.securityQuestionId || ""),
-      securityAnswerHash: String(userRow.security_answer_hash || userRow.securityAnswerHash || ""),
-      accountStatus: String(userRow.account_status || userRow.accountStatus || "active"),
-      createdAt: String(userRow.created_at || userRow.createdAt || new Date().toISOString()),
-    };
-  } catch {
-    return null;
-  }
+  const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 2500));
+  return Promise.race([fetchPromise, timeoutPromise]);
 }
 
 export async function getUserOrdersFromSupabase(email: string) {
