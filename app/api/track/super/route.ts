@@ -12,6 +12,21 @@ import { supabase } from "../../../lib/supabase";
 
 export const runtime = "nodejs";
 
+// Helper for fast Supabase query with 1.5s timeout
+async function fastSupabaseQuery(tableName: string, queryFn: (sb: any) => Promise<any>) {
+  if (!supabase) return null;
+  const fetchPromise = (async () => {
+    try {
+      const res = await queryFn(supabase.from(tableName));
+      return res?.data || null;
+    } catch {
+      return null;
+    }
+  })();
+  const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 1500));
+  return Promise.race([fetchPromise, timeoutPromise]);
+}
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const rawCode = String(searchParams.get("id") || searchParams.get("code") || "").trim();
@@ -24,28 +39,26 @@ export async function GET(request: Request) {
   }
 
   const code = rawCode.toUpperCase();
+  const lowerEmail = rawCode.toLowerCase();
   const db = await getDb();
 
-  // 1. TRY SEARCHING ORDERS (VPO-...)
-  try {
-    const orderRows = await db
-      .select()
-      .from(orders)
-      .where(eq(orders.orderId, code))
-      .limit(1);
+  // Helper search functions
+  async function searchOrder() {
+    try {
+      const orderRows = await db
+        .select()
+        .from(orders)
+        .where(eq(orders.orderId, code))
+        .limit(1);
 
-    let orderData = orderRows && orderRows[0];
+      let orderData = orderRows && orderRows[0];
 
-    // Supabase fallback for orders
-    if (!orderData && supabase) {
-      try {
-        const { data } = await supabase
-          .from("orders")
-          .select("*")
-          .eq("order_id", code)
-          .limit(1);
-        if (data && data[0]) {
-          const co = data[0];
+      if (!orderData) {
+        const sbData = await fastSupabaseQuery("orders", (sb) =>
+          sb.select("*").eq("order_id", code).limit(1)
+        );
+        if (sbData && sbData[0]) {
+          const co = sbData[0];
           orderData = {
             orderId: co.order_id || co.orderId,
             customerName: co.customer_name || co.customerName || "Customer",
@@ -61,54 +74,50 @@ export async function GET(request: Request) {
             updatedAt: co.updated_at || co.updatedAt || new Date().toISOString(),
           };
         }
-      } catch {}
-    }
+      }
 
-    if (orderData) {
-      const items = await db
+      if (orderData) {
+        const items = await db
+          .select()
+          .from(orderItems)
+          .where(eq(orderItems.orderId, orderData.orderId))
+          .catch(() => []);
+
+        return {
+          found: true,
+          type: "order" as const,
+          code: orderData.orderId,
+          title: "VPANSAK Order Shipment",
+          data: orderData,
+          items,
+        };
+      }
+    } catch {}
+    return null;
+  }
+
+  async function searchCareer() {
+    try {
+      const careerRows = await db
         .select()
-        .from(orderItems)
-        .where(eq(orderItems.orderId, orderData.orderId))
-        .catch(() => []);
-
-      return Response.json({
-        found: true,
-        type: "order",
-        code: orderData.orderId,
-        title: "VPANSAK Order Shipment",
-        data: orderData,
-        items,
-      });
-    }
-  } catch {}
-
-  // 2. TRY SEARCHING CAREER APPLICATIONS (VPC-CAREER-...)
-  try {
-    const careerRows = await db
-      .select()
-      .from(careerApplications)
-      .where(
-        or(
-          eq(careerApplications.applicationId, code),
-          eq(careerApplications.email, rawCode.toLowerCase())
+        .from(careerApplications)
+        .where(
+          or(
+            eq(careerApplications.applicationId, code),
+            eq(careerApplications.email, lowerEmail)
+          )
         )
-      )
-      .orderBy(desc(careerApplications.createdAt))
-      .limit(1);
+        .orderBy(desc(careerApplications.createdAt))
+        .limit(1);
 
-    let careerData = careerRows && careerRows[0];
+      let careerData = careerRows && careerRows[0];
 
-    if (!careerData && supabase) {
-      try {
-        const { data } = await supabase
-          .from("career_applications")
-          .select("*")
-          .or(`application_id.eq.${code},email.eq.${rawCode.toLowerCase()}`)
-          .order("created_at", { ascending: false })
-          .limit(1);
-
-        if (data && data[0]) {
-          const cc = data[0];
+      if (!careerData) {
+        const sbData = await fastSupabaseQuery("career_applications", (sb) =>
+          sb.select("*").or(`application_id.eq.${code},email.eq.${lowerEmail}`).order("created_at", { ascending: false }).limit(1)
+        );
+        if (sbData && sbData[0]) {
+          const cc = sbData[0];
           careerData = {
             applicationId: cc.application_id || cc.applicationId,
             fullName: cc.full_name || cc.fullName,
@@ -127,39 +136,37 @@ export async function GET(request: Request) {
             updatedAt: cc.updated_at || cc.updatedAt,
           };
         }
-      } catch {}
-    }
+      }
 
-    if (careerData) {
-      return Response.json({
-        found: true,
-        type: "career",
-        code: careerData.applicationId,
-        title: "VPANSAK Career Application",
-        data: careerData,
-      });
-    }
-  } catch {}
+      if (careerData) {
+        return {
+          found: true,
+          type: "career" as const,
+          code: careerData.applicationId,
+          title: "VPANSAK Career Application",
+          data: careerData,
+        };
+      }
+    } catch {}
+    return null;
+  }
 
-  // 3. TRY SEARCHING SUPPORT TICKETS (VPT-...)
-  try {
-    const ticketRows = await db
-      .select()
-      .from(tickets)
-      .where(eq(tickets.ticketId, code))
-      .limit(1);
+  async function searchTicket() {
+    try {
+      const ticketRows = await db
+        .select()
+        .from(tickets)
+        .where(eq(tickets.ticketId, code))
+        .limit(1);
 
-    let ticketData = ticketRows && ticketRows[0];
+      let ticketData = ticketRows && ticketRows[0];
 
-    if (!ticketData && supabase) {
-      try {
-        const { data } = await supabase
-          .from("tickets")
-          .select("*")
-          .eq("ticket_id", code)
-          .limit(1);
-        if (data && data[0]) {
-          const ct = data[0];
+      if (!ticketData) {
+        const sbData = await fastSupabaseQuery("tickets", (sb) =>
+          sb.select("*").eq("ticket_id", code).limit(1)
+        );
+        if (sbData && sbData[0]) {
+          const ct = sbData[0];
           ticketData = {
             ticketId: ct.ticket_id || ct.ticketId,
             customerName: ct.customer_name || ct.customerName,
@@ -174,52 +181,49 @@ export async function GET(request: Request) {
             updatedAt: ct.updated_at || ct.updatedAt,
           };
         }
-      } catch {}
-    }
+      }
 
-    if (ticketData) {
-      const replies = await db
+      if (ticketData) {
+        const replies = await db
+          .select()
+          .from(ticketReplies)
+          .where(eq(ticketReplies.ticketId, ticketData.ticketId))
+          .catch(() => []);
+
+        return {
+          found: true,
+          type: "ticket" as const,
+          code: ticketData.ticketId,
+          title: "VPANSAK Support Ticket",
+          data: ticketData,
+          replies,
+        };
+      }
+    } catch {}
+    return null;
+  }
+
+  async function searchContribution() {
+    try {
+      const contribRows = await db
         .select()
-        .from(ticketReplies)
-        .where(eq(ticketReplies.ticketId, ticketData.ticketId))
-        .catch(() => []);
-
-      return Response.json({
-        found: true,
-        type: "ticket",
-        code: ticketData.ticketId,
-        title: "VPANSAK Support Ticket",
-        data: ticketData,
-        replies,
-      });
-    }
-  } catch {}
-
-  // 4. TRY SEARCHING SUPPORT CONTRIBUTIONS / CERTIFICATES (VPC-2026-...)
-  try {
-    const contribRows = await db
-      .select()
-      .from(contributions)
-      .where(
-        or(
-          eq(contributions.verificationId, code),
-          eq(contributions.certificateNumber, code)
+        .from(contributions)
+        .where(
+          or(
+            eq(contributions.verificationId, code),
+            eq(contributions.certificateNumber, code)
+          )
         )
-      )
-      .limit(1);
+        .limit(1);
 
-    let contribData = contribRows && contribRows[0];
+      let contribData = contribRows && contribRows[0];
 
-    if (!contribData && supabase) {
-      try {
-        const { data } = await supabase
-          .from("contributions")
-          .select("*")
-          .or(`verification_id.eq.${code},certificate_number.eq.${code}`)
-          .limit(1);
-
-        if (data && data[0]) {
-          const cc = data[0];
+      if (!contribData) {
+        const sbData = await fastSupabaseQuery("contributions", (sb) =>
+          sb.select("*").or(`verification_id.eq.${code},certificate_number.eq.${code}`).limit(1)
+        );
+        if (sbData && sbData[0]) {
+          const cc = sbData[0];
           contribData = {
             verificationId: cc.verification_id || cc.verificationId,
             certificateNumber: cc.certificate_number || cc.certificateNumber,
@@ -231,19 +235,48 @@ export async function GET(request: Request) {
             verifiedAt: cc.verified_at || cc.verifiedAt,
           };
         }
-      } catch {}
-    }
+      }
 
-    if (contribData) {
-      return Response.json({
-        found: true,
-        type: "contribution",
-        code: contribData.verificationId || contribData.certificateNumber,
-        title: "VPANSAK Support Contribution",
-        data: contribData,
-      });
-    }
-  } catch {}
+      if (contribData) {
+        return {
+          found: true,
+          type: "contribution" as const,
+          code: contribData.verificationId || contribData.certificateNumber,
+          title: "VPANSAK Support Contribution",
+          data: contribData,
+        };
+      }
+    } catch {}
+    return null;
+  }
+
+  // 1. FAST ROUTING BY PREFIX
+  if (code.startsWith("VPC-CAREER-") || lowerEmail.includes("@")) {
+    const careerRes = await searchCareer();
+    if (careerRes) return Response.json(careerRes);
+  } else if (code.startsWith("VPO-")) {
+    const orderRes = await searchOrder();
+    if (orderRes) return Response.json(orderRes);
+  } else if (code.startsWith("VPT-")) {
+    const ticketRes = await searchTicket();
+    if (ticketRes) return Response.json(ticketRes);
+  } else if (code.startsWith("VPC-2026-") || code.startsWith("CERT-")) {
+    const contribRes = await searchContribution();
+    if (contribRes) return Response.json(contribRes);
+  }
+
+  // 2. PARALLEL FALLBACK SEARCH FOR ALL UNKNOWN CODES
+  const [orderRes, careerRes, ticketRes, contribRes] = await Promise.all([
+    searchOrder(),
+    searchCareer(),
+    searchTicket(),
+    searchContribution(),
+  ]);
+
+  const result = orderRes || careerRes || ticketRes || contribRes;
+  if (result) {
+    return Response.json(result);
+  }
 
   return Response.json(
     {
