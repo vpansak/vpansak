@@ -1589,8 +1589,10 @@ export default function CareersPage() {
                     )}
                   </button>
                 </div>
-              </form>
+              </>
             )}
+          </form>
+        )}
           </div>
         </section>
       </div>
