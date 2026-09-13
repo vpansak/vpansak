@@ -40,32 +40,32 @@ export default function FounderPage() {
         <div className="vp-founder-hero-inner">
           <div className="vp-founder-badge-row">
             <span className="vp-hero-chip"><Sparkles size={14} /> Official Profile</span>
-            <span className="vp-hero-chip blue"><ShieldCheck size={14} /> Founder &amp; CEO</span>
+            <span className="vp-hero-chip blue"><ShieldCheck size={14} /> Leadership &amp; Vision</span>
           </div>
-          <h1>Alok Singh</h1>
+          <h1>VPANSAK Founder &amp; Executive Team</h1>
           <p className="vp-hero-tagline">
-            Founder &amp; CEO of VPANSAK • Class 12 Student Innovator from Kanail, Gorakhpur (U.P.)
+            Building India&apos;s Next-Gen Transparent Digital E-Commerce Ecosystem
           </p>
 
           <div className="vp-founder-socials">
             <a
-              href="https://x.com/rajpratapsinghh"
+              href="https://x.com"
               target="_blank"
               rel="noreferrer"
               className="vp-x-btn"
             >
-              <XIcon size={16} /> @rajpratapsinghh
+              <XIcon size={16} /> @vpansak_official
             </a>
             <a
-              href="https://www.instagram.com/aloksingh_._/"
+              href="https://www.instagram.com"
               target="_blank"
               rel="noreferrer"
               className="vp-insta-btn"
             >
-              <InstagramIcon size={18} /> @aloksingh_._
+              <InstagramIcon size={18} /> @vpansak.official
             </a>
             <Link href="/cofounder" className="vp-secondary-btn">
-              <Users size={18} /> Meet Co-Founder Ayushi Tripathi
+              <Users size={18} /> Meet Executive Co-Leadership
             </Link>
           </div>
         </div>
@@ -74,70 +74,70 @@ export default function FounderPage() {
       {/* Profile & Biography Section */}
       <section className="vp-founder-container">
         <div className="vp-founder-grid">
-          {/* Left Column: HD Photo & Quick Bio Card */}
+          {/* Left Column: Photo & Quick Bio Card */}
           <aside className="vp-founder-photo-card">
             <div className="vp-hd-photo-wrapper">
               <img
                 src="/alok-singh-founder.jpg"
-                alt="Alok Singh - Founder & CEO of VPANSAK"
+                alt="VPANSAK Founder & Leadership"
                 className="vp-hd-founder-img"
               />
-              <span className="vp-hd-badge">HD Verified Photo</span>
+              <span className="vp-hd-badge">Verified Leadership Profile</span>
             </div>
 
             <div className="vp-quick-bio">
-              <h3>Alok Singh</h3>
-              <p className="vp-bio-role">Founder &amp; Chief Executive Officer</p>
+              <h3>VPANSAK Leadership</h3>
+              <p className="vp-bio-role">Founder &amp; Chief Executive Directorate</p>
               <div className="vp-divider" />
               
               <ul className="vp-info-list">
                 <li>
                   <Calendar size={16} />
                   <div>
-                    <small>Date of Birth</small>
-                    <strong>13 April 2008</strong>
+                    <small>Official Launch Date</small>
+                    <strong>12 August 2026</strong>
                   </div>
                 </li>
                 <li>
                   <MapPin size={16} />
                   <div>
-                    <small>Hometown &amp; Roots</small>
-                    <strong>Kanail Village, Gorakhpur, Uttar Pradesh, India</strong>
+                    <small>Headquarters &amp; Operations</small>
+                    <strong>Uttar Pradesh, India</strong>
                   </div>
                 </li>
                 <li>
                   <Heart size={16} />
                   <div>
-                    <small>Parents</small>
-                    <strong>Arvind Singh (Father) &amp; Niraj Singh (Mother)</strong>
+                    <small>Organization</small>
+                    <strong>VPANSAK Shopping &amp; A&amp;A Group</strong>
                   </div>
                 </li>
                 <li>
                   <BookOpen size={16} />
                   <div>
-                    <small>Company Origin</small>
-                    <strong>Built VPANSAK in Class 12 (School Days)</strong>
+                    <small>Company Focus</small>
+                    <strong>Direct Brand Retail &amp; Merchant Ecosystem</strong>
                   </div>
                 </li>
               </ul>
 
               <div className="vp-social-card-links" style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                 <a
-                  href="https://x.com/rajpratapsinghh"
+                  href="https://x.com"
                   target="_blank"
                   rel="noreferrer"
                   className="vp-card-x-link"
                   style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", padding: "12px", borderRadius: "10px", background: "rgba(255, 255, 255, 0.08)", color: "#f8fafc", border: "1px solid rgba(255, 255, 255, 0.2)", fontSize: "12px", fontWeight: 800, textDecoration: "none" }}
                 >
-                  <XIcon size={16} /> Follow Alok on X (@rajpratapsinghh)
+                  <XIcon size={16} /> Follow VPANSAK on X (@vpansak_official)
                 </a>
                 <a
-                  href="https://www.instagram.com/aloksingh_._/"
+                  href="https://www.instagram.com"
                   target="_blank"
                   rel="noreferrer"
                   className="vp-card-insta-link"
                 >
-                  <InstagramIcon size={16} /> Follow Alok on Instagram
+                  <InstagramIcon size={16} /> Follow VPANSAK on Instagram
                 </a>
               </div>
             </div>
@@ -147,33 +147,33 @@ export default function FounderPage() {
           <div className="vp-founder-story">
             <div className="vp-story-card">
               <span className="vp-section-eyebrow"><BookOpen size={14} /> THE VPANSAK STORY</span>
-              <h2>From Kanail Village to Building India&apos;s Digital Ecosystem</h2>
+              <h2>Building India&apos;s Digital Commerce Ecosystem</h2>
               <p>
-                Alok Singh was born on <strong>13 April 2008</strong> in the small, peaceful village of <strong>Kanail</strong>, located in the <strong>Gorakhpur district of Uttar Pradesh, India</strong>. Guided by the values and blessings of his father, <strong>Arvind Singh</strong>, and mother, <strong>Niraj Singh</strong>, Alok developed a deep passion for technology and digital systems from a very early age.
+                VPANSAK was conceptualized with a mission to deliver a completely transparent, high-speed, and customer-first online marketplace for Indian consumers and independent merchants.
               </p>
               <p>
-                While studying in <strong>Class 12</strong> in school, when most students were focusing solely on textbooks, Alok envisioned creating a complete, transparent, and reliable online marketplace for Indian consumers and small merchants. That vision took shape as <strong>VPANSAK</strong> (Powered by A&amp;A Group).
+                With a clear focus on technology innovation, merchant empowerment, and verified support operations, VPANSAK continues to expand its reach across India.
               </p>
             </div>
 
-            {/* School Roots & Partnership */}
+            {/* Leadership & Co-Founding Collaboration */}
             <div className="vp-story-card highlight">
-              <span className="vp-section-eyebrow"><HeartHandshake size={14} /> SCHOOL-BORN COLLABORATION</span>
-              <h2>Meeting Co-Founder Ayushi Tripathi</h2>
+              <span className="vp-section-eyebrow"><HeartHandshake size={14} /> EXECUTIVE COLLABORATION</span>
+              <h2>Co-Founding &amp; Executive Leadership</h2>
               <p>
-                It was during their school days that Alok Singh met <strong>Ayushi Tripathi</strong>, who became his trusted co-founder in creating VPANSAK. Together, their shared determination and complementary strengths transformed a high-school dream into a full-scale digital ecosystem featuring e-commerce shopping, merchant platforms, trackable support tickets, and community foundation initiatives.
+                VPANSAK&apos;s leadership brings together creative direction, technological excellence, and strategic management to deliver a full-scale digital ecosystem featuring e-commerce shopping, merchant seller hubs, trackable support tickets, and community foundation initiatives.
               </p>
               <div className="vp-founders-joint-box">
                 <img
                   src="/alok-ayushi-founders.jpg"
-                  alt="Alok Singh & Ayushi Tripathi - Founders of VPANSAK"
+                  alt="VPANSAK Co-Founders & Leadership"
                   className="vp-joint-img"
                 />
                 <div className="vp-joint-copy">
-                  <h4>Alok Singh &amp; Ayushi Tripathi</h4>
-                  <p>Co-founders of VPANSAK, who started building the platform during their school journey.</p>
+                  <h4>VPANSAK Executive Leadership</h4>
+                  <p>Guiding the strategic direction, growth, and customer commitment of VPANSAK.</p>
                   <Link href="/cofounder" className="vp-joint-link">
-                    Read Ayushi Tripathi&apos;s Co-Founder Story &rarr;
+                    Read Executive Co-Leadership Profile &rarr;
                   </Link>
                 </div>
               </div>
@@ -196,13 +196,13 @@ export default function FounderPage() {
                 </div>
                 <div className="vp-pillar-item">
                   <span className="vp-pillar-num">03</span>
-                  <h4>Youth Leadership</h4>
-                  <p>Proving that age is no barrier when backed by dedication, clarity, and hard work.</p>
+                  <h4>Innovation First</h4>
+                  <p>Building high-performance e-commerce software backed by clarity and hard work.</p>
                 </div>
                 <div className="vp-pillar-item">
                   <span className="vp-pillar-num">04</span>
                   <h4>Community Foundation</h4>
-                  <p>Giving back to society through VPANSAK Foundation and verification programs.</p>
+                  <p>Giving back to society through VPANSAK Support Foundation and verification programs.</p>
                 </div>
               </div>
             </div>
@@ -214,16 +214,16 @@ export default function FounderPage() {
       <section className="vp-founder-cta">
         <div className="vp-cta-box">
           <UserCheck size={36} />
-          <h2>Connect with Alok Singh &amp; VPANSAK</h2>
-          <p>Have questions, partnerships, or feedback? Follow Alok on Instagram or reach out via Support Hub.</p>
+          <h2>Connect with VPANSAK Leadership</h2>
+          <p>Have questions, partnerships, or feedback? Follow VPANSAK on social channels or reach out via Support Hub.</p>
           <div className="vp-cta-btns">
             <a
-              href="https://www.instagram.com/aloksingh_._/"
+              href="https://www.instagram.com"
               target="_blank"
               rel="noreferrer"
               className="vp-cta-primary"
             >
-              <InstagramIcon size={18} /> Follow @aloksingh_._
+              <InstagramIcon size={18} /> Follow @vpansak.official
             </a>
             <Link href="/" className="vp-cta-secondary">
               Explore VPANSAK Marketplace

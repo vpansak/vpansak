@@ -421,7 +421,7 @@ function FoundationContent() {
               <dl className="support-payment-dl">
                 <div>
                   <dt style={{ color: "#64748b", fontSize: 11 }}>Account holder</dt>
-                  <dd style={{ margin: 0, fontWeight: 700, color: "#0f172a" }}>ALOK SINGH</dd>
+                  <dd style={{ margin: 0, fontWeight: 700, color: "#0f172a" }}>VPANSAK SUPPORT FOUNDATION</dd>
                 </div>
                 <div>
                   <dt style={{ color: "#64748b", fontSize: 11 }}>Account number</dt>
@@ -444,8 +444,8 @@ function FoundationContent() {
                 <div>
                   <dt style={{ color: "#64748b", fontSize: 11 }}>Bank UPI ID</dt>
                   <dd style={{ margin: 0, fontWeight: 700, color: "#0f172a" }}>
-                    8738869635@kotakbank{" "}
-                    <button type="button" onClick={() => copy("8738869635@kotakbank", "UPI ID")} style={{ background: 0, border: 0, color: "#1766ef", cursor: "pointer" }}>
+                    vpansak@kotakbank{" "}
+                    <button type="button" onClick={() => copy("vpansak@kotakbank", "UPI ID")} style={{ background: 0, border: 0, color: "#1766ef", cursor: "pointer" }}>
                       <Copy size={13} />
                     </button>
                   </dd>
@@ -462,10 +462,10 @@ function FoundationContent() {
                 <p style={{ margin: "0 0 10px", color: "#475569", fontSize: 13 }}>Scan with any UPI app (GPay, PhonePe, Paytm, BHIM) or copy the UPI ID below.</p>
                 <button
                   type="button"
-                  onClick={() => copy("alookk@ptyes", "UPI ID")}
+                  onClick={() => copy("vpansak@upi", "UPI ID")}
                   style={{ background: "#1766ef", color: "white", padding: "8px 14px", borderRadius: 6, border: 0, fontWeight: 700, fontSize: 12, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6 }}
                 >
-                  <Copy size={14} /> alookk@ptyes
+                  <Copy size={14} /> vpansak@upi
                 </button>
               </div>
             </article>
@@ -491,7 +491,7 @@ function FoundationContent() {
             <form onSubmit={handleCreateContribution}>
               <label>
                 Full name
-                <input name="name" required maxLength={100} placeholder="e.g. Alok Singh" />
+                <input name="name" required maxLength={100} placeholder="e.g. Rahul Sharma" />
               </label>
               <label>
                 Email address
@@ -827,12 +827,12 @@ function FoundationContent() {
               <div className="cert-sig-area">
                 <img
                   src="/assets/certificate/alok-singh-signature.png"
-                  alt="Alok Singh Signature"
+                  alt="Authorized Signature"
                   className="cert-sig-image"
                 />
                 <div className="cert-sig-line-gold" />
-                <strong className="cert-sig-name-text">Alok Singh</strong>
-                <span className="cert-sig-title-text">Founder, VPANSAK</span>
+                <strong className="cert-sig-name-text">Authorized Signatory</strong>
+                <span className="cert-sig-title-text">Executive Board, VPANSAK</span>
               </div>
 
               <div className="cert-disclaimer-center">
@@ -910,12 +910,12 @@ function FoundationContent() {
               <div className="cert-sig-area">
                 <img
                   src="/assets/certificate/alok-singh-signature.png"
-                  alt="Alok Singh Signature"
+                  alt="Authorized Signature"
                   className="cert-sig-image"
                 />
                 <div className="cert-sig-line-gold" />
-                <strong className="cert-sig-name-text">Alok Singh</strong>
-                <span className="cert-sig-title-text">Founder, VPANSAK</span>
+                <strong className="cert-sig-name-text">Authorized Signatory</strong>
+                <span className="cert-sig-title-text">Executive Board, VPANSAK</span>
               </div>
 
               <div className="cert-disclaimer-center">

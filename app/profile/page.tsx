@@ -349,7 +349,7 @@ export function ProfileContent({ paramsTab }: { paramsTab?: string }) {
   };
 
   const isAdminUser =
-    user.email.toLowerCase() === "aloksingh84959@gmail.com" ||
+    user.email.toLowerCase() === "admin@vpansak.com" ||
     ["admin", "superadmin", "founder", "officer", "cofounder"].includes(user.role?.toLowerCase() || "");
 
   const initials = (user.fullName || user.email || "VP")
@@ -428,7 +428,7 @@ export function ProfileContent({ paramsTab }: { paramsTab?: string }) {
                   <h2>{user.fullName || user.email.split("@")[0]}</h2>
                   {isAdminUser ? (
                     <span className="badge-admin-superuser">
-                      <ShieldAlert size={12} /> {user.email.toLowerCase() === "aloksingh84959@gmail.com" ? "Admin Superuser (Alok Singh)" : `${(user.role || "Officer").toUpperCase()} Account`}
+                      <ShieldAlert size={12} /> {user.email.toLowerCase() === "admin@vpansak.com" ? "Admin Superuser (VPANSAK)" : `${(user.role || "Officer").toUpperCase()} Account`}
                     </span>
                   ) : (
                     <span className="badge-active">

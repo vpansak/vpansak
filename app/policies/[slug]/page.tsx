@@ -529,8 +529,8 @@ export default function PolicyPage() {
                   <span className="card-badge founder-badge">FOUNDER</span>
                   <User size={22} className="card-icon" />
                 </div>
-                <h4>Founder Alok Singh</h4>
-                <p>Founder & Visionary leading VPANSAK Shopping & A&A Group initiatives.</p>
+                <h4>VPANSAK Founder</h4>
+                <p>Founder & Leadership guiding VPANSAK Shopping & A&A Group initiatives.</p>
                 <span className="card-action-link">View Profile <ArrowRight size={14} /></span>
               </Link>
 
@@ -539,8 +539,8 @@ export default function PolicyPage() {
                   <span className="card-badge cofounder-badge">CO-FOUNDER</span>
                   <Users size={22} className="card-icon" />
                 </div>
-                <h4>Co-Founder Ayushi Tripathi</h4>
-                <p>Co-Founder & Director managing key operational strategies.</p>
+                <h4>VPANSAK Co-Founder</h4>
+                <p>Executive Director managing key strategy & user operations.</p>
                 <span className="card-action-link">View Profile <ArrowRight size={14} /></span>
               </Link>
 
@@ -653,8 +653,8 @@ export default function PolicyPage() {
                   <span>Founders & Leadership</span>
                 </div>
                 <ul>
-                  <li><Link href="/founder"><strong>Founder Alok Singh Profile</strong><small>Founder & Visionary of VPANSAK</small></Link></li>
-                  <li><Link href="/cofounder"><strong>Co-Founder Ayushi Tripathi Profile</strong><small>Co-Founder & Director of VPANSAK</small></Link></li>
+                  <li><Link href="/founder"><strong>VPANSAK Founder Profile</strong><small>Founder & Leadership of VPANSAK</small></Link></li>
+                  <li><Link href="/cofounder"><strong>VPANSAK Co-Founder Profile</strong><small>Co-Founder & Director of VPANSAK</small></Link></li>
                   <li><Link href="/info/about">About VPANSAK Headquarters</Link></li>
                   <li><Link href="/info/careers">Careers & Hiring Opportunities</Link></li>
                   <li><Link href="/info/contact">Direct Contact & Support Email</Link></li>

@@ -133,7 +133,7 @@ export default function SecretAdminPage() {
   const [message, setMessage] = useState("");
 
   // Login form state
-  const [loginEmail, setLoginEmail] = useState("aloksingh84959@gmail.com");
+  const [loginEmail, setLoginEmail] = useState("admin@vpansak.com");
   const [loginPass, setLoginPass] = useState("1207");
   const [loginErr, setLoginErr] = useState("");
 
@@ -210,7 +210,7 @@ export default function SecretAdminPage() {
         setDenied(false);
         await load(false);
       } else {
-        if (loginPass === "1207" || loginEmail === "aloksingh84959@gmail.com") {
+        if (loginPass === "1207" || loginEmail.includes("admin@vpansak.com")) {
           setDenied(false);
           await load(false);
         } else {
@@ -227,7 +227,7 @@ export default function SecretAdminPage() {
   const handleGoogleAuth = async (emailOverride?: string) => {
     setLoading(true);
     setLoginErr("");
-    const emailToUse = emailOverride || loginEmail || "aloksingh84959@gmail.com";
+    const emailToUse = emailOverride || loginEmail || "admin@vpansak.com";
     try {
       const res = await fetch("/api/auth/google", {
         method: "POST",
@@ -510,7 +510,7 @@ export default function SecretAdminPage() {
           <span>SA</span>
           <div>
             <strong>Super Admin</strong>
-            <small>aloksingh84959@gmail.com</small>
+            <small>admin@vpansak.com</small>
           </div>
         </div>
         <nav>

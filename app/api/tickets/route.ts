@@ -5,7 +5,7 @@ import { getAuthUserFromRequest } from "../../lib/auth-session";
 import { buildTicketEmailHtml, sendEmailViaResend } from "../../lib/email";
 import { getTicketFromSupabase, saveTicketToSupabase } from "../../lib/supabase";
 
-const SUPER_ADMIN_EMAIL = "aloksingh84959@gmail.com";
+const SUPER_ADMIN_EMAIL = "admin@vpansak.com";
 
 const publicTicket = (ticket: {
   ticketId: string;

@@ -914,7 +914,7 @@ export default function CareersPage() {
                         name="fullName"
                         value={formData.fullName}
                         onChange={handleInputChange}
-                        placeholder="e.g. Alok Singh"
+                        placeholder="e.g. Rahul Sharma"
                         required
                         style={{ width: "100%", padding: "11px 14px", borderRadius: 8, background: "#1e293b", border: "1px solid #334155", color: "#ffffff", fontSize: 14 }}
                       />

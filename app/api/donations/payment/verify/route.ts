@@ -75,8 +75,8 @@ export async function POST(request: Request) {
           submittedAt: existingPayment.submittedAt,
           verifiedAt: existingPayment.verifiedAt,
           paymentStatus: "verified",
-          founderName: "Alok Singh",
-          founderDesignation: "Founder & Authorized Signatory",
+          founderName: "Authorized Signatory",
+          founderDesignation: "Executive Board, VPANSAK",
           signatureUrl: "/assets/certificate/alok-singh-signature.png?v=2",
         },
       });
@@ -215,8 +215,8 @@ export async function POST(request: Request) {
         certificateGeneratedAt: now,
         paymentStatus: "verified",
         verificationMethod: "razorpay_auto",
-        founderName: "Alok Singh",
-        founderDesignation: "Founder & Authorized Signatory",
+        founderName: "Authorized Signatory",
+        founderDesignation: "Executive Board, VPANSAK",
         signatureUrl: "/assets/certificate/alok-singh-signature.png",
       },
     });

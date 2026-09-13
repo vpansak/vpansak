@@ -11,8 +11,8 @@ async function runTests() {
   assert.ok(db, "Database instance should be initialized");
 
   // Test 1: Masking helper functions
-  assert.strictEqual(maskName("Alok Singh"), "Alok S****");
-  assert.strictEqual(maskEmail("aloksingh84959@gmail.com"), "al***@gmail.com");
+  assert.strictEqual(maskName("Rahul Sharma"), "Rahul S****");
+  assert.strictEqual(maskEmail("admin@vpansak.com"), "ad***@vpansak.com");
   assert.strictEqual(maskMobile("8738869635"), "******9635");
   console.log("✓ Test 1: Data masking helpers verified.");
 
@@ -54,7 +54,7 @@ async function runTests() {
     paymentStatus: "verified",
     verificationMethod: "manual_admin",
     verifiedAt: now,
-    verifiedBy: "aloksingh84959@gmail.com",
+    verifiedBy: "admin@vpansak.com",
     certificateNumber: certNo,
     certificateGeneratedAt: now,
     updatedAt: now,

@@ -788,14 +788,14 @@ export default function HomePage() {
               <div className="useful-buttons-grid">
                 <Link href="/founder" onClick={() => setUsefulLinksOpen(false)} className="useful-btn-card highlight-card">
                   <div className="btn-card-top"><span className="card-badge founder-badge">FOUNDER</span><UserRound size={20} className="card-icon" /></div>
-                  <h4>Founder Alok Singh</h4>
-                  <p>Founder & Visionary leading VPANSAK Shopping.</p>
+                  <h4>VPANSAK Founder</h4>
+                  <p>Leadership & Vision guiding VPANSAK Shopping.</p>
                   <span className="card-action-link">View Profile <ArrowRight size={14} /></span>
                 </Link>
                 <Link href="/cofounder" onClick={() => setUsefulLinksOpen(false)} className="useful-btn-card highlight-card">
                   <div className="btn-card-top"><span className="card-badge cofounder-badge">CO-FOUNDER</span><UserRound size={20} className="card-icon" /></div>
-                  <h4>Co-Founder Ayushi Tripathi</h4>
-                  <p>Co-Founder & Director managing key strategy.</p>
+                  <h4>VPANSAK Co-Founder</h4>
+                  <p>Executive Director managing key strategy.</p>
                   <span className="card-action-link">View Profile <ArrowRight size={14} /></span>
                 </Link>
                 <a href="https://vpansaksupporthub.lovable.app/" target="_blank" rel="noreferrer" onClick={() => setUsefulLinksOpen(false)} className="useful-btn-card">
@@ -840,8 +840,8 @@ export default function HomePage() {
                 <div className="useful-link-col">
                   <div className="col-title"><UserRound size={16} /><span>Founders & Leadership</span></div>
                   <ul>
-                    <li><Link href="/founder" onClick={() => setUsefulLinksOpen(false)}><strong>Founder Alok Singh Profile</strong><small>Founder & Visionary of VPANSAK</small></Link></li>
-                    <li><Link href="/cofounder" onClick={() => setUsefulLinksOpen(false)}><strong>Co-Founder Ayushi Tripathi Profile</strong><small>Co-Founder & Director of VPANSAK</small></Link></li>
+                    <li><Link href="/founder" onClick={() => setUsefulLinksOpen(false)}><strong>VPANSAK Founder Profile</strong><small>Founder & Leadership of VPANSAK</small></Link></li>
+                    <li><Link href="/cofounder" onClick={() => setUsefulLinksOpen(false)}><strong>VPANSAK Co-Founder Profile</strong><small>Co-Founder & Director of VPANSAK</small></Link></li>
                     <li><Link href="/info/about" onClick={() => setUsefulLinksOpen(false)}>About VPANSAK HQ</Link></li>
                     <li><Link href="/careers" onClick={() => setUsefulLinksOpen(false)}>Careers at VPANSAK</Link></li>
                     <li><Link href="/info/contact" onClick={() => setUsefulLinksOpen(false)}>Contact Us</Link></li>

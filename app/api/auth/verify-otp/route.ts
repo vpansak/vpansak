@@ -117,7 +117,7 @@ export async function POST(request: Request) {
         })
         .where(eq(users.email, email));
 
-      const isAdmin = user.email.toLowerCase() === "aloksingh84959@gmail.com" || user.role === "admin";
+      const isAdmin = user.email.toLowerCase() === "admin@vpansak.com" || user.role === "admin";
       const sessionData = {
         email: user.email,
         fullName: user.fullName || user.email.split("@")[0],

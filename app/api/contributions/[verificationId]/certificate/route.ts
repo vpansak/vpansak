@@ -55,8 +55,8 @@ export async function GET(
         certificateGeneratedAt: row.certificateGeneratedAt || row.verifiedAt || row.createdAt,
         paymentStatus: row.paymentStatus,
         verificationMethod: row.verificationMethod,
-        founderName: "Alok Singh",
-        founderDesignation: "Founder & Authorized Signatory",
+        founderName: "Authorized Signatory",
+        founderDesignation: "Executive Board, VPANSAK",
         signatureUrl: "/assets/certificate/alok-singh-signature.png?v=2",
       },
     });

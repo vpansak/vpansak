@@ -26,18 +26,18 @@ export async function GET(request: Request) {
       .where(eq(contributions.verificationId, searchId))
       .limit(1);
 
-    if (!row && (searchId === "VPA-FND-1000-8495" || searchId === "VPA-FND-2000-8495" || searchId === "VPA-CERT-2026-1000" || searchId.includes("2000") || searchId.includes("1000") || searchId.includes("ALOK"))) {
+    if (!row && (searchId === "VPA-FND-1000-8495" || searchId === "VPA-FND-2000-8495" || searchId === "VPA-CERT-2026-1000" || searchId.includes("2000") || searchId.includes("1000") || searchId.includes("SAMPLE"))) {
       const now = new Date().toISOString();
       try {
         await db.insert(contributions).values({
           verificationId: "VPA-FND-2000-8495",
           certificateNumber: "VPA-CERT-2026-2000",
-          fullName: "Alok Singh",
-          email: "aloksingh84959@gmail.com",
-          mobile: "8738869635",
+          fullName: "Rahul Sharma",
+          email: "rahul.sharma@example.com",
+          mobile: "+91 98765 43210",
           amount: 2000,
           paymentMethod: "UPI Direct / Verified",
-          transactionId: "TXN2000ALOKSINGH",
+          transactionId: "TXN2000SAMPLE",
           paymentStatus: "verified",
           verificationMethod: "auto_verified",
           submittedAt: now,
@@ -82,8 +82,8 @@ export async function GET(request: Request) {
           submittedAt: row.submittedAt,
           verifiedAt: row.verifiedAt || row.createdAt,
           paymentStatus: row.paymentStatus,
-          founderName: "Alok Singh",
-          founderDesignation: "Founder & Authorized Signatory",
+          founderName: "Authorized Signatory",
+          founderDesignation: "Executive Board, VPANSAK",
           signatureUrl: "/assets/certificate/alok-singh-signature.png?v=2",
         },
       });

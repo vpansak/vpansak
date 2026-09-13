@@ -72,7 +72,7 @@ const tocSections = [
 const faqList = [
   { q: "What is VPANSAK?", a: "VPANSAK Shopping is an exclusive Direct-to-Consumer (D2C) brand store created under A & A Group to deliver high quality VPANSAK products directly to customers." },
   { q: "When was VPANSAK launched?", a: "VPANSAK was officially launched on 12 August 2026." },
-  { q: "Who founded VPANSAK?", a: "VPANSAK was founded by Alok Singh with the vision of building a transparent, direct brand store for Indian consumers." },
+  { q: "Who founded VPANSAK?", a: "VPANSAK was founded with the vision of building a transparent, direct brand store for Indian consumers." },
   { q: "Where is VPANSAK based?", a: "VPANSAK is headquartered and developed from Gorakhpur, Uttar Pradesh, India." },
   { q: "How do I create an account?", a: "You can create an account using your email address through the Login / Signup page. Your registered email address acts as your primary account identity." },
   { q: "What should I do if I forget my password?", a: "Click on 'Forgot Password' on the login screen. You can reset your password securely via OTP sent to your registered email address." },
@@ -162,7 +162,7 @@ export default function InfoPage() {
             <span className="info-eyebrow">ABOUT VPANSAK</span>
             <h1>Building a More Reliable and Accessible Shopping Experience</h1>
             <p>
-              VPANSAK is a modern shopping platform founded by <strong>Alok Singh</strong> and launched on{" "}
+              VPANSAK is a modern shopping platform launched on{" "}
               <strong>12 August 2026</strong>. Created under <strong>A &amp; A Group</strong>, the platform is being
               developed to connect customers with quality products, verified sellers, secure payment options, live order
               tracking and responsive customer support through one unified digital experience.
@@ -272,7 +272,7 @@ export default function InfoPage() {
               tracking and support tools together in one connected place.
             </p>
             <p>
-              VPANSAK was founded by <strong>Alok Singh</strong> and officially launched on <strong>12 August 2026</strong>.
+              VPANSAK was officially launched on <strong>12 August 2026</strong>.
               The platform operates associated with <strong>A &amp; A Group</strong> and is developed from Gorakhpur,
               Uttar Pradesh, India.
             </p>
@@ -304,8 +304,8 @@ export default function InfoPage() {
               <div className="fact-item">
                 <UserCheck size={20} />
                 <div>
-                  <small>FOUNDER</small>
-                  <strong>Alok Singh (Founder)</strong>
+                  <small>FOUNDER & LEADERSHIP</small>
+                  <strong>VPANSAK Directorate</strong>
                 </div>
               </div>
               <div className="fact-item">
@@ -346,23 +346,22 @@ export default function InfoPage() {
               support tracking, the aim is to keep every important action clear and accessible.
             </p>
             <p>
-              On 12 August 2026, VPANSAK formally began its journey as a shopping platform under the leadership of founder
-              Alok Singh.
+              On 12 August 2026, VPANSAK formally began its journey as a shopping platform under executive leadership.
             </p>
           </section>
 
           {/* FOUNDER SECTION */}
           <section id="founder" className="info-card-block founder-card-block">
             <div className="founder-header">
-              <div className="founder-avatar-block">AS</div>
+              <div className="founder-avatar-block">VP</div>
               <div>
-                <h2>Alok Singh</h2>
-                <span className="founder-title">Founder • VPANSAK</span>
-                <small>Gorakhpur, Uttar Pradesh</small>
+                <h2>VPANSAK Leadership</h2>
+                <span className="founder-title">Executive Directorate • VPANSAK</span>
+                <small>Uttar Pradesh, India</small>
               </div>
             </div>
             <p>
-              Alok Singh founded VPANSAK with the aim of creating a customer-focused digital shopping platform supported by
+              VPANSAK was founded with the aim of creating a customer-focused digital shopping platform supported by
               structured seller verification, transparent order processes and accessible customer support.
             </p>
             <blockquote className="founder-quote">
@@ -717,7 +716,7 @@ export default function InfoPage() {
               <div className="timeline-item">
                 <span className="timeline-date">12 August 2026</span>
                 <strong>VPANSAK Shopping Launch</strong>
-                <p>VPANSAK officially begins operations under founder Alok Singh in Gorakhpur, UP.</p>
+                <p>VPANSAK officially begins operations in Uttar Pradesh, India.</p>
               </div>
               <div className="timeline-item planned">
                 <span className="timeline-date">Future Vision</span>
@@ -782,7 +781,7 @@ export default function InfoPage() {
             <div className="contact-details-box">
               <p><strong>Public Business Name:</strong> VPANSAK Shopping</p>
               <p><strong>Group Affiliation:</strong> A &amp; A Group</p>
-              <p><strong>Founder:</strong> Alok Singh (Founder)</p>
+              <p><strong>Founder:</strong> VPANSAK Executive Directorate</p>
               <p><strong>Location:</strong> Gorakhpur, Uttar Pradesh, India</p>
               <p><strong>Customer Support Email:</strong> support.vpansak@gmail.com</p>
               <p><strong>WhatsApp Support:</strong> +66 94 203 3973</p>

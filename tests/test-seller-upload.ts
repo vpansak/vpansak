@@ -8,9 +8,9 @@ async function testSellerUpload() {
   console.log("=== Testing Seller Application Upload Endpoint ===");
 
   const formData = new FormData();
-  formData.append("fullName", "Alok Seller");
+  formData.append("fullName", "Test Seller");
   formData.append("mobile", "9876543210");
-  formData.append("email", "seller.alok@example.com");
+  formData.append("email", "seller.test@example.com");
   formData.append("businessName", "VPANSAK Traders");
   formData.append("businessType", "Proprietorship");
   formData.append("gstin", "07AAAAA0000A1Z5");
@@ -40,7 +40,7 @@ async function testSellerUpload() {
   const [row] = await db.select().from(sellerApplications).where(eq(sellerApplications.applicationId, data.applicationId)).limit(1);
   assert.ok(row, "Application record must exist in DB");
   assert.strictEqual(row.businessName, "VPANSAK Traders");
-  assert.strictEqual(row.email, "seller.alok@example.com");
+  assert.strictEqual(row.email, "seller.test@example.com");
 
   console.log("✓ Database record verified successfully.");
   console.log("=== ALL SELLER UPLOAD TESTS PASSED ===");

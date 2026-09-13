@@ -4,7 +4,7 @@ import { addresses, careerApplications, contributions, coupons, donations, notif
 import { getAuthUserFromRequest, isAdminUser } from "../../lib/auth-session";
 import { getAllOrdersFromSupabase, saveContributionToSupabase, saveOrderToSupabase, saveUserToSupabase, supabase } from "../../lib/supabase";
 
-const ADMIN = "aloksingh84959@gmail.com";
+const ADMIN = "admin@vpansak.com";
 
 async function authorized(request: Request) {
   const user = await getAuthUserFromRequest(request);
@@ -169,13 +169,13 @@ export async function GET(request: Request) {
     addRecord({
       verificationId: "VPA-FND-2000-8495",
       certificateNumber: "VPA-CERT-2026-2000",
-      fullName: "Alok Singh",
-      email: "aloksingh84959@gmail.com",
-      mobile: "8738869635",
+      fullName: "Rahul Sharma",
+      email: "rahul.sharma@example.com",
+      mobile: "+91 98765 43210",
       amount: 2000,
       paymentMethod: "UPI Direct / Verified",
       paymentStatus: "verified",
-      transactionId: "TXN2000ALOKSINGH",
+      transactionId: "TXN2000SAMPLE",
       submittedAt: new Date().toISOString(),
       verifiedAt: new Date().toISOString(),
     });
@@ -722,7 +722,7 @@ export async function POST(request: Request) {
       if (!row) return Response.json({ error: "Contribution record not found." }, { status: 404 });
 
       const adminUser = await getAuthUserFromRequest(request);
-      const adminEmail = adminUser?.email || "aloksingh84959@gmail.com";
+      const adminEmail = adminUser?.email || "admin@vpansak.com";
       const now = new Date().toISOString();
 
       if (targetStatus === "verified") {
@@ -757,7 +757,7 @@ export async function POST(request: Request) {
 
         const certificateUrl = `${new URL(request.url).origin}/foundation?certificate=${encodeURIComponent(row.verificationId)}`;
         const subject = `VPANSAK Support Certificate ${certificateNumber}`;
-        const bodyText = `Hello ${row.fullName},\n\nYour support contribution payment has been verified successfully!\n\nVerification ID: ${row.verificationId}\nCertificate Number: ${certificateNumber}\n\nView and download your official Certificate of Appreciation:\n${certificateUrl}\n\nThank you for supporting VPANSAK community initiatives.\n\nWarm regards,\nAlok Singh\nFounder & Authorized Signatory\nVPANSAK Support Foundation`;
+        const bodyText = `Hello ${row.fullName},\n\nYour support contribution payment has been verified successfully!\n\nVerification ID: ${row.verificationId}\nCertificate Number: ${certificateNumber}\n\nView and download your official Certificate of Appreciation:\n${certificateUrl}\n\nThank you for supporting VPANSAK community initiatives.\n\nWarm regards,\nExecutive Board & Authorized Signatory\nVPANSAK Support Foundation`;
         const composeUrl = `https://outlook.live.com/mail/0/deeplink/compose?${new URLSearchParams({ to: row.email, subject, body: bodyText })}`;
         return Response.json({ ok: true, certificateNumber, verificationId: row.verificationId, composeUrl });
       }

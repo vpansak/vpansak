@@ -1,7 +1,7 @@
 import crypto from "node:crypto";
 
 const SESSION_COOKIE_NAME = "vpansak_session";
-const ADMIN_EMAIL = "aloksingh84959@gmail.com";
+const ADMIN_EMAIL = "admin@vpansak.com";
 
 export function hashPassword(password: string): string {
   const salt = crypto.randomBytes(16).toString("hex");

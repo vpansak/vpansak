@@ -12,8 +12,8 @@ export default function UsefulLinksPage() {
   const [searchTerm, setSearchTerm] = useState("");
 
   const quickButtons = [
-    { title: "Founder Alok Singh", badge: "FOUNDER", badgeClass: "founder-badge", icon: User, desc: "Founder & Visionary leading VPANSAK Shopping.", link: "/founder" },
-    { title: "Co-Founder Ayushi Tripathi", badge: "CO-FOUNDER", badgeClass: "cofounder-badge", icon: Users, desc: "Co-Founder & Director managing key strategy.", link: "/cofounder" },
+    { title: "VPANSAK Founder", badge: "FOUNDER", badgeClass: "founder-badge", icon: User, desc: "Founder & Leadership guiding VPANSAK Shopping.", link: "/founder" },
+    { title: "VPANSAK Co-Founder", badge: "CO-FOUNDER", badgeClass: "cofounder-badge", icon: Users, desc: "Executive Director managing key strategy.", link: "/cofounder" },
     { title: "24×7 Support Hub", badge: "HELP HUB", badgeClass: "help-badge", icon: Headphones, desc: "Official VPANSAK Support Hub.", link: "https://vpansaksupporthub.lovable.app/" },
     { title: "Create Support Ticket", badge: "NEW TICKET", badgeClass: "help-badge", icon: Mail, desc: "Submit a new support ticket.", link: "https://vpansaksupporthub.lovable.app/submit" },
     { title: "Track Support Ticket", badge: "TICKET TRACKING", badgeClass: "live-badge", icon: PackageCheck, desc: "Track VPT ticket reply status.", link: "https://vpansaksupporthub.lovable.app/track" },
@@ -31,8 +31,8 @@ export default function UsefulLinksPage() {
       title: "Founders & Leadership",
       icon: User,
       links: [
-        { name: "Founder Alok Singh Profile", desc: "Founder & Visionary of VPANSAK", href: "/founder" },
-        { name: "Co-Founder Ayushi Tripathi Profile", desc: "Co-Founder & Director of VPANSAK", href: "/cofounder" },
+        { name: "VPANSAK Founder Profile", desc: "Founder & Leadership of VPANSAK", href: "/founder" },
+        { name: "VPANSAK Co-Founder Profile", desc: "Co-Founder & Director of VPANSAK", href: "/cofounder" },
         { name: "About VPANSAK Headquarters", desc: "Company overview and ecosystem", href: "/info/about" },
         { name: "Careers & Opportunities", desc: "Join our technology and business teams", href: "/info/careers" },
         { name: "Direct Contact Information", desc: "Support email and Instagram channels", href: "/info/contact" },

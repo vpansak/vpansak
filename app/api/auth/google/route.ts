@@ -4,7 +4,7 @@ import { profiles, users } from "../../../../db/schema";
 import { hashPassword, setSessionCookieHeaders } from "../../../lib/auth-session";
 import { saveUserToSupabase } from "../../../lib/supabase";
 
-const ADMIN_EMAIL = "aloksingh84959@gmail.com";
+const ADMIN_EMAIL = "admin@vpansak.com";
 
 type GoogleJwtPayload = {
   iss?: string;
