@@ -54,14 +54,20 @@ export const sellerApplications = sqliteTable("seller_applications", {
 export const products = sqliteTable("products", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
-  brand: text("brand").notNull().default("VPANSAK Select"),
+  brand: text("brand").notNull().default("VPANSAK Official"),
   category: text("category").notNull(),
+  capacity: text("capacity"),
   description: text("description").notNull().default(""),
   specifications: text("specifications").notNull().default("{}"),
   imageUrl: text("image_url").notNull(),
   images: text("images").notNull().default("[]"),
+  colors: text("colors").notNull().default("[]"),
+  variants: text("variants").notNull().default("[]"),
   price: integer("price").notNull(),
   mrp: integer("mrp").notNull(),
+  productCost: integer("product_cost").notNull().default(0),
+  packagingCost: integer("packaging_cost").notNull().default(0),
+  otherCost: integer("other_cost").notNull().default(0),
   stock: integer("stock").notNull().default(0),
   sku: text("sku").notNull().unique(),
   rating: integer("rating").notNull().default(0),
@@ -70,6 +76,7 @@ export const products = sqliteTable("products", {
   sellerId: text("seller_id"),
   createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });
+
 
 export const profiles = sqliteTable("profiles", {
   email: text("email").primaryKey(),

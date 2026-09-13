@@ -302,12 +302,33 @@ export async function GET(request: Request) {
       (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
 
+    const enrichedProducts = productRows.map((p: any) => {
+      const pCost = Number(p.productCost || 0);
+      const pkgCost = Number(p.packagingCost || 0);
+      const oCost = Number(p.otherCost || 0);
+      const totalCost = pCost + pkgCost + oCost;
+      const sellingPrice = Number(p.price || 0);
+      const profit = sellingPrice - totalCost;
+      const profitMargin = sellingPrice > 0 ? Number(((profit / sellingPrice) * 100).toFixed(1)) : 0;
+      const minSellingPrice = totalCost + 100;
+      return {
+        ...p,
+        productCost: pCost,
+        packagingCost: pkgCost,
+        otherCost: oCost,
+        totalCost,
+        profit,
+        profitMargin,
+        minSellingPrice,
+      };
+    });
+
     return Response.json({
       users: enrichedUsers,
       orders: mergedOrders,
       sellers: sellerRows,
       tickets: mergedTickets,
-      products: productRows,
+      products: enrichedProducts,
       reviews: reviewRows,
       officers: officerRows,
       donations: mergedDonations,
@@ -323,6 +344,7 @@ export async function POST(request: Request) {
   try {
     const body = (await request.json()) as Record<string, unknown>;
     const action = String(body.action || "");
+
     const db = await getDb();
 
     if (action === "userRole" || action === "userStatus" || action === "accountStatus") {
@@ -480,7 +502,7 @@ export async function POST(request: Request) {
 
     if (action === "productStatus") {
       const id = String(body.id || "").trim();
-      const status = String(body.status || "Active").slice(0, 30);
+      const status = String(body.status || "Approved").slice(0, 30);
       try {
         await db.update(products).set({ status }).where(eq(products.id, id));
       } catch {}
@@ -491,6 +513,131 @@ export async function POST(request: Request) {
       } catch {}
       return Response.json({ ok: true });
     }
+
+    if (action === "saveProduct") {
+      const id = String(body.id || `vpansak-bot-${Date.now()}`).trim();
+      const name = String(body.name || "").trim();
+      if (!name) return Response.json({ error: "Product name is required." }, { status: 400 });
+
+      const sku = String(body.sku || `VP-BOT-${Date.now()}`).trim();
+      const category = String(body.category || "Bottles & Hydration").trim();
+      const capacity = body.capacity ? String(body.capacity).trim() : null;
+      const description = String(body.description || "").trim();
+      const imageUrl = String(body.imageUrl || "/shop/vpansak-bottle-black.jpg").trim();
+      const stock = Math.max(0, Math.round(Number(body.stock) || 0));
+
+      const productCost = Math.max(0, Math.round(Number(body.productCost) || 0));
+      const packagingCost = Math.max(0, Math.round(Number(body.packagingCost) || 0));
+      const otherCost = Math.max(0, Math.round(Number(body.otherCost) || 0));
+      const totalCost = productCost + packagingCost + otherCost;
+
+      const sellingPrice = Math.max(0, Math.round(Number(body.price ?? body.sellingPrice) || 0));
+      const mrp = Math.max(sellingPrice, Math.round(Number(body.mrp) || sellingPrice * 1.5));
+
+      const profit = sellingPrice - totalCost;
+      const minSellingPrice = totalCost + 100;
+
+      if (profit < 100) {
+        return Response.json({
+          error: `Invalid Price! Selling Price (₹${sellingPrice}) produces ₹${profit} profit. Minimum Selling Price must be at least ₹${minSellingPrice} (Total Cost ₹${totalCost} + ₹100 min profit).`
+        }, { status: 400 });
+      }
+
+      const specObj = typeof body.specifications === "string" ? body.specifications : JSON.stringify(body.specifications || {});
+      const imagesArr = Array.isArray(body.images) ? JSON.stringify(body.images) : typeof body.images === "string" ? body.images : "[]";
+      const colorsArr = Array.isArray(body.colors) ? JSON.stringify(body.colors) : typeof body.colors === "string" ? body.colors : "[]";
+      const variantsArr = Array.isArray(body.variants) ? JSON.stringify(body.variants) : typeof body.variants === "string" ? body.variants : "[]";
+      const status = String(body.status || "Approved").slice(0, 30);
+
+      await db.insert(products).values({
+        id,
+        name,
+        brand: "VPANSAK Official",
+        category,
+        capacity,
+        description,
+        specifications: specObj,
+        imageUrl,
+        images: imagesArr,
+        colors: colorsArr,
+        variants: variantsArr,
+        price: sellingPrice,
+        mrp,
+        productCost,
+        packagingCost,
+        otherCost,
+        stock,
+        sku,
+        rating: 50,
+        reviewCount: 1,
+        status
+      }).onConflictDoUpdate({
+        target: products.id,
+        set: {
+          name,
+          category,
+          capacity,
+          description,
+          specifications: specObj,
+          imageUrl,
+          images: imagesArr,
+          colors: colorsArr,
+          variants: variantsArr,
+          price: sellingPrice,
+          mrp,
+          productCost,
+          packagingCost,
+          otherCost,
+          stock,
+          sku,
+          status
+        }
+      });
+
+      if (supabase) {
+        try {
+          await supabase.from("products").upsert({
+            id,
+            name,
+            brand: "VPANSAK Official",
+            category,
+            capacity,
+            description,
+            image_url: imageUrl,
+            price: sellingPrice,
+            mrp,
+            product_cost: productCost,
+            packaging_cost: packagingCost,
+            other_cost: otherCost,
+            stock,
+            sku,
+            status
+          });
+        } catch {}
+      }
+
+      return Response.json({
+        ok: true,
+        id,
+        totalCost,
+        profit,
+        profitMargin: sellingPrice > 0 ? Number(((profit / sellingPrice) * 100).toFixed(1)) : 0
+      });
+    }
+
+    if (action === "deleteProduct") {
+      const id = String(body.id || "").trim();
+      if (id) {
+        await db.delete(products).where(eq(products.id, id));
+        if (supabase) {
+          try {
+            await supabase.from("products").delete().eq("id", id);
+          } catch {}
+        }
+      }
+      return Response.json({ ok: true });
+    }
+
 
     if (action === "donationStatus" || action === "verifyContribution" || action === "rejectContribution") {
       const verificationId = String(body.verificationId || body.donationId || "").trim().toUpperCase();

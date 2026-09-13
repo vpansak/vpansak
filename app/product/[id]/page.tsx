@@ -13,8 +13,12 @@ export default function ProductPage() {
   const { id } = useParams<{ id: string }>();
   const product = catalogProducts.find((item) => item.id === id);
   const related = useMemo(
-    () => product ? catalogProducts.filter((item) => item.category === product.category && item.id !== product.id).slice(0, 4) : [],
+    () => product ? catalogProducts.filter((item) => item.id !== product.id).slice(0, 4) : catalogProducts.slice(0, 4),
     [product]
+  );
+
+  const [selectedColor, setSelectedColor] = useState<string>(
+    product?.colors?.[0]?.name || "Matte Black"
   );
 
   const images = useMemo(() => {
@@ -41,10 +45,13 @@ export default function ProductPage() {
   // Reviews state
   const [reviews, setReviews] = useState<Array<{ id: number; displayName: string; rating: number; title: string; body: string; createdAt: string }>>([]);
 
-  // Reset selected image index when product changes
+  // Reset selected image index & color when product changes
   useEffect(() => {
     if (!product) return;
     setActiveImgIndex(0);
+    if (product.colors && product.colors.length > 0) {
+      setSelectedColor(product.colors[0].name);
+    }
     fetch(`/api/reviews?product=${encodeURIComponent(product.id)}`)
       .then((r) => r.json())
       .then((d) => setReviews(d.reviews || []))
@@ -57,7 +64,7 @@ export default function ProductPage() {
         <div style={{ textAlign: "center", padding: "40px 20px" }}>
           <ShieldCheck size={48} style={{ color: "#1766ef", margin: "0 auto 16px" }} />
           <h2 style={{ fontSize: "24px", margin: "8px 0" }}>Product Not Found</h2>
-          <p style={{ color: "#64748b", margin: "8px 0 24px" }}>The requested VPANSAK product is currently unavailable or being updated.</p>
+          <p style={{ color: "#64748b", margin: "8px 0 24px" }}>The requested VPANSAK bottle is currently unavailable or updating.</p>
           <Link href="/" style={{ padding: "12px 24px", background: "#1766ef", color: "white", borderRadius: "8px", fontWeight: "bold", textDecoration: "none" }}>
             Return to Storefront
           </Link>
@@ -79,7 +86,7 @@ export default function ProductPage() {
       setPinMessage("Please enter a valid 6-digit PIN code");
       return;
     }
-    setPinMessage(`Delivery available for ${cleanPin} • Delivery in 2–3 business days`);
+    setPinMessage(`Delivery available for ${cleanPin} • Express delivery in 2–3 business days`);
   };
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -98,14 +105,19 @@ export default function ProductPage() {
     const diffX = touchStartX.current - e.changedTouches[0].clientX;
     if (Math.abs(diffX) > 40) {
       if (diffX > 0) {
-        // Swiped left -> next image
         setActiveImgIndex((prev) => (prev + 1) % images.length);
       } else {
-        // Swiped right -> prev image
         setActiveImgIndex((prev) => (prev - 1 + images.length) % images.length);
       }
     }
     touchStartX.current = null;
+  };
+
+  const handleColorSelect = (colorName: string, imageIndex?: number) => {
+    setSelectedColor(colorName);
+    if (typeof imageIndex === "number" && images[imageIndex]) {
+      setActiveImgIndex(imageIndex);
+    }
   };
 
   const [authUser, setAuthUser] = useState<unknown | null>(null);
@@ -138,9 +150,9 @@ export default function ProductPage() {
       const response = await fetch("/api/account", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ action: "cart", productId: product.id, quantity: qty }),
+        body: JSON.stringify({ action: "cart", productId: product.id, quantity: qty, color: selectedColor }),
       });
-      if (response.ok) notice("Saved to your account cart");
+      if (response.ok) notice(`Added ${product.name} (${selectedColor}) to cart`);
       else notice("Cart could not be saved");
     } catch {
       notice("Cart could not be saved");
@@ -215,32 +227,25 @@ export default function ProductPage() {
           <img className="brand-logo" src="/vpansak-logo-dark.jpeg" alt="VPANSAK" />
           <span>
             <strong>VPANSAK</strong>
-            <small>SHOPPING</small>
+            <small>OFFICIAL STORE</small>
           </span>
         </Link>
         <nav>
-          <Link href="/">
-            <ArrowLeft />
-            Back to store
+          <Link href="/collections">
+            <ArrowLeft size={16} style={{ display: "inline-block", marginRight: "4px" }} />
+            All Bottles
           </Link>
-          <Link href="/account">My account</Link>
-          <a href="https://vpansaksupporthub.lovable.app/" target="_blank" rel="noreferrer">Support</a>
-
+          <Link href="/account">My Account</Link>
+          <a href="https://vpansaksupporthub.lovable.app/" target="_blank" rel="noreferrer">Support Hub</a>
         </nav>
       </header>
 
       {/* Breadcrumb Navigation */}
       <nav className="breadcrumb" aria-label="Breadcrumb">
         <Link href="/">Home</Link>
-        <ChevronRight />
-        <Link href="/categories">{product.category}</Link>
-        <ChevronRight />
-        {product.specifications?.Subcategory && (
-          <>
-            <span>{product.specifications.Subcategory}</span>
-            <ChevronRight />
-          </>
-        )}
+        <ChevronRight size={14} />
+        <Link href="/collections">Water Bottles</Link>
+        <ChevronRight size={14} />
         <strong>{product.name}</strong>
       </nav>
 
@@ -294,7 +299,7 @@ export default function ProductPage() {
                 </button>
               </div>
 
-              {/* Slider Arrows for Quick Navigation */}
+              {/* Slider Arrows */}
               {images.length > 1 && (
                 <>
                   <button
@@ -320,7 +325,7 @@ export default function ProductPage() {
                 </>
               )}
 
-              {/* Slider Pagination Dots for Mobile */}
+              {/* Mobile Dots */}
               {images.length > 1 && (
                 <div className="mobile-slider-dots">
                   {images.map((_, idx) => (
@@ -339,7 +344,9 @@ export default function ProductPage() {
         {/* Product Purchase Summary */}
         <div className="product-summary product-details-card">
           <div className="product-meta-header product-meta-top">
-            <small>{product.brand} • {product.category}</small>
+            <small style={{ fontWeight: 700, letterSpacing: "0.05em", color: "#1766ef" }}>
+              VPANSAK OFFICIAL • REUSABLE COLLECTION
+            </small>
             <span className="stock-badge in-stock">
               <Check size={12} /> {product.stock > 0 ? "In Stock" : "Out of Stock"}
             </span>
@@ -352,50 +359,120 @@ export default function ProductPage() {
               <strong>
                 {(product.rating / 10).toFixed(1)} <Star fill="currentColor" size={12} />
               </strong>
-              <span>{product.reviewCount.toLocaleString("en-IN")} verified ratings</span>
+              <span>{product.reviewCount.toLocaleString("en-IN")} verified buyer reviews</span>
             </div>
             <span className="sku-tag sku-text">SKU: {product.sku}</span>
           </div>
 
           <p className="product-description">{product.description}</p>
 
-          {/* Pricing & Discount */}
+          {/* Pricing & Savings */}
           <div className="detail-price price-row">
             <strong className="selling-price">{money(product.price)}</strong>
             <s>{money(product.mrp)}</s>
             <span className="discount-tag">{discountPercent}% OFF</span>
             <small className="price-savings">Save {money(product.mrp - product.price)}</small>
           </div>
-          <p className="tax-note">Inclusive of all taxes &amp; free shipping</p>
+          <p className="tax-note">Inclusive of all taxes • Free express shipping nationwide</p>
+
+          {/* Color Swatch Selection */}
+          {product.colors && product.colors.length > 0 && (
+            <div className="color-selector-section" style={{ margin: "20px 0" }}>
+              <label style={{ display: "block", fontSize: "14px", fontWeight: 700, marginBottom: "8px" }}>
+                Select Color Variant: <span style={{ color: "#1766ef" }}>{selectedColor}</span>
+              </label>
+              <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", alignItems: "center" }}>
+                {product.colors.map((c, idx) => {
+                  const isSelected = selectedColor === c.name;
+                  return (
+                    <button
+                      key={c.name}
+                      type="button"
+                      onClick={() => handleColorSelect(c.name, idx % images.length)}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "6px",
+                        padding: "6px 14px",
+                        borderRadius: "20px",
+                        border: isSelected ? "2px solid #1766ef" : "1px solid #cbd5e1",
+                        background: isSelected ? "#eff6ff" : "#ffffff",
+                        cursor: "pointer",
+                        fontWeight: isSelected ? 700 : 500,
+                        fontSize: "13px",
+                        color: isSelected ? "#1e40af" : "#334155",
+                        transition: "all 0.2s ease",
+                      }}
+                    >
+                      <span
+                        style={{
+                          width: "16px",
+                          height: "16px",
+                          borderRadius: "50%",
+                          backgroundColor: c.hex,
+                          border: "1px solid rgba(0,0,0,0.15)",
+                          display: "inline-block",
+                        }}
+                      />
+                      {c.name}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Capacity / Size Selection */}
+          {product.capacity && (
+            <div className="capacity-section" style={{ margin: "16px 0 24px" }}>
+              <label style={{ display: "block", fontSize: "14px", fontWeight: 700, marginBottom: "8px" }}>
+                Capacity:
+              </label>
+              <div style={{ display: "flex", gap: "8px" }}>
+                <span
+                  style={{
+                    padding: "8px 16px",
+                    background: "#0f172a",
+                    color: "white",
+                    borderRadius: "8px",
+                    fontWeight: 700,
+                    fontSize: "14px",
+                  }}
+                >
+                  {product.capacity}
+                </span>
+              </div>
+            </div>
+          )}
 
           {/* Key Highlights Pills */}
           <div className="highlights-pills product-feature-chips">
-            <span className="product-feature-chip">SPF 50 PA++++</span>
-            <span className="product-feature-chip">Aqua Gel Texture</span>
-            <span className="product-feature-chip long-chip">Oil-Free &amp; Fragrance-Free</span>
-            <span className="product-feature-chip">1% Hyaluronic Acid</span>
-            <span className="product-feature-chip">Lightweight Matte Finish</span>
+            <span className="product-feature-chip">100% Leakproof Lid</span>
+            <span className="product-feature-chip">24 hrs Cold / 12 hrs Hot</span>
+            <span className="product-feature-chip long-chip">304 Food-Grade Stainless Steel</span>
+            <span className="product-feature-chip">BPA & Toxin Free</span>
+            <span className="product-feature-chip">Sweat-Proof Coating</span>
           </div>
 
           {/* Offers */}
           <div className="offer-box offers-card">
-            <b>Available Offers</b>
+            <b>VPANSAK Brand Guarantees</b>
             <div className="offer-item">
               <BadgeCheck className="offer-icon" size={16} />
               <div className="offer-text">
-                Special discounts &amp; promo codes applicable at checkout
+                1-Year Official Warranty against manufacturing defects &amp; thermal failure
               </div>
             </div>
             <div className="offer-item">
               <BadgeCheck className="offer-icon" size={16} />
               <div className="offer-text">
-                Free express delivery on prepaid &amp; COD orders
+                Free Express Delivery nationwide + Secure COD &amp; Online Checkout
               </div>
             </div>
             <div className="offer-item">
               <BadgeCheck className="offer-icon" size={16} />
               <div className="offer-text">
-                100% Genuine product sourced directly from brand
+                Direct from VPANSAK — 100% Authentic product guaranteed
               </div>
             </div>
           </div>
@@ -404,7 +481,7 @@ export default function ProductPage() {
           <div className="delivery-box">
             <Truck />
             <div>
-              <strong>Delivery & Availability Check</strong>
+              <strong>Check Delivery Availability</strong>
               <label>
                 <input
                   placeholder="Enter 6-digit PIN code"
@@ -421,7 +498,7 @@ export default function ProductPage() {
               {pinMessage ? (
                 <small className={pinMessage.includes("valid") ? "pin-err" : "pin-ok"}>{pinMessage}</small>
               ) : (
-                <small>Enter PIN code to check estimated delivery date & COD availability</small>
+                <small>Enter your PIN code to check express delivery time</small>
               )}
             </div>
           </div>
@@ -444,10 +521,10 @@ export default function ProductPage() {
               className="buy-detail"
               onClick={() => {
                 if (!authUser) {
-                  window.location.href = `/login?return_to=${encodeURIComponent(`/checkout?product=${product.id}&qty=${qty}`)}`;
+                  window.location.href = `/login?return_to=${encodeURIComponent(`/checkout?product=${product.id}&qty=${qty}&color=${encodeURIComponent(selectedColor)}`)}`;
                   return;
                 }
-                window.location.href = `/checkout?product=${product.id}&qty=${qty}`;
+                window.location.href = `/checkout?product=${product.id}&qty=${qty}&color=${encodeURIComponent(selectedColor)}`;
               }}
             >
               Buy Now
@@ -463,7 +540,7 @@ export default function ProductPage() {
               className="share-detail"
               onClick={() => {
                 navigator.clipboard?.writeText(location.href);
-                notice("Product link copied");
+                notice("VPANSAK bottle link copied");
               }}
               aria-label="Share product"
             >
@@ -474,16 +551,16 @@ export default function ProductPage() {
           {/* Assurance Icons */}
           <div className="product-assurances">
             <span>
-              <CreditCard /> <b>Online Payment Available</b>
+              <CreditCard /> <b>UPI &amp; Card Payments</b>
             </span>
             <span>
-              <ShieldCheck /> <b>100% Original</b>
+              <ShieldCheck /> <b>1-Year Warranty</b>
             </span>
             <span>
-              <RotateCcw /> <b>7-Day Return Policy</b>
+              <RotateCcw /> <b>7-Day Easy Replacement</b>
             </span>
             <span>
-              <PackageCheck /> <b>COD &amp; Prepaid Supported</b>
+              <PackageCheck /> <b>Prepaid &amp; COD Available</b>
             </span>
           </div>
         </div>
@@ -493,96 +570,93 @@ export default function ProductPage() {
       <section className="product-content-grid">
         {/* Product Details & Key Highlights */}
         <article className="content-card">
-          <h2>Product Details & Highlights</h2>
+          <h2>Engineering &amp; Design Highlights</h2>
           <p>{product.description}</p>
           <ul className="highlights-list">
             <li>
-              <strong>SPF 50 PA++++ Protection:</strong> High broad-spectrum defense against skin-damaging UVA & UVB rays.
+              <strong>Double-Wall Vacuum Insulation:</strong> Keeps beverages icy cold for up to 24 hours or steaming hot for up to 12 hours without external condensation.
             </li>
             <li>
-              <strong>Lightweight Aqua Gel Texture:</strong> Absorbs quickly without sticky residue or heavy feel.
+              <strong>304 Food-Grade Stainless Steel:</strong> Crafted from premium rust-resistant 18/8 stainless steel that preserves pure taste with zero metallic flavor transfer.
             </li>
             <li>
-              <strong>Oil-Free & Fragrance-Free:</strong> Formulated without fragrance or clogging oils, reducing irritation risk.
+              <strong>100% Leakproof Airtight Seal:</strong> Precision silicone gasket lid allows you to toss the bottle into backpacks or gym bags without risk of spills.
             </li>
             <li>
-              <strong>Suitable for Multiple Skin Types:</strong> Ideal for Dry, Oily, Combination, Acne-Prone, Normal & Sensitive Skin.
+              <strong>Durable Matte Powder Coating:</strong> Offers a tactile, slip-free grip resistant to scratches, sweat, and daily wear.
             </li>
             <li>
-              <strong>Deep Hydration:</strong> Infused with 1% Hyaluronic Acid to retain skin moisture throughout the day.
+              <strong>BPA-Free &amp; Eco-Friendly:</strong> 100% free of BPA, phthalates, and toxins. Replace single-use plastics with a bottle designed to last years.
             </li>
             <li>
-              <strong>Matte Finish:</strong> Leaves a clean, smooth, non-greasy matte appearance under makeup or daily wear.
+              <strong>Ergonomic Carry Handle:</strong> Integrated carry loop or strap makes hydration effortless during workouts, commutes, and outdoor travel.
             </li>
           </ul>
         </article>
 
-        {/* How to Use Section */}
+        {/* Care & Maintenance */}
         <article className="content-card how-to-use-card">
-          <h2>How to Use</h2>
+          <h2>Care &amp; Cleaning Instructions</h2>
           <div className="usage-steps">
             <div className="step-item">
               <span className="step-num">01</span>
               <div>
-                <strong>Dispense Quantity</strong>
-                <p>Take approximately two-finger-length sunscreen gel onto clean fingertips.</p>
+                <strong>First Use Wash</strong>
+                <p>Rinse bottle and lid thoroughly with warm soapy water before filling for the first time.</p>
               </div>
             </div>
             <div className="step-item">
               <span className="step-num">02</span>
               <div>
-                <strong>Even Application</strong>
-                <p>Apply evenly on face, neck, ears and all other sun-exposed areas 15–20 minutes before stepping out.</p>
+                <strong>Daily Cleaning</strong>
+                <p>Hand wash with a bottle brush. Avoid abrasive scrubbers to preserve the premium powder coating finish.</p>
               </div>
             </div>
             <div className="step-item">
               <span className="step-num">03</span>
               <div>
-                <strong>Reapply Regularly</strong>
-                <p>Reapply every 4 hours or immediately after excessive sweating, towel drying, or washing the face.</p>
+                <strong>Drying &amp; Storage</strong>
+                <p>Store bottle with the cap off to allow internal air circulation and keep internal walls fresh.</p>
               </div>
             </div>
           </div>
         </article>
 
-        {/* Ingredients Section */}
+        {/* Materials & Safety Section */}
         <article className="content-card">
-          <h2>Ingredients & Formulation</h2>
+          <h2>Materials &amp; Eco Commitment</h2>
           <div className="key-ingredient-box">
             <Sparkles size={20} />
             <div>
-              <strong>Key Active Ingredient: 1% Hyaluronic Acid</strong>
-              <p>Attracts and locks in essential hydration without adding weight or greasy shine to the skin.</p>
+              <strong>Built for Sustainability</strong>
+              <p>One VPANSAK bottle prevents hundreds of single-use plastic bottles from polluting landfills each year.</p>
             </div>
           </div>
           <div className="ingredient-matrix">
             <p>
-              <strong>Formulated Matrix:</strong> Aqua (Water), Hyaluronic Acid (1%), Niacinamide, Zinc PCA, Vitamin E (Tocopherol), Glycerin, Ethylhexyl Methoxycinnamate, Cyclopentasiloxane, Ammonium Acryloyldimethyltaurate/VP Copolymer, Phenoxyethanol.
+              <strong>Material Composition:</strong> Body: 18/8 (304) Stainless Steel • Cap: Food-grade Polypropylene (PP5) &amp; BPA-Free Silicone Seal.
             </p>
-            <small>Free from parabens, artificial fragrance, mineral oil, and dermatologically tested for daily skincare.</small>
+            <small>Tested and certified for safe daily contact with hot and cold beverages.</small>
           </div>
         </article>
 
         {/* Return Policy & Guarantee Section */}
         <article className="content-card return-policy-card">
-          <h2>VPANSAK Return Policy & Assurance</h2>
+          <h2>VPANSAK 1-Year Guarantee &amp; Return Policy</h2>
           <div className="return-policy-content">
             <div className="policy-badge">
               <RotateCcw size={24} />
               <div>
-                <strong>7 Days Easy Replacement & Return</strong>
-                <p>Eligible for return or replacement within 7 days of delivery in case of damaged, defective, or incorrect items.</p>
+                <strong>7 Days Replacement &amp; 1-Year Warranty</strong>
+                <p>Includes full replacement coverage for insulation defects, leaks, or transit damages.</p>
               </div>
             </div>
             <div className="policy-details">
               <p>
-                <Check size={14} /> <strong>Original Condition:</strong> Please retain original packaging, pump seal, and box.
+                <Check size={14} /> <strong>Hassle-Free Support:</strong> Reach out to VPANSAK Support Hub with your Order ID for instant assistance.
               </p>
               <p>
-                <Check size={14} /> <strong>Hassle-Free Support:</strong> Submit a return ticket via our Support Hub with Order ID and photos.
-              </p>
-              <p>
-                <Check size={14} /> <strong>Full Refund Guarantee:</strong> Verified returns receive 100% refund to original payment mode or store credit.
+                <Check size={14} /> <strong>Guaranteed Quality:</strong> Every bottle undergoes double-layer vacuum pressure testing before shipping.
               </p>
             </div>
           </div>
@@ -590,7 +664,7 @@ export default function ProductPage() {
 
         {/* Technical Specifications */}
         <article className="content-card full-width-card">
-          <h2>Product Specifications</h2>
+          <h2>Technical Specifications</h2>
           <dl className="spec-dl">
             {Object.entries(product.specifications).map(([key, value]) => (
               <div key={key}>
@@ -606,8 +680,8 @@ export default function ProductPage() {
       <section className="review-section">
         <div className="review-head">
           <div>
-            <small>CUSTOMER REVIEWS & RATINGS</small>
-            <h2>Verified Feedback</h2>
+            <small>VERIFIED VPANSAK REVIEWS</small>
+            <h2>Customer Experience</h2>
           </div>
           <div className="score">
             <strong>{(product.rating / 10).toFixed(1)}</strong>
@@ -636,46 +710,46 @@ export default function ProductPage() {
             ) : (
               <div className="no-reviews">
                 <Star size={28} />
-                <h3>No written reviews submitted yet</h3>
-                <p>Be the first customer to share your detailed experience with this sunscreen.</p>
+                <h3>No customer reviews submitted yet</h3>
+                <p>Be the first owner of this VPANSAK bottle to leave your review!</p>
               </div>
             )}
           </div>
 
           <form className="review-form" onSubmit={submitReview}>
-            <h3>Write a Customer Review</h3>
+            <h3>Write a VPANSAK Bottle Review</h3>
             <label>
               Display Name
-              <input name="name" required placeholder="e.g. Priya S." />
+              <input name="name" required placeholder="e.g. Rahul M." />
             </label>
             <label>
               Rating
               <select name="rating" defaultValue="5">
-                <option value="5">5 — Excellent product</option>
-                <option value="4">4 — Very good</option>
-                <option value="3">3 — Average</option>
-                <option value="2">2 — Below expectation</option>
-                <option value="1">1 — Poor quality</option>
+                <option value="5">5 — Superior quality & insulation</option>
+                <option value="4">4 — Very good bottle</option>
+                <option value="3">3 — Decent</option>
+                <option value="2">2 — Below expectations</option>
+                <option value="1">1 — Poor</option>
               </select>
             </label>
             <label>
               Review Title
-              <input name="title" required placeholder="e.g. Non-greasy sunscreen!" />
+              <input name="title" required placeholder="e.g. Keeps water cold all day long!" />
             </label>
             <label>
               Your Review
-              <textarea name="body" required minLength={10} placeholder="Describe texture, absorption, finish, and skin feel..." />
+              <textarea name="body" required minLength={10} placeholder="Tell us about thermal performance, finish, durability..." />
             </label>
             <button type="submit">Submit Review for Approval</button>
-            <small>Reviews are verified for authenticity before appearing publicly.</small>
+            <small>Reviews are verified for authenticity prior to publishing.</small>
           </form>
         </div>
       </section>
 
       {/* Similar / Related Products */}
       <section className="related-section">
-        <small>YOU MAY ALSO LIKE</small>
-        <h2>Similar Skincare & Beauty Products</h2>
+        <small>EXPLORE THE VPANSAK RANGE</small>
+        <h2>More Reusable Bottles</h2>
         <div>
           {related.map((item) => (
             <Link href={`/product/${item.id}`} key={item.id}>

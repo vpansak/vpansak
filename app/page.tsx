@@ -75,39 +75,56 @@ const XIcon = ({ size = 15 }: { size?: number }) => (
 const money = (amount: number) => new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(amount);
 
 const categories = [
-  { name: "All", value: "All", icon: Grid3X3, color: "#edf2f8" },
-  { name: "Mobiles", value: "Mobile", icon: Smartphone, color: "#e8f2ff" },
-  { name: "Electronics", value: "Electronics", icon: Laptop, color: "#eeeaff" },
-  { name: "Fashion", value: "Fashion", icon: Shirt, color: "#fff0f3" },
-  { name: "Home", value: "Home", icon: Home, color: "#fff3df" },
-  { name: "Appliances", value: "Appliances", icon: Zap, color: "#e9fbf4" },
-  { name: "Beauty", value: "Beauty", icon: Sparkles, color: "#fff0fa" },
-  { name: "Grocery", value: "Grocery", icon: ShoppingBag, color: "#f1f9e7" },
-  { name: "Kitchen", value: "Kitchen", icon: Utensils, color: "#fff4e7" },
-  { name: "Computers", value: "Computer", icon: Laptop, color: "#e9f3ff" },
-  { name: "Accessories", value: "Accessories", icon: PackageOpen, color: "#f4edff" },
-  { name: "Lifestyle", value: "Lifestyle", icon: Watch, color: "#eafaf7" },
-  { name: "Gaming", value: "Gaming", icon: Gamepad2, color: "#f0ecff" },
-  { name: "Furniture", value: "Furniture", icon: Sofa, color: "#fff0e7" },
-  { name: "Sports", value: "Sports", icon: Dumbbell, color: "#eaf8ef" },
-  { name: "Toys", value: "Toys", icon: ToyBrick, color: "#fff1f1" },
-  { name: "Books", value: "Books", icon: BookOpen, color: "#fff7df" },
-  { name: "Automotive", value: "Automotive", icon: Car, color: "#edf2f8" },
-  { name: "Smart Watches", value: "Electronics", icon: Watch, color: "#e7f4ff" },
-  { name: "Audio", value: "Electronics", icon: Headphones, color: "#f4edff" },
-  { name: "Study", value: "Books", icon: LampDesk, color: "#fff4dc" },
-  { name: "Home Decor", value: "Home", icon: Home, color: "#f5efe8" },
-  { name: "Daily Needs", value: "Lifestyle", icon: ShoppingBag, color: "#eaf8ef" },
-  { name: "Top Deals", value: "All", icon: Tag, color: "#fff0e5" },
+  { name: "All Bottles", value: "All", icon: Grid3X3, color: "#edf2f8" },
+  { name: "Core Series", value: "Core Series", icon: Utensils, color: "#e8f2ff" },
+  { name: "Steel Series", value: "Steel Series", icon: ShieldCheck, color: "#eeeaff" },
+  { name: "Travel Series", value: "Travel Series", icon: Car, color: "#fff0f3" },
+  { name: "750ml Bottles", value: "750ml", icon: PackageCheck, color: "#fff3df" },
+  { name: "1000ml Bottles", value: "1000ml", icon: PackageCheck, color: "#e9fbf4" },
+  { name: "600ml Bottles", value: "600ml", icon: PackageCheck, color: "#fff0fa" },
 ];
 
 const heroSlides = [
-  { eyebrow: "OFFICIAL VPANSAK DIRECT STORE", title: "Premium quality.\nSmarter prices.", copy: "Discover 100% genuine VPANSAK products directly from our in-house manufacturing and fulfillment hubs.", offer: "Direct Brand Guarantee", button: "Explore Catalog", category: "Electronics", image: "https://images.unsplash.com/photo-1526738549149-8e07eca6c147?auto=format&fit=crop&w=1800&q=88", theme: "blue" },
-  { eyebrow: "VPANSAK ESSENTIAL FASHION", title: "Everyday style,\nmade effortless.", copy: "Quality everyday apparel, footwear and accessories crafted with comfort, versatility and durability.", offer: "Everyday Fits From ₹399", button: "Shop Fashion", category: "Fashion", image: "https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=1800&q=88", theme: "rose" },
-  { eyebrow: "HOME & LIFESTYLE ESSENTIALS", title: "Small upgrades.\nA better home.", copy: "Thoughtful decor, kitchenware and home essentials designed for modern living and long-term utility.", offer: "Home Essentials From ₹549", button: "Refresh your home", category: "Home", image: "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=1800&q=88", theme: "gold" },
-  { eyebrow: "VPANSAK MOBILE & TECH", title: "Faster devices.\nBetter everyday.", copy: "Dependable 5G smartphones, wireless audio and mobile accessories with direct brand warranty.", offer: "Direct Brand Pricing", button: "Explore Mobiles", category: "Mobile", image: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=1800&q=88", theme: "blue" },
-  { eyebrow: "VPANSAK KITCHEN & HOME", title: "Cook with ease.\nShare great moments.", copy: "Useful cookware, kitchen tools and home appliances built for daily performance.", offer: "Direct-From-Brand", button: "Explore kitchen", category: "Kitchen", image: "https://images.unsplash.com/photo-1556911220-bff31c812dba?auto=format&fit=crop&w=1800&q=88", theme: "gold" },
-  { eyebrow: "VPANSAK CARE & BEAUTY", title: "Gentle daily care.\nEveryday glow.", copy: "Pure daily care routines with dermatologist-inspired formulas and clean ingredients.", offer: "Starting ₹299", button: "Shop daily care", category: "Beauty", image: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1800&q=88", theme: "rose" },
+  {
+    eyebrow: "MADE FOR THE MODERN LIFE",
+    title: "The VPANSAK Bottle.\nPure Hydration.",
+    copy: "Double-wall vacuum insulated premium reusable water bottles. Keeps drinks icy cold for 24 hours or hot for 12 hours.",
+    offer: "Official VPANSAK Own Brand Launch",
+    button: "Shop The Collection",
+    category: "All",
+    image: "/shop/vpansak-bottle-black.jpg",
+    theme: "blue"
+  },
+  {
+    eyebrow: "VPANSAK STEEL COLLECTION",
+    title: "100% Leakproof.\nZero Sweating.",
+    copy: "Crafted from food-grade 304 stainless steel with durable matte powder coating and ergonomic carry handle.",
+    offer: "Starting at ₹799 + Free Shipping",
+    button: "Explore Steel Series",
+    category: "Steel Series",
+    image: "/shop/vpansak-bottle-blue.jpg",
+    theme: "blue"
+  },
+  {
+    eyebrow: "VPANSAK TRAVEL SERIES",
+    title: "Compact 600ml.\nReady for Action.",
+    copy: "Lightweight, cup-holder friendly design engineered for gym, travel, workouts, and daily commutes.",
+    offer: "Special Launch Price ₹699",
+    button: "Explore Travel Bottle",
+    category: "Travel Series",
+    image: "/shop/vpansak-bottle-olive.jpg",
+    theme: "gold"
+  },
+  {
+    eyebrow: "VPANSAK CORE COLLECTION",
+    title: "Minimalist Design.\nMaximum Performance.",
+    copy: "Available in 750ml and 1000ml capacities across Matte Black, Navy Blue, White/Cream, and Olive colors.",
+    offer: "1-Year Official Brand Warranty",
+    button: "Shop Core Bottles",
+    category: "Core Series",
+    image: "/shop/vpansak-bottle-white.jpg",
+    theme: "rose"
+  }
 ];
 
 function ProductCard({ product, wished, onWish, onAdd, authUser }: { product: CatalogProduct; wished: boolean; onWish: () => void; onAdd: () => void; authUser: unknown }) {
@@ -447,25 +464,25 @@ export default function HomePage() {
       </section>
 
       <section className="vp-banner-grid">
-        <button type="button" className="vp-banner-fashion" onClick={() => chooseCategory("Fashion")}><span><small>STYLE STORE</small><strong>New looks.<br />Everyday prices.</strong><b>Min. 45% off</b><i>Shop now <ArrowRight /></i></span></button>
-        <button type="button" className="vp-banner-home" onClick={() => chooseCategory("Home")}><span><small>HOME UPGRADE</small><strong>Make every corner<br />work better.</strong><b>From ₹549</b><i>Explore home <ArrowRight /></i></span></button>
-        <button type="button" className="vp-banner-seller" onClick={() => { window.location.href = "/seller"; }}><ShieldCheck /><span><small>VPANSAK DIRECT</small><strong>100% Genuine Brand Products.</strong><b>Explore our direct store</b></span><ArrowRight /></button>
+        <button type="button" className="vp-banner-fashion" onClick={() => chooseCategory("Core Series")}><span><small>VPANSAK CORE</small><strong>Core Bottle Series.<br />Everyday hydration.</strong><b>750ml &amp; 1000ml</b><i>Shop now <ArrowRight /></i></span></button>
+        <button type="button" className="vp-banner-home" onClick={() => chooseCategory("Steel Series")}><span><small>STEEL SERIES</small><strong>Double-Wall Vacuum.<br />12h Hot / 24h Cold.</strong><b>From ₹799</b><i>Explore Steel <ArrowRight /></i></span></button>
+        <button type="button" className="vp-banner-seller" onClick={() => { window.location.href = "/collections"; }}><ShieldCheck /><span><small>VPANSAK DIRECT</small><strong>100% Genuine Brand Bottles.</strong><b>Explore full collection</b></span><ArrowRight /></button>
       </section>
 
       <section className="vp-shelf">
-        <header><div><small>MOST LOVED THIS WEEK</small><h2>Trending across VPANSAK</h2><p>High-interest products from trusted departments.</p></div><span className="vp-live"><i /> Updated today</span></header>
+        <header><div><small>MOST POPULAR BOTTLES</small><h2>Trending Bottle Collection</h2><p>Double-wall vacuum insulated bottles engineered for everyday life.</p></div><span className="vp-live"><i /> In Stock</span></header>
         <div className="vp-product-rail">{trending.map((product) => <ProductCard key={product.id} product={product} wished={wishlist.includes(product.id)} onWish={() => toggleWishlist(product.id)} onAdd={() => addToCart(product.id)} authUser={authUser} />)}</div>
       </section>
 
       <section className="vp-shelf">
-        <header><div><small>SMART VALUE PICKS</small><h2>Useful finds under ₹999</h2><p>Everyday products that stay within budget.</p></div><button onClick={() => { setSort("price-low"); setCategory("All"); document.getElementById("catalog")?.scrollIntoView({ behavior: "smooth" }); }}>See more <ArrowRight /></button></header>
+        <header><div><small>EVERYDAY VALUE</small><h2>Bottles under ₹999</h2><p>Premium reusable water bottles at accessible direct-to-consumer prices.</p></div><button onClick={() => { setSort("price-low"); setCategory("All"); document.getElementById("catalog")?.scrollIntoView({ behavior: "smooth" }); }}>See more <ArrowRight /></button></header>
         <div className="vp-product-rail">{budget.map((product) => <ProductCard key={product.id} product={product} wished={wishlist.includes(product.id)} onWish={() => toggleWishlist(product.id)} onAdd={() => addToCart(product.id)} authUser={authUser} />)}</div>
       </section>
 
       <section className="vp-catalog" id="catalog">
-        <header><div><small>VPANSAK DIRECT STORE</small><h2>Official Product Catalog</h2><p>100% genuine in-house VPANSAK products.</p></div><span>{filteredProducts.length} products</span></header>
+        <header><div><small>VPANSAK OFFICIAL STORE</small><h2>Official Water Bottle Collection</h2><p>100% original VPANSAK engineered reusable water bottles.</p></div><span>{filteredProducts.length} products</span></header>
         <div className="vp-catalog-toolbar">
-          <div><SlidersHorizontal />{["All", "Mobile", "Electronics", "Fashion", "Home", "Kitchen", "Computer", "Gaming"].map((item) => <button type="button" key={item} className={category === item ? "active" : ""} onClick={() => setCategory(item)}>{item}</button>)}</div>
+          <div><SlidersHorizontal />{["All", "Core Series", "Steel Series", "Travel Series", "750ml", "1000ml", "600ml"].map((item) => <button type="button" key={item} className={category === item ? "active" : ""} onClick={() => setCategory(item)}>{item}</button>)}</div>
           <label>Sort by<select value={sort} onChange={(event) => setSort(event.target.value)}><option value="featured">Popularity</option><option value="rating">Customer rating</option><option value="price-low">Price: Low to high</option><option value="price-high">Price: High to low</option></select></label>
         </div>
         {filteredProducts.length ? <div className="vp-catalog-grid">{filteredProducts.map((product) => <ProductCard key={product.id} product={product} wished={wishlist.includes(product.id)} onWish={() => toggleWishlist(product.id)} onAdd={() => addToCart(product.id)} authUser={authUser} />)}</div> : <div className="vp-empty"><Search /><h3>VPANSAK Direct Catalog Coming Soon</h3><p>Our official brand products are currently being updated. Check back soon for new arrivals!</p><button type="button" onClick={() => { setSearch(""); setCategory("All"); }}>Clear all filters</button></div>}

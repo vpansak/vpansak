@@ -29,13 +29,14 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
 type Row = {
-  id?: number;
+  id?: string | number;
   orderId?: string;
   applicationId?: string;
   ticketId?: string;
   donationId?: string;
   certificateId?: string;
   name?: string;
+  brand?: string;
   customerName?: string;
   donorName?: string;
   businessName?: string;
@@ -45,6 +46,8 @@ type Row = {
   mobile?: string;
   subject?: string;
   category?: string;
+  capacity?: string;
+  description?: string;
   productId?: string;
   title?: string;
   body?: string;
@@ -55,10 +58,22 @@ type Row = {
   paymentMethod?: string;
   total?: number;
   price?: number;
+  mrp?: number;
+  productCost?: number;
+  packagingCost?: number;
+  otherCost?: number;
+  totalCost?: number;
+  profit?: number;
+  profitMargin?: number;
+  minSellingPrice?: number;
   amount?: number;
   stock?: number;
   sku?: string;
   rating?: number;
+  imageUrl?: string;
+  images?: string | string[];
+  colors?: string | string[];
+  variants?: string | any[];
   role?: string;
   department?: string;
   assignedOfficer?: string;
@@ -68,6 +83,7 @@ type Row = {
   minOrder?: number;
   active?: boolean;
 };
+
 
 type AdminData = {
   users: Row[];
@@ -615,31 +631,9 @@ export default function SecretAdminPage() {
         )}
 
         {tab === "products" && (
-          <AdminSection title="Product Inventory & Moderation">
-            <div className="manage-rows">
-              {filterList(data.products).map((r) => (
-                <article key={String(r.id)}>
-                  <span>
-                    <strong>{r.name}</strong>
-                    <small>
-                      SKU: {r.sku} • Stock: {r.stock} • Category: {r.category || "General"}
-                    </small>
-                  </span>
-                  <b>{money(r.price)}</b>
-                  <select
-                    value={r.status}
-                    onChange={(e) => action({ action: "productStatus", id: r.id, status: e.target.value })}
-                  >
-                    <option>Pending Review</option>
-                    <option>Approved</option>
-                    <option>Rejected</option>
-                    <option>Out of Stock</option>
-                  </select>
-                </article>
-              ))}
-            </div>
-          </AdminSection>
+          <AdminProductSection products={filterList(data.products)} action={action} money={money} />
         )}
+
 
         {tab === "tickets" && (
           <AdminSection title="Customer Support Tickets">
@@ -1262,3 +1256,419 @@ function TicketRows({
     </div>
   );
 }
+
+function AdminProductSection({
+  products,
+  action,
+  money
+}: {
+  products: Row[];
+  action: (payload: Record<string, unknown>) => void;
+  money: (n?: number) => string;
+}) {
+  const [editingId, setEditingId] = useState<string | null>(null);
+
+  // Form State
+  const [name, setName] = useState("");
+  const [sku, setSku] = useState("");
+  const [capacity, setCapacity] = useState("750ml");
+  const [category, setCategory] = useState("Bottles & Hydration");
+  const [productCost, setProductCost] = useState(350);
+  const [packagingCost, setPackagingCost] = useState(40);
+  const [otherCost, setOtherCost] = useState(30);
+  const [sellingPrice, setSellingPrice] = useState(699);
+  const [mrp, setMrp] = useState(1299);
+  const [stock, setStock] = useState(150);
+  const [imageUrl, setImageUrl] = useState("/shop/vpansak-bottle-black.jpg");
+  const [description, setDescription] = useState("");
+  const [formErr, setFormErr] = useState("");
+
+  const totalCost = productCost + packagingCost + otherCost;
+  const minPrice = totalCost + 100;
+  const profit = sellingPrice - totalCost;
+  const profitMargin = sellingPrice > 0 ? ((profit / sellingPrice) * 100).toFixed(1) : "0";
+
+  const handleEdit = (p: Row) => {
+    setEditingId(String(p.id || ""));
+    setName(p.name || "");
+    setSku(p.sku || "");
+    setCapacity(p.capacity || "750ml");
+    setCategory(p.category || "Bottles & Hydration");
+    setProductCost(Number(p.productCost || 0));
+    setPackagingCost(Number(p.packagingCost || 0));
+    setOtherCost(Number(p.otherCost || 0));
+    setSellingPrice(Number(p.price || 0));
+    setMrp(Number(p.mrp || (p.price ? p.price * 1.5 : 0)));
+    setStock(Number(p.stock || 0));
+    setImageUrl(p.imageUrl || "/shop/vpansak-bottle-black.jpg");
+    setDescription(p.description || "");
+    setFormErr("");
+  };
+
+  const handleResetForm = () => {
+    setEditingId(null);
+    setName("");
+    setSku("");
+    setCapacity("750ml");
+    setCategory("Bottles & Hydration");
+    setProductCost(350);
+    setPackagingCost(40);
+    setOtherCost(30);
+    setSellingPrice(699);
+    setMrp(1299);
+    setStock(150);
+    setImageUrl("/shop/vpansak-bottle-black.jpg");
+    setDescription("");
+    setFormErr("");
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (profit < 100) {
+      setFormErr(`Selling Price (₹${sellingPrice}) is invalid. Minimum Selling Price must be at least ₹${minPrice} (Total Cost ₹${totalCost} + ₹100 min profit).`);
+      return;
+    }
+    setFormErr("");
+    action({
+      action: "saveProduct",
+      id: editingId || `vpansak-bot-${Date.now()}`,
+      name,
+      sku: sku || `VP-BOT-${Date.now()}`,
+      capacity,
+      category,
+      productCost,
+      packagingCost,
+      otherCost,
+      price: sellingPrice,
+      mrp,
+      stock,
+      imageUrl,
+      description,
+      status: "Approved",
+      colors: ["Matte Black", "Navy Blue", "White/Cream", "Olive"],
+      variants: [
+        { color: "Matte Black", hex: "#1c1917", imageUrl: "/shop/vpansak-bottle-black.jpg" },
+        { color: "Navy Blue", hex: "#1e3a8a", imageUrl: "/shop/vpansak-bottle-blue.jpg" },
+        { color: "White/Cream", hex: "#f5f5f4", imageUrl: "/shop/vpansak-bottle-white.jpg" },
+        { color: "Olive", hex: "#3f6212", imageUrl: "/shop/vpansak-bottle-olive.jpg" }
+      ],
+      specifications: {
+        "Capacity": capacity,
+        "Material": "Pro-Grade 18/8 Stainless Steel",
+        "Insulation": "Double-Wall Vacuum + Copper Layer",
+        "Thermal Rating": "24 Hours Cold / 12 Hours Hot",
+        "Warranty": "1 Year Official VPANSAK Warranty"
+      }
+    });
+    handleResetForm();
+  };
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+      {/* Product Creation / Edit Form */}
+      <AdminSection title={editingId ? "Edit VPANSAK Own-Brand Product" : "Add New VPANSAK Own-Brand Product"}>
+        <form onSubmit={handleSubmit} style={{ padding: 24, display: "grid", gap: 16 }}>
+          {formErr && (
+            <div style={{ padding: "12px 16px", borderRadius: 8, background: "#7f1d1d", color: "#fca5a5", fontSize: 13, fontWeight: 700 }}>
+              {formErr}
+            </div>
+          )}
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            <label style={{ display: "flex", flexDirection: "column", gap: 4, color: "#94a3b8", fontSize: 11, fontWeight: 700 }}>
+              Product Name *
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="e.g. VPANSAK Core Bottle — 750ml"
+                required
+                style={{ height: 40, padding: "0 12px", borderRadius: 6, background: "#0a1f38", border: "1px solid #1e3a61", color: "#fff" }}
+              />
+            </label>
+            <label style={{ display: "flex", flexDirection: "column", gap: 4, color: "#94a3b8", fontSize: 11, fontWeight: 700 }}>
+              SKU Code *
+              <input
+                type="text"
+                value={sku}
+                onChange={(e) => setSku(e.target.value)}
+                placeholder="e.g. VP-BOT-CORE-750"
+                required
+                style={{ height: 40, padding: "0 12px", borderRadius: 6, background: "#0a1f38", border: "1px solid #1e3a61", color: "#fff" }}
+              />
+            </label>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
+            <label style={{ display: "flex", flexDirection: "column", gap: 4, color: "#94a3b8", fontSize: 11, fontWeight: 700 }}>
+              Category
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                style={{ height: 40, padding: "0 12px", borderRadius: 6, background: "#0a1f38", border: "1px solid #1e3a61", color: "#fff" }}
+              >
+                <option>Bottles &amp; Hydration</option>
+                <option>Travel &amp; Outdoor</option>
+                <option>Lifestyle Essentials</option>
+              </select>
+            </label>
+            <label style={{ display: "flex", flexDirection: "column", gap: 4, color: "#94a3b8", fontSize: 11, fontWeight: 700 }}>
+              Capacity
+              <input
+                type="text"
+                value={capacity}
+                onChange={(e) => setCapacity(e.target.value)}
+                placeholder="e.g. 750ml"
+                style={{ height: 40, padding: "0 12px", borderRadius: 6, background: "#0a1f38", border: "1px solid #1e3a61", color: "#fff" }}
+              />
+            </label>
+            <label style={{ display: "flex", flexDirection: "column", gap: 4, color: "#94a3b8", fontSize: 11, fontWeight: 700 }}>
+              Stock Quantity
+              <input
+                type="number"
+                value={stock}
+                onChange={(e) => setStock(Number(e.target.value))}
+                min={0}
+                style={{ height: 40, padding: "0 12px", borderRadius: 6, background: "#0a1f38", border: "1px solid #1e3a61", color: "#fff" }}
+              />
+            </label>
+          </div>
+
+          {/* Cost Breakdown & Profit Rule Box */}
+          <div style={{ padding: 18, borderRadius: 12, background: "#0c1a2e", border: "1px solid #1e3a61", display: "grid", gap: 12 }}>
+            <span style={{ color: "#38bdf8", fontSize: 11, fontWeight: 800, letterSpacing: "0.1em" }}>
+              FINANCIAL COST BREAKDOWN &amp; PROFIT MARGIN ENFORCEMENT
+            </span>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
+              <label style={{ display: "flex", flexDirection: "column", gap: 4, color: "#94a3b8", fontSize: 11, fontWeight: 700 }}>
+                Product Cost (₹)
+                <input
+                  type="number"
+                  value={productCost}
+                  onChange={(e) => setProductCost(Number(e.target.value))}
+                  min={0}
+                  style={{ height: 38, padding: "0 10px", borderRadius: 6, background: "#071628", border: "1px solid #1e3a61", color: "#fff" }}
+                />
+              </label>
+              <label style={{ display: "flex", flexDirection: "column", gap: 4, color: "#94a3b8", fontSize: 11, fontWeight: 700 }}>
+                Packaging Cost (₹)
+                <input
+                  type="number"
+                  value={packagingCost}
+                  onChange={(e) => setPackagingCost(Number(e.target.value))}
+                  min={0}
+                  style={{ height: 38, padding: "0 10px", borderRadius: 6, background: "#071628", border: "1px solid #1e3a61", color: "#fff" }}
+                />
+              </label>
+              <label style={{ display: "flex", flexDirection: "column", gap: 4, color: "#94a3b8", fontSize: 11, fontWeight: 700 }}>
+                Other Cost (₹)
+                <input
+                  type="number"
+                  value={otherCost}
+                  onChange={(e) => setOtherCost(Number(e.target.value))}
+                  min={0}
+                  style={{ height: 38, padding: "0 10px", borderRadius: 6, background: "#071628", border: "1px solid #1e3a61", color: "#fff" }}
+                />
+              </label>
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginTop: 4 }}>
+              <label style={{ display: "flex", flexDirection: "column", gap: 4, color: "#f59e0b", fontSize: 11, fontWeight: 700 }}>
+                Selling Price (₹) *
+                <input
+                  type="number"
+                  value={sellingPrice}
+                  onChange={(e) => setSellingPrice(Number(e.target.value))}
+                  min={0}
+                  style={{ height: 38, padding: "0 10px", borderRadius: 6, background: "#071628", border: "1px solid #f59e0b", color: "#fff" }}
+                />
+              </label>
+              <label style={{ display: "flex", flexDirection: "column", gap: 4, color: "#94a3b8", fontSize: 11, fontWeight: 700 }}>
+                MRP (₹)
+                <input
+                  type="number"
+                  value={mrp}
+                  onChange={(e) => setMrp(Number(e.target.value))}
+                  min={0}
+                  style={{ height: 38, padding: "0 10px", borderRadius: 6, background: "#071628", border: "1px solid #1e3a61", color: "#fff" }}
+                />
+              </label>
+              <div style={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
+                <span style={{ fontSize: 10, color: "#94a3b8" }}>Calculated Total Cost:</span>
+                <strong style={{ fontSize: 18, color: "#38bdf8" }}>{money(totalCost)}</strong>
+              </div>
+            </div>
+
+            {/* Live Profit & Rule Summary */}
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                padding: "10px 14px",
+                borderRadius: 8,
+                background: profit >= 100 ? "rgba(16, 185, 129, 0.15)" : "rgba(239, 68, 68, 0.2)",
+                border: "1px solid " + (profit >= 100 ? "rgba(16, 185, 129, 0.3)" : "rgba(239, 68, 68, 0.4)")
+              }}
+            >
+              <div>
+                <span style={{ fontSize: 11, color: "#cbd5e1" }}>Min Price Allowed (Total Cost + ₹100): </span>
+                <strong style={{ fontSize: 12, color: "#f59e0b" }}>{money(minPrice)}</strong>
+              </div>
+              <div style={{ textAlign: "right" }}>
+                <span style={{ fontSize: 11, color: "#cbd5e1" }}>Calculated Profit: </span>
+                <strong style={{ fontSize: 15, color: profit >= 100 ? "#34d399" : "#f87171" }}>
+                  {money(profit)} ({profitMargin}%)
+                </strong>
+              </div>
+            </div>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            <label style={{ display: "flex", flexDirection: "column", gap: 4, color: "#94a3b8", fontSize: 11, fontWeight: 700 }}>
+              Main Image URL
+              <input
+                type="text"
+                value={imageUrl}
+                onChange={(e) => setImageUrl(e.target.value)}
+                placeholder="/shop/vpansak-bottle-black.jpg"
+                style={{ height: 40, padding: "0 12px", borderRadius: 6, background: "#0a1f38", border: "1px solid #1e3a61", color: "#fff" }}
+              />
+            </label>
+            <label style={{ display: "flex", flexDirection: "column", gap: 4, color: "#94a3b8", fontSize: 11, fontWeight: 700 }}>
+              Description
+              <input
+                type="text"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Product description..."
+                style={{ height: 40, padding: "0 12px", borderRadius: 6, background: "#0a1f38", border: "1px solid #1e3a61", color: "#fff" }}
+              />
+            </label>
+          </div>
+
+          <div style={{ display: "flex", gap: 12, marginTop: 8 }}>
+            <button
+              type="submit"
+              disabled={profit < 100}
+              style={{
+                height: 44,
+                padding: "0 24px",
+                borderRadius: 8,
+                background: profit >= 100 ? "linear-gradient(135deg, #10b981, #059669)" : "#475569",
+                color: "#fff",
+                fontWeight: 800,
+                fontSize: 13,
+                border: 0,
+                cursor: profit >= 100 ? "pointer" : "not-allowed"
+              }}
+            >
+              {editingId ? "Update Product" : "Save Product & Launch"}
+            </button>
+            {editingId && (
+              <button
+                type="button"
+                onClick={handleResetForm}
+                style={{ height: 44, padding: "0 20px", borderRadius: 8, background: "#334155", color: "#fff", border: 0, cursor: "pointer" }}
+              >
+                Cancel Edit
+              </button>
+            )}
+          </div>
+        </form>
+      </AdminSection>
+
+      {/* Active Inventory List */}
+      <AdminSection title={`VPANSAK Own-Brand Catalog (${products.length} Products)`}>
+        <div style={{ display: "grid", gap: 12, padding: 16 }}>
+          {products.map((r) => {
+            const pCost = Number(r.productCost || 0);
+            const pkgCost = Number(r.packagingCost || 0);
+            const oCost = Number(r.otherCost || 0);
+            const totCost = Number(r.totalCost || pCost + pkgCost + oCost);
+            const sPrice = Number(r.price || 0);
+            const netProf = Number(r.profit ?? sPrice - totCost);
+            const margin = Number(r.profitMargin ?? (sPrice > 0 ? ((netProf / sPrice) * 100).toFixed(1) : 0));
+
+            return (
+              <article
+                key={String(r.id)}
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "60px 1.5fr 1fr 1fr auto",
+                  alignItems: "center",
+                  gap: 16,
+                  padding: 16,
+                  borderRadius: 12,
+                  background: "#0c1a2e",
+                  border: "1px solid #1e3a61"
+                }}
+              >
+                <img
+                  src={r.imageUrl || "/shop/vpansak-bottle-black.jpg"}
+                  alt=""
+                  style={{ width: 60, height: 60, borderRadius: 8, objectFit: "contain", background: "#071628" }}
+                />
+
+                <div>
+                  <strong style={{ color: "#fff", fontSize: 14, display: "block" }}>{r.name}</strong>
+                  <span style={{ color: "#94a3b8", fontSize: 11 }}>
+                    SKU: {r.sku} • Capacity: {r.capacity || "N/A"} • Stock: {r.stock}
+                  </span>
+                </div>
+
+                {/* Admin Cost & Profit Ledger */}
+                <div style={{ fontSize: 11, color: "#cbd5e1" }}>
+                  <div>Total Cost: <strong style={{ color: "#38bdf8" }}>{money(totCost)}</strong></div>
+                  <small style={{ color: "#64748b", fontSize: 10 }}>
+                    (Prod ₹{pCost} + Pkg ₹{pkgCost} + Oth ₹{oCost})
+                  </small>
+                </div>
+
+                <div style={{ fontSize: 11 }}>
+                  <div style={{ color: "#cbd5e1" }}>Selling Price: <strong style={{ color: "#fff" }}>{money(sPrice)}</strong></div>
+                  <div style={{ color: "#34d399", fontWeight: 800 }}>
+                    Profit: {money(netProf)} ({margin}%)
+                  </div>
+                </div>
+
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <select
+                    value={r.status || "Approved"}
+                    onChange={(e) => action({ action: "productStatus", id: r.id, status: e.target.value })}
+                    style={{ height: 34, padding: "0 8px", borderRadius: 6, background: "#071628", border: "1px solid #1e3a61", color: "#fff", fontSize: 11 }}
+                  >
+                    <option>Approved</option>
+                    <option>Pending Review</option>
+                    <option>Out of Stock</option>
+                  </select>
+
+                  <button
+                    type="button"
+                    onClick={() => handleEdit(r)}
+                    style={{ height: 34, padding: "0 12px", borderRadius: 6, background: "#1d4ed8", color: "#fff", border: 0, cursor: "pointer", fontSize: 11, fontWeight: 700 }}
+                  >
+                    Edit
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (confirm(`Delete product "${r.name}"?`)) {
+                        action({ action: "deleteProduct", id: r.id });
+                      }
+                    }}
+                    style={{ height: 34, padding: "0 10px", borderRadius: 6, background: "#991b1b", color: "#fca5a5", border: 0, cursor: "pointer", fontSize: 11 }}
+                  >
+                    Delete
+                  </button>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      </AdminSection>
+    </div>
+  );
+}
+
