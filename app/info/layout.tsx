@@ -1,16 +1,16 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "About VPANSAK | Shopping, Sellers, Payments, Support and Policies",
+  title: "About VPANSAK | Direct D2C Brand Store, Payments, Support and Policies",
   description:
-    "Learn about VPANSAK Shopping, its customer services, verified seller program, secure payment options, delivery process, return and refund system, support centre and future vision.",
+    "Learn about VPANSAK Shopping, its customer services, 100% direct D2C brand model, secure payment options, delivery process, return and refund system, support centre and future vision.",
   alternates: {
     canonical: "https://vpansak.vercel.app/info",
   },
   openGraph: {
-    title: "About VPANSAK | Shopping, Sellers, Payments, Support and Policies",
+    title: "About VPANSAK | Direct D2C Brand Store, Payments, Support and Policies",
     description:
-      "Learn about VPANSAK Shopping, its customer services, verified seller program, secure payment options, delivery process, return and refund system, support centre and future vision.",
+      "Learn about VPANSAK Shopping, its customer services, 100% direct D2C brand model, secure payment options, delivery process, return and refund system, support centre and future vision.",
     url: "https://vpansak.vercel.app/info",
     siteName: "VPANSAK Shopping",
     images: [

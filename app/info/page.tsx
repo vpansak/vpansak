@@ -59,7 +59,7 @@ const tocSections = [
   { id: "payments", label: "Payments & Verification" },
   { id: "delivery", label: "Delivery & Tracking" },
   { id: "returns-refunds", label: "Returns & 5-Min Refund" },
-  { id: "seller-program", label: "Sell on VPANSAK (3% Fee)" },
+  { id: "seller-program", label: "VPANSAK Direct Brand Policy" },
   { id: "support", label: "Support Centre" },
   { id: "contribution", label: "Support Contribution" },
   { id: "security", label: "Security & Safety" },
