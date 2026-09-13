@@ -31,8 +31,10 @@ export async function GET(request: Request) {
         applicationId: latest.applicationId,
         status: latest.status || "New",
         isRejected,
+        rejectionReason: latest.adminNotes || "Requirements criteria mismatch",
         createdAt: latest.createdAt,
         interestedRole: latest.interestedRole,
+        previousData: latest,
       });
     }
 
@@ -53,8 +55,30 @@ export async function GET(request: Request) {
           applicationId: latest.application_id || latest.applicationId,
           status: latest.status || "New",
           isRejected,
+          rejectionReason: latest.admin_notes || latest.adminNotes || "Requirements criteria mismatch",
           createdAt: latest.created_at || latest.createdAt,
           interestedRole: latest.interested_role || latest.interestedRole,
+          previousData: {
+            fullName: latest.full_name || latest.fullName,
+            email: latest.email,
+            mobile: latest.mobile,
+            city: latest.city,
+            state: latest.state,
+            country: latest.country || "India",
+            interestedRole: latest.interested_role || latest.interestedRole,
+            preferredPosition: latest.preferred_position || latest.preferredPosition,
+            workMode: latest.work_mode || latest.workMode,
+            qualification: latest.qualification,
+            degreeCourse: latest.degree_course || latest.degreeCourse,
+            fieldOfStudy: latest.field_of_study || latest.fieldOfStudy,
+            institution: latest.institution,
+            graduationYear: latest.graduation_year || latest.graduationYear,
+            skills: latest.skills,
+            experienceLevel: latest.experience_level || latest.experienceLevel,
+            experienceDetails: latest.experience_details || latest.experienceDetails,
+            whyVpansak: latest.why_vpansak || latest.whyVpansak,
+            careerGoals: latest.career_goals || latest.careerGoals,
+          },
         });
       }
     }

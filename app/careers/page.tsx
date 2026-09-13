@@ -98,8 +98,19 @@ export default function CareersPage() {
     applicationId?: string;
     status?: string;
     isRejected?: boolean;
+    rejectionReason?: string;
+    previousData?: any;
   } | null>(null);
   const [checkingActive, setCheckingActive] = useState(false);
+
+  const handleRefill = () => {
+    if (activeApp?.previousData) {
+      setFormData((prev) => ({
+        ...prev,
+        ...activeApp.previousData,
+      }));
+    }
+  };
 
   // Auto-check active application whenever email is entered
   useEffect(() => {
@@ -807,58 +818,79 @@ export default function CareersPage() {
                   </div>
                 )}
 
-                {/* Active Application Status Alert Card */}
-                {activeApp && activeApp.active && !activeApp.isRejected && (
+                {/* Active Application Card (When Active Request Exists, Hide Form Inputs) */}
+                {activeApp && activeApp.active && !activeApp.isRejected ? (
                   <div
                     style={{
-                      padding: "20px 22px",
-                      borderRadius: 12,
-                      background: "rgba(234, 179, 8, 0.12)",
-                      border: "1px solid rgba(234, 179, 8, 0.4)",
-                      color: "#fef08a",
-                      marginBottom: 28,
+                      padding: "32px 24px",
+                      borderRadius: 14,
+                      background: "#0a192f",
+                      border: "1px solid #1e3a61",
+                      textAlign: "center",
+                      margin: "20px 0",
                     }}
                   >
-                    <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-                      <Clock size={22} style={{ color: "#eab308" }} />
-                      <strong style={{ fontSize: 16, color: "#ffffff" }}>
-                        APPLICATION IN PROCESSING (Status: {activeApp.status || "Under Review"})
-                      </strong>
+                    <div style={{ width: 60, height: 60, borderRadius: "50%", background: "rgba(56, 189, 248, 0.15)", border: "2px solid #38bdf8", color: "#38bdf8", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
+                      <Clock size={30} />
                     </div>
-                    <p style={{ fontSize: 13, margin: "0 0 10px", lineHeight: 1.6, color: "#fef08a" }}>
-                      An active career application is already under processing for <strong>{formData.email}</strong>. Multiple active submissions are locked until your active request is reviewed by VPANSAK HR.
+                    <span style={{ fontSize: 11, fontWeight: 900, letterSpacing: "0.1em", color: "#38bdf8", textTransform: "uppercase" }}>ACTIVE APPLICATION IN PROCESSING</span>
+                    <h2 style={{ fontSize: 24, fontWeight: 900, color: "#ffffff", margin: "8px 0 4px" }}>
+                      {activeApp.applicationId}
+                    </h2>
+                    <p style={{ fontSize: 14, color: "#94a3b8", maxWidth: 540, margin: "0 auto 20px", lineHeight: 1.6 }}>
+                      An active career application is already under processing for <strong style={{ color: "#ffffff" }}>{formData.email}</strong>. Multiple active submissions are locked until your application is reviewed by VPANSAK HR.
                     </p>
-                    <div style={{ display: "flex", alignItems: "center", gap: 10, background: "rgba(0,0,0,0.3)", padding: "8px 14px", borderRadius: 6, width: "max-content" }}>
-                      <span style={{ fontSize: 11, color: "#94a3b8" }}>TRACKING CODE:</span>
-                      <code style={{ fontSize: 14, fontWeight: 900, color: "#38bdf8" }}>{activeApp.applicationId}</code>
-                    </div>
-                    <small style={{ display: "block", marginTop: 10, color: "#cbd5e1", fontSize: 12 }}>
-                      ℹ️ Re-application is automatically permitted if your previous application is rejected.
-                    </small>
-                  </div>
-                )}
 
-                {/* Re-Application Opportunity Banner */}
-                {activeApp && activeApp.isRejected && (
-                  <div
-                    style={{
-                      padding: "16px 20px",
-                      borderRadius: 10,
-                      background: "rgba(34, 197, 94, 0.12)",
-                      border: "1px solid rgba(34, 197, 94, 0.3)",
-                      color: "#86efac",
-                      marginBottom: 24,
-                    }}
-                  >
-                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <CheckCircle2 size={18} style={{ color: "#22c55e" }} />
-                      <strong>Re-Application Window Open</strong>
+                    <div style={{ display: "inline-flex", alignItems: "center", gap: 10, background: "#1e293b", padding: "10px 20px", borderRadius: 10, border: "1px solid #334155", marginBottom: 24 }}>
+                      <span style={{ fontSize: 12, color: "#94a3b8" }}>Current Status:</span>
+                      <span style={{ fontSize: 13, fontWeight: 900, color: "#38bdf8", padding: "4px 12px", borderRadius: 6, background: "rgba(56, 189, 248, 0.15)" }}>
+                        {activeApp.status || "Under Review"}
+                      </span>
                     </div>
-                    <p style={{ fontSize: 13, margin: "4px 0 0", color: "#cbd5e1" }}>
-                      Your previous application (Tracking Code: <strong>{activeApp.applicationId}</strong>) was reviewed. You are eligible to submit an updated application profile now.
-                    </p>
+
+                    <div>
+                      <Link href={`/track?id=${encodeURIComponent(activeApp.applicationId || "")}`} style={{ padding: "12px 24px", borderRadius: 8, background: "#2563eb", color: "#ffffff", fontWeight: 800, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 8 }}>
+                        <Search size={16} /> Track Application Status Live
+                      </Link>
+                    </div>
                   </div>
-                )}
+                ) : (
+                  <>
+                    {/* Re-Application Opportunity Banner with Rejection Reason & Refill Button */}
+                    {activeApp && activeApp.isRejected && (
+                      <div
+                        style={{
+                          padding: "20px 24px",
+                          borderRadius: 12,
+                          background: "rgba(239, 68, 68, 0.12)",
+                          border: "1px solid rgba(239, 68, 68, 0.4)",
+                          color: "#fca5a5",
+                          marginBottom: 28,
+                        }}
+                      >
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 12 }}>
+                          <div>
+                            <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#f87171", fontWeight: 800, fontSize: 15, marginBottom: 4 }}>
+                              <AlertTriangle size={18} /> Previous Application ({activeApp.applicationId}) Was Rejected
+                            </div>
+                            <p style={{ fontSize: 13, color: "#fca5a5", margin: "4px 0 8px", lineHeight: 1.5 }}>
+                              <strong>Rejection Reason from HR:</strong> {activeApp.rejectionReason || "Requirements criteria mismatch."}
+                            </p>
+                            <small style={{ color: "#94a3b8", fontSize: 12 }}>
+                              ℹ️ Re-application window is open. You may update your details/resume and submit a fresh application.
+                            </small>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={handleRefill}
+                            style={{ padding: "10px 18px", borderRadius: 8, background: "#2563eb", color: "white", border: 0, fontWeight: 800, fontSize: 12, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6 }}
+                          >
+                            <RefreshCw size={14} /> Refill Previous Details &amp; Edit Form
+                          </button>
+                        </div>
+                      </div>
+                    )}
 
                 {/* SECTION 1: BASIC INFORMATION */}
                 <div style={{ marginBottom: 32 }}>

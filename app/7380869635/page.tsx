@@ -1691,7 +1691,13 @@ function CareerRows({ rows, action }: { rows: any[]; action: (b: Record<string, 
   const [selectedApp, setSelectedApp] = useState<any | null>(null);
 
   const handleStatusUpdate = (r: any, newStatus: string) => {
-    action({ action: "careerStatus", applicationId: r.applicationId, status: newStatus });
+    if (newStatus === "Rejected") {
+      const reason = window.prompt(`Enter Rejection Reason for ${r.fullName} (This reason will be shown to candidate on Careers Portal & Email):`, r.adminNotes || "Experience or skills criteria mismatch");
+      if (reason === null) return;
+      action({ action: "careerStatus", applicationId: r.applicationId, status: "Rejected", adminNotes: reason.trim() });
+    } else {
+      action({ action: "careerStatus", applicationId: r.applicationId, status: newStatus });
+    }
   };
 
   const handleNotesUpdate = (r: any) => {
@@ -1700,18 +1706,120 @@ function CareerRows({ rows, action }: { rows: any[]; action: (b: Record<string, 
     action({ action: "careerStatus", applicationId: r.applicationId, status: r.status || "New", adminNotes: notes.trim() });
   };
 
+  const handlePrintApplication = (app: any) => {
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) return;
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>VPANSAK Candidate Application Profile - ${app.applicationId}</title>
+          <style>
+            body { font-family: Arial, sans-serif; padding: 30px; color: #1e293b; line-height: 1.5; }
+            .header { border-bottom: 2px solid #2563eb; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+            .brand { font-size: 24px; font-weight: bold; color: #0f172a; }
+            .title { font-size: 14px; color: #2563eb; font-weight: bold; text-transform: uppercase; }
+            .section { margin-bottom: 18px; padding: 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; }
+            .section-title { font-size: 13px; font-weight: bold; color: #2563eb; margin-bottom: 8px; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px; }
+            .field { font-size: 12px; margin-bottom: 4px; }
+            .field strong { color: #0f172a; }
+            .badge { display: inline-block; padding: 4px 10px; background: #dbeafe; color: #1e40af; border-radius: 12px; font-weight: bold; font-size: 11px; }
+            @media print {
+              body { padding: 10px; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div>
+              <div class="brand">VPANSAK CAREERS</div>
+              <div class="title">Candidate Application Profile</div>
+            </div>
+            <div style="text-align: right;">
+              <div style="font-size: 14px; font-weight: bold;">Tracking ID: ${app.applicationId}</div>
+              <div class="badge">Status: ${app.status || "New"}</div>
+              <div style="font-size: 11px; color: #64748b; margin-top: 4px;">Applied: ${new Date(app.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</div>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">1. Basic Information</div>
+            <div class="field"><strong>Full Name:</strong> ${app.fullName}</div>
+            <div class="field"><strong>Email Address:</strong> ${app.email}</div>
+            <div class="field"><strong>Mobile Number:</strong> ${app.mobile}</div>
+            <div class="field"><strong>Current Location:</strong> ${app.city}, ${app.state}, ${app.country || "India"}</div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">2. Role Preferences</div>
+            <div class="field"><strong>Interested Role Category:</strong> ${app.interestedRole}</div>
+            <div class="field"><strong>Preferred Position:</strong> ${app.preferredPosition || "General"}</div>
+            <div class="field"><strong>Work Mode:</strong> ${app.workMode}</div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">3. Education & Qualification</div>
+            <div class="field"><strong>Highest Qualification:</strong> ${app.qualification}</div>
+            <div class="field"><strong>Degree / Course:</strong> ${app.degreeCourse || "N/A"} (${app.fieldOfStudy || "General"})</div>
+            <div class="field"><strong>College / Institution:</strong> ${app.institution || "N/A"}</div>
+            <div class="field"><strong>Graduation Year:</strong> ${app.graduationYear || "N/A"}</div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">4. Skills & Work Experience</div>
+            <div class="field"><strong>Key Skills:</strong> ${app.skills}</div>
+            <div class="field"><strong>Experience Level:</strong> ${app.experienceLevel}</div>
+            <div class="field"><strong>Experience Details:</strong> ${app.experienceDetails || "N/A"}</div>
+            ${app.projectDetails ? `<div class="field"><strong>Project Details:</strong> ${app.projectDetails}</div>` : ""}
+          </div>
+
+          <div class="section">
+            <div class="section-title">5. Motivations & Availability</div>
+            ${app.linkedinUrl ? `<div class="field"><strong>LinkedIn:</strong> ${app.linkedinUrl}</div>` : ""}
+            ${app.githubUrl ? `<div class="field"><strong>GitHub:</strong> ${app.githubUrl}</div>` : ""}
+            ${app.portfolioUrl ? `<div class="field"><strong>Portfolio:</strong> ${app.portfolioUrl}</div>` : ""}
+            <div class="field"><strong>Why VPANSAK:</strong> ${app.whyVpansak || "N/A"}</div>
+            <div class="field"><strong>Career Goals:</strong> ${app.careerGoals || "N/A"}</div>
+            <div class="field"><strong>Availability:</strong> ${app.availability} (Interview Ready: ${app.interviewAvailability})</div>
+          </div>
+
+          ${app.adminNotes ? `<div class="section"><div class="section-title">6. HR / Admin Notes & Rejection Reason</div><div class="field"><strong>Notes / Reason:</strong> ${app.adminNotes}</div></div>` : ""}
+
+          <div style="margin-top: 30px; border-top: 1px solid #cbd5e1; padding-top: 10px; text-align: center; font-size: 11px; color: #64748b;">
+            Official VPANSAK Candidate Application Ledger • Confidential
+          </div>
+
+          <script>
+            window.onload = function() { window.print(); }
+          </script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+  };
+
   return (
     <div className="manage-rows">
       {selectedApp && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "grid", placeItems: "center", zIndex: 999, padding: 20 }}>
-          <div style={{ background: "#0f172a", border: "1px solid #334155", borderRadius: 12, width: "min(700px, 100%)", maxHeight: "90vh", overflow: "auto", padding: 24, color: "white" }}>
+          <div style={{ background: "#0f172a", border: "1px solid #334155", borderRadius: 12, width: "min(750px, 100%)", maxHeight: "90vh", overflow: "auto", padding: 24, color: "white" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, borderBottom: "1px solid #334155", paddingBottom: 12 }}>
               <div>
-                <span style={{ fontSize: 11, color: "#38bdf8", fontWeight: 800 }}>APPLICATION DETAILS</span>
+                <span style={{ fontSize: 11, color: "#38bdf8", fontWeight: 800 }}>CANDIDATE APPLICATION PROFILE</span>
                 <h2 style={{ fontSize: 20, margin: "2px 0 0", color: "white" }}>{selectedApp.fullName}</h2>
                 <small style={{ color: "#94a3b8" }}>ID: {selectedApp.applicationId} • Applied: {new Date(selectedApp.createdAt).toLocaleDateString()}</small>
               </div>
-              <button type="button" onClick={() => setSelectedApp(null)} style={{ background: "#334155", border: 0, color: "white", padding: "6px 12px", borderRadius: 6, cursor: "pointer", fontWeight: 700 }}>Close</button>
+              <div style={{ display: "flex", gap: 8 }}>
+                <button
+                  type="button"
+                  onClick={() => handlePrintApplication(selectedApp)}
+                  style={{ background: "#2563eb", border: 0, color: "white", padding: "6px 14px", borderRadius: 6, cursor: "pointer", fontWeight: 800, fontSize: 12 }}
+                >
+                  🖨️ Print Application Sheet
+                </button>
+                <button type="button" onClick={() => setSelectedApp(null)} style={{ background: "#334155", border: 0, color: "white", padding: "6px 12px", borderRadius: 6, cursor: "pointer", fontWeight: 700 }}>Close</button>
+              </div>
             </div>
 
             <div style={{ display: "grid", gap: 16, fontSize: 13 }}>
@@ -1771,7 +1879,7 @@ function CareerRows({ rows, action }: { rows: any[]; action: (b: Record<string, 
 
               {selectedApp.adminNotes && (
                 <div style={{ background: "#0284c720", border: "1px solid #0284c750", padding: 14, borderRadius: 8 }}>
-                  <strong style={{ color: "#38bdf8", display: "block", marginBottom: 4 }}>📝 Internal HR Notes</strong>
+                  <strong style={{ color: "#38bdf8", display: "block", marginBottom: 4 }}>📝 Rejection Reason / HR Notes</strong>
                   <p style={{ margin: 0, color: "#e0f2fe" }}>{selectedApp.adminNotes}</p>
                 </div>
               )}
@@ -1797,23 +1905,44 @@ function CareerRows({ rows, action }: { rows: any[]; action: (b: Record<string, 
               <small style={{ color: "#94a3b8", display: "block", marginTop: 2 }}>
                 Contact: {r.email} | {r.mobile} | {r.city}, {r.state}
               </small>
+              {r.adminNotes && (
+                <small style={{ color: "#dc2626", display: "block", marginTop: 2, fontWeight: 700 }}>
+                  Reason/Notes: {r.adminNotes}
+                </small>
+              )}
             </div>
 
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
               <button
                 type="button"
                 onClick={() => setSelectedApp(r)}
                 style={{ height: 32, padding: "0 10px", borderRadius: 6, background: "#0f172a", color: "white", border: 0, cursor: "pointer", fontSize: 11, fontWeight: 700 }}
               >
-                View Full Details
+                View Details
               </button>
 
               <button
                 type="button"
-                onClick={() => handleNotesUpdate(r)}
-                style={{ height: 32, padding: "0 10px", borderRadius: 6, background: "#e0e7ff", color: "#3730a3", border: 0, cursor: "pointer", fontSize: 11, fontWeight: 700 }}
+                onClick={() => handlePrintApplication(r)}
+                style={{ height: 32, padding: "0 10px", borderRadius: 6, background: "#2563eb", color: "white", border: 0, cursor: "pointer", fontSize: 11, fontWeight: 800 }}
               >
-                Notes
+                🖨️ Print PDF
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleStatusUpdate(r, "Shortlisted")}
+                style={{ height: 32, padding: "0 10px", borderRadius: 6, background: "#16a34a", color: "white", border: 0, cursor: "pointer", fontSize: 11, fontWeight: 800 }}
+              >
+                ✓ Accept
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleStatusUpdate(r, "Rejected")}
+                style={{ height: 32, padding: "0 10px", borderRadius: 6, background: "#dc2626", color: "white", border: 0, cursor: "pointer", fontSize: 11, fontWeight: 800 }}
+              >
+                ✕ Reject (Reason)
               </button>
 
               <select

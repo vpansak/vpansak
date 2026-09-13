@@ -518,6 +518,47 @@ export async function POST(request: Request) {
       return Response.json({ ok: true });
     }
 
+    if (action === "careerStatus") {
+      const applicationId = String(body.applicationId || "").trim();
+      const status = String(body.status || "New").trim();
+      const adminNotes = body.adminNotes !== undefined ? String(body.adminNotes).trim() : undefined;
+
+      if (!applicationId) return Response.json({ error: "Application ID required." }, { status: 400 });
+
+      const updatePayload: Record<string, any> = { status, updatedAt: new Date().toISOString() };
+      if (adminNotes !== undefined) {
+        updatePayload.adminNotes = adminNotes;
+      }
+
+      try {
+        await db.update(careerApplications).set(updatePayload).where(eq(careerApplications.applicationId, applicationId));
+      } catch {}
+
+      try {
+        if (supabase) {
+          const sbPayload: Record<string, any> = { status, updated_at: new Date().toISOString() };
+          if (adminNotes !== undefined) sbPayload.admin_notes = adminNotes;
+          await supabase.from("career_applications").update(sbPayload).eq("application_id", applicationId);
+        }
+      } catch {}
+
+      const [appRow] = await db.select().from(careerApplications).where(eq(careerApplications.applicationId, applicationId)).limit(1);
+      if (appRow && appRow.email) {
+        const isRejected = status === "Rejected";
+        const subject = isRejected
+          ? `VPANSAK Career Application Status Update (${applicationId})`
+          : `Congratulations! Your VPANSAK Career Application (${applicationId})`;
+        const bodyText = isRejected
+          ? `Dear ${appRow.fullName},\n\nThank you for applying for the ${appRow.interestedRole} position at VPANSAK.\n\nAfter careful review of your application (${applicationId}), we regret to inform you that we are not moving forward with your application at this time.\n\nRejection Reason: ${adminNotes || "Requirements criteria mismatch"}\n\nRe-application Window: You may update your resume/skills and submit a fresh application anytime on the VPANSAK Careers Portal.\n\nWarm regards,\nHR & Talent Acquisition Team\nVPANSAK`
+          : `Dear ${appRow.fullName},\n\nWe are pleased to inform you that your application (${applicationId}) for ${appRow.interestedRole} has been updated to: ${status}!\n\nOur HR team will reach out to you shortly with next steps.\n\nBest regards,\nHR & Talent Acquisition Team\nVPANSAK`;
+
+        const composeUrl = `https://outlook.live.com/mail/0/deeplink/compose?${new URLSearchParams({ to: appRow.email, subject, body: bodyText })}`;
+        return Response.json({ ok: true, composeUrl, status, applicationId });
+      }
+
+      return Response.json({ ok: true, status, applicationId });
+    }
+
     if (action === "reviewStatus") {
       const id = Number(body.id);
       const status = String(body.status || "Approved").slice(0, 30);
