@@ -71,7 +71,7 @@ async function runE2ETest() {
 
   // Test EmailJS sending
   const verificationLink = `https://vpansak.vercel.app/verify-email?token=${rawToken}`;
-  console.log(`2. Sending verification email via EmailJS (service_15li5i6)...`);
+  console.log(`2. Sending verification email via EmailJS (vpansak)...`);
   const emailRes = await sendVerificationEmail(testEmail, testName, verificationLink);
   if (!emailRes.success) {
     throw new Error(`EmailJS delivery failed: ${emailRes.error}`);

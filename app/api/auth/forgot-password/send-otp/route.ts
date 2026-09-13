@@ -17,10 +17,10 @@ function hashOtp(otp: string): string {
 
 async function sendEmailJsOtp(toEmail: string, userName: string, otpCode: string, baseUrl?: string): Promise<boolean> {
   // Primary OTP Template Config
-  const primaryServiceId = process.env.EMAILJS_OTP_SERVICE_ID || "vpansak";
-  const primaryTemplateId = process.env.EMAILJS_OTP_TEMPLATE_ID || "template_di6hvjm";
-  const primaryPublicKey = process.env.EMAILJS_OTP_PUBLIC_KEY || "jjG3XUesW7Yt8McRJ";
-  const primaryPrivateKey = process.env.EMAILJS_OTP_PRIVATE_KEY || "G-re211vGlwHrNVCniNgz";
+  const primaryServiceId = process.env.EMAILJS_OTP_SERVICE_ID || process.env.EMAILJS_SERVICE_ID || "vpansak";
+  const primaryTemplateId = process.env.EMAILJS_OTP_TEMPLATE_ID || process.env.EMAILJS_TEMPLATE_ID || "template_di6hvjm";
+  const primaryPublicKey = process.env.EMAILJS_OTP_PUBLIC_KEY || process.env.EMAILJS_PUBLIC_KEY || "jjG3XUesW7Yt8McRJ";
+  const primaryPrivateKey = process.env.EMAILJS_OTP_PRIVATE_KEY || process.env.EMAILJS_PRIVATE_KEY || "G-re211vGlwHrNVCniNgz";
 
   const appOrigin = baseUrl || process.env.APP_URL || "https://vpansak.vercel.app";
   const resetLink = `${appOrigin.replace(/\/+$/, "")}/forgot-password?email=${encodeURIComponent(toEmail)}&code=${otpCode}`;
@@ -83,10 +83,10 @@ async function sendEmailJsOtp(toEmail: string, userName: string, otpCode: string
         "User-Agent": "Mozilla/5.0 (VPANSAK Backend Email Service)",
       },
       body: JSON.stringify({
-        service_id: process.env.EMAILJS_SERVICE_ID || "service_15li5i6",
-        template_id: process.env.EMAILJS_TEMPLATE_ID || "template_yv895a7",
-        user_id: process.env.EMAILJS_PUBLIC_KEY || "K2hOwDJVfSGpJ3nih",
-        accessToken: process.env.EMAILJS_PRIVATE_KEY || "30mafPjRgPPn5im53Idzh",
+        service_id: process.env.EMAILJS_SERVICE_ID || "vpansak",
+        template_id: process.env.EMAILJS_TEMPLATE_ID || "template_di6hvjm",
+        user_id: process.env.EMAILJS_PUBLIC_KEY || "jjG3XUesW7Yt8McRJ",
+        accessToken: process.env.EMAILJS_PRIVATE_KEY || "G-re211vGlwHrNVCniNgz",
         template_params: templateParams,
       }),
     });

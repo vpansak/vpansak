@@ -186,10 +186,10 @@ export async function sendVerificationEmail(
   userName: string,
   verificationLink: string
 ): Promise<{ success: boolean; error?: string }> {
-  const serviceId = process.env.EMAILJS_SERVICE_ID || "service_15li5i6";
-  const templateId = process.env.EMAILJS_TEMPLATE_ID || "template_yv895a7";
-  const publicKey = process.env.EMAILJS_PUBLIC_KEY || "K2hOwDJVfSGpJ3nih";
-  const privateKey = process.env.EMAILJS_PRIVATE_KEY || "30mafPjRgPPn5im53Idzh";
+  const serviceId = process.env.EMAILJS_SERVICE_ID || "vpansak";
+  const templateId = process.env.EMAILJS_TEMPLATE_ID || "template_di6hvjm";
+  const publicKey = process.env.EMAILJS_PUBLIC_KEY || "jjG3XUesW7Yt8McRJ";
+  const privateKey = process.env.EMAILJS_PRIVATE_KEY || "G-re211vGlwHrNVCniNgz";
   const origin = process.env.APP_URL || "https://vpansak.vercel.app";
 
   try {
